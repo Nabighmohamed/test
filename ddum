@@ -1,3 +1,6 @@
+pip install tqdm
+
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
@@ -7,6 +10,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 # Sample DataFrame (replace this with your actual dataset)
 data = {
@@ -45,9 +49,20 @@ preprocessor = ColumnTransformer(
 # Define the model
 model = RandomForestRegressor(n_estimators=100, random_state=42)
 
+# Create a custom class to wrap the model and provide progress updates
+class ProgressRandomForest(RandomForestRegressor):
+    def fit(self, X, y):
+        for _ in tqdm(super().fit(X, y), desc="Training Progress", total=self.n_estimators):
+            pass
+        return self
+
+# Replace the RandomForestRegressor with ProgressRandomForest
+model = ProgressRandomForest(n_estimators=100, random_state=42)
+
 # Create and evaluate the pipeline
 pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                           ('model', model)])
+                           ('model', model)],
+                    verbose=True)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
