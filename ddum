@@ -1,3 +1,25 @@
+/* Creating the first dataset */
+data dataset1;
+    input ID $ Name $ Age;
+    datalines;
+    1 Alice 30
+    2 Bob 25
+    3 Carol 28
+    ;
+run;
+
+/* Creating the second dataset */
+data dataset2;
+    input ID $ Name $ Age;
+    datalines;
+    4 Dave 35
+    5 Eve 22
+    6 Frank 29
+    ;
+run;
+
+
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
