@@ -1,3 +1,12 @@
+
+Bonjour Solène,
+
+Je comprends bien, et je vous remercie pour votre réponse. Je souhaite simplement progresser dans l'analyse de données ce week-end.
+
+Je vous souhaite un excellent week-end !
+
+
+
 /* Creating the first dataset */
 data dataset1;
     input ID $ Name $ Age;
