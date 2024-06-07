@@ -1,23 +1,10 @@
-pip install tqdm
-
-
+from sklearn.linear_model import LinearRegression
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.impute import SimpleImputer
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-import matplotlib.pyplot as plt
-import numpy as np
-from tqdm import tqdm
 
-# Sample DataFrame (replace this with your actual dataset)
+# Sample DataFrame
 data = {
-    'Feature_1': [1, 2, 3, None, 5, 6, 7, 8, 9, 10],
-    'Feature_2': [1.1, 2.2, None, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
-    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', None],
-    'Feature_4': [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
     'Target': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 }
 df = pd.DataFrame(data)
@@ -26,73 +13,98 @@ df = pd.DataFrame(data)
 X = df.drop(columns=['Target'])
 y = df['Target']
 
-# Identify numerical and categorical columns
-numerical_cols = X.select_dtypes(include=['float64', 'int64']).columns
-categorical_cols = X.select_dtypes(include=['object']).columns
+# Train a linear regression model
+model = LinearRegression()
+model.fit(X, y)
 
-# Preprocessing for numerical data: impute missing values with mean
-numerical_transformer = SimpleImputer(strategy='mean')
+# Coefficients as feature importance
+importance = model.coef_
+for i, v in enumerate(importance):
+    print(f'Feature: {X.columns[i]}, Score: {v:.5f}')
 
-# Preprocessing for categorical data: impute missing values with constant and then one-hot encode
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
 
-# Bundle preprocessing for numerical and categorical data
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numerical_transformer, numerical_cols),
-        ('cat', categorical_transformer, categorical_cols)
-    ])
 
-# Define the model
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Target': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+}
+df = pd.DataFrame(data)
+
+# Separate features and target
+X = df.drop(columns=['Target'])
+y = df['Target']
+
+# Train a random forest model
 model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X, y)
 
-# Create a custom class to wrap the model and provide progress updates
-class ProgressRandomForest(RandomForestRegressor):
-    def fit(self, X, y):
-        for _ in tqdm(super().fit(X, y), desc="Training Progress", total=self.n_estimators):
-            pass
-        return self
+# Feature importances
+importances = model.feature_importances_
+for i, v in enumerate(importances):
+    print(f'Feature: {X.columns[i]}, Score: {v:.5f}')
 
-# Replace the RandomForestRegressor with ProgressRandomForest
-model = ProgressRandomForest(n_estimators=100, random_state=42)
 
-# Create and evaluate the pipeline
-pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                           ('model', model)],
-                    verbose=True)
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.inspection import permutation_importance
+import pandas as pd
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Sample DataFrame
+data = {
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Target': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+}
+df = pd.DataFrame(data)
 
-# Fit the pipeline on the training data
-pipeline.fit(X_train, y_train)
+# Separate features and target
+X = df.drop(columns=['Target'])
+y = df['Target']
 
-# Extract feature importances
-importances = pipeline.named_steps['model'].feature_importances_
+# Train a random forest model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X, y)
 
-# Get the feature names after one-hot encoding
-onehot_feature_names = pipeline.named_steps['preprocessor'].transformers_[1][1].named_steps['onehot'].get_feature_names_out(categorical_cols)
-feature_names = np.concatenate([numerical_cols, onehot_feature_names])
+# Permutation importance
+results = permutation_importance(model, X, y, scoring='neg_mean_squared_error')
+importances = results.importances_mean
+for i, v in enumerate(importances):
+    print(f'Feature: {X.columns[i]}, Score: {v:.5f}')
 
-# Sort the feature importances
-indices = np.argsort(importances)[::-1]
 
-# Print the feature ranking
-print("Feature ranking:")
 
-for f in range(len(importances)):
-    print(f"{f + 1}. {feature_names[indices[f]]} ({importances[indices[f]]:.4f})")
 
-# Plot the feature importances
-plt.figure(figsize=(10, 8))
-plt.title("Feature Importances")
-plt.bar(range(len(importances)), importances[indices], align="center")
-plt.xticks(range(len(importances)), [feature_names[i] for i in indices], rotation=45)
-plt.xlim([-1, len(importances)])
-plt.xlabel('Features')
-plt.ylabel('Importance Score')
-plt.tight_layout()
-plt.show()
+
+
+
+
+import shap
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Target': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+}
+df = pd.DataFrame(data)
+
+# Separate features and target
+X = df.drop(columns=['Target'])
+y = df['Target']
+
+# Train a random forest model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X, y)
+
+# Explain the model predictions using SHAP values
+explainer = shap.Explainer(model, X)
+shap_values = explainer(X)
+
+# Plot SHAP values
+shap.summary_plot(shap_values, X)
