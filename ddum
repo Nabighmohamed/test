@@ -1,8 +1,78 @@
 
-# Plotting box plots for each numeric variable separately
-for column in numeric_df.columns:
-    plt.figure(figsize=(6, 4))
-    plt.boxplot(numeric_df[column].dropna())
-    plt.title(f'Box Plot of {column}')
-    plt.ylabel(column)
-    plt.show()
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Histogram
+df['numerical_column'].hist(bins=30)
+plt.title('Histogram of Numerical Column')
+plt.xlabel('Value')
+plt.ylabel('Frequency')
+plt.show()
+
+# Box Plot
+plt.figure(figsize=(6, 4))
+sns.boxplot(x=df['numerical_column'])
+plt.title('Box Plot of Numerical Column')
+plt.show()
+
+# Bar Plot
+df['categorical_column'].value_counts().plot(kind='bar')
+plt.title('Bar Plot of Categorical Column')
+plt.xlabel('Category')
+plt.ylabel('Frequency')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+# Scatter Plot
+plt.scatter(df['numerical_column_1'], df['numerical_column_2'])
+plt.title('Scatter Plot')
+plt.xlabel('Numerical Column 1')
+plt.ylabel('Numerical Column 2')
+plt.show()
+
+# Correlation Matrix
+corr_matrix = df.corr()
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.title('Correlation Matrix')
+plt.show()
+
+# Box Plot
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='categorical_column', y='numerical_column', data=df)
+plt.title('Box Plot of Numerical Column by Categorical Column')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Pair Plot
+sns.pairplot(df)
+plt.show()
+
+# Facet Grid
+g = sns.FacetGrid(df, col="categorical_column_1", row="categorical_column_2")
+g = g.map(plt.hist, "numerical_column")
+plt.show()
+
+
+
+
