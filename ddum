@@ -1,104 +1,29 @@
-Bonjour Marie,
-
-Merci beaucoup pour votre accueil chaleureux au sein de la Guilde DATA IA BCEF.
-
-Je vais commencer par consulter les documents disponibles dans la partie « Fichiers » du canal Général, comme la Charte d'utilisation de l'équipe TEAMS, la Liste des membres, la Cartographie des Membres et la FAQ, pour mieux comprendre le fonctionnement de l'équipe.
-
-J'apprécie également les informations concernant les différents canaux et leurs utilisations. Je vais explorer ces canaux, notamment le canal Échanges et besoins, pour échanger avec les autres membres.
-
-Concernant les réunions périodiques, je note les dates pour les Rendez-vous de la Guilde le 27/6/2024 et le Flash Meeting le 11/7/2024. Je serai attentif aux invitations pour ces réunions.
-
-Vous trouverez en pièce jointe les documents "Droit à l'image" dûment rempli ainsi que le « Recueil des expertises et compétences » avec mes connaissances dans le domaine de la DATA et de l'IA. J'ai également joint une photo pour le trombinoscope.
-
-Merci encore pour toutes ces informations et pour votre soutien. Je suis ravi de rejoindre la Guilde et impatient de collaborer avec vous tous.
-
-Cordialement,
-
-
-
-/* Creating the first dataset */
-data dataset1;
-    input ID $ Name $ Age;
-    datalines;
-    1 Alice 30
-    2 Bob 25
-    3 Carol 28
-    ;
-run;
-
-/* Creating the second dataset */
-data dataset2;
-    input ID $ Name $ Age;
-    datalines;
-    4 Dave 35
-    5 Eve 22
-    6 Frank 29
-    ;
-run;
-
-
-
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
-import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
-# Sample DataFrame with null values and strings
+# Sample DataFrame with mixed types
 data = {
-    'Feature_1': [1, 2, 3, None, 5, 6, 7, 8, 9, 10],
-    'Feature_2': [1.1, 2.2, None, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
-    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', None],
-    'Feature_4': [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
-    'Target': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A'],
+    'Feature_4': [True, False, True, False, True, False, True, False, True, False],
+    'Feature_5': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 }
+
 df = pd.DataFrame(data)
 
-# Separate features and target
-X = df.drop(columns=['Target'])
-y = df['Target']
+# Convert categorical columns to numeric
+label_encoders = {}
+for column in df.select_dtypes(include=['object', 'bool']).columns:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le
 
-# Drop non-numeric columns
-X = X.select_dtypes(include=['float64', 'int64'])
-
-# Drop columns with more than 1% missing values
-missing_threshold = 0.01
-X = X.loc[:, X.isnull().mean() <= missing_threshold]
-
-# Drop rows with missing values
-X = X.dropna()
-y = y[X.index]  # Align target variable with the filtered features
-
-# Check if there are any remaining columns and rows
-if X.empty:
-    raise ValueError("No columns left after dropping non-numeric columns and columns with more than 1% missing values.")
-if y.isnull().any():
-    raise ValueError("Target variable has missing values.")
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Train a Random Forest model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
-
-# Extract feature importances
-importances = model.feature_importances_
-indices = np.argsort(importances)[::-1]
-
-# Print the feature ranking
-print("Feature ranking:")
-
-for i in range(len(importances)):
-    print(f'{i + 1}. {X.columns[indices[i]]} ({importances[indices[i]]:.5f})')
-
-# Plot the feature importances
-plt.figure(figsize=(10, 8))
-plt.title("Feature Importances")
-plt.bar(range(len(importances)), importances[indices], align="center")
-plt.xticks(range(len(importances)), [X.columns[i] for i in indices], rotation=45)
-plt.xlim([-1, len(importances)])
-plt.xlabel('Features')
-plt.ylabel('Importance Score')
-plt.tight_layout()
+# Plotting box plots for all variables
+plt.figure(figsize=(12, 6))
+df.boxplot()
+plt.title('Box Plot of All Variables')
+plt.ylabel('Values')
+plt.xticks(rotation=45)
 plt.show()
