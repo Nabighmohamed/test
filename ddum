@@ -1,29 +1,8 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
 
-# Sample DataFrame with mixed types
-data = {
-    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    'Feature_2': [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
-    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A'],
-    'Feature_4': [True, False, True, False, True, False, True, False, True, False],
-    'Feature_5': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-}
-
-df = pd.DataFrame(data)
-
-# Convert categorical columns to numeric
-label_encoders = {}
-for column in df.select_dtypes(include=['object', 'bool']).columns:
-    le = LabelEncoder()
-    df[column] = le.fit_transform(df[column])
-    label_encoders[column] = le
-
-# Plotting box plots for all variables
-plt.figure(figsize=(12, 6))
-df.boxplot()
-plt.title('Box Plot of All Variables')
-plt.ylabel('Values')
-plt.xticks(rotation=45)
-plt.show()
+# Plotting box plots for each numeric variable separately
+for column in numeric_df.columns:
+    plt.figure(figsize=(6, 4))
+    plt.boxplot(numeric_df[column].dropna())
+    plt.title(f'Box Plot of {column}')
+    plt.ylabel(column)
+    plt.show()
