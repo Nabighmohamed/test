@@ -4,10 +4,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.inspection import permutation_importance
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.inspection import permutation_importance
+from sklearn.metrics import r2_score
 
 # Sample DataFrame (replace with your actual dataset)
 data = {
@@ -18,9 +21,9 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# Preprocess data
-df.drop(columns=['Feature_2'], inplace=True)  # Drop columns with missing values other than target
-df.dropna(subset=['Target'], inplace=True)    # Drop rows where target is missing
+# Preprocess data: Drop columns with missing values and rows where target is missing
+df.drop(columns=['Feature_2'], inplace=True)
+df.dropna(subset=['Target'], inplace=True)
 
 # Separate features and target
 X = df.drop(columns=['Target'])
@@ -60,6 +63,11 @@ for name, model in models:
                                ('regressor', model)])
     pipeline.fit(X_train, y_train)
 
+    # Retrieve feature names after fitting the pipeline
+    numeric_feature_names = pipeline.named_steps['preprocessor'].transformers_[0][1].named_steps['scaler'].get_feature_names_out(numeric_features).tolist()
+    categorical_feature_names = pipeline.named_steps['preprocessor'].transformers_[1][1].named_steps['onehot'].get_feature_names_out(categorical_features).tolist()
+    feature_names = numeric_feature_names + categorical_feature_names
+
     # Feature importances
     if hasattr(model, 'feature_importances_'):
         importances = model.feature_importances_
@@ -69,8 +77,6 @@ for name, model in models:
         importances = permutation_importance(pipeline, X_test, y_test, n_repeats=10, random_state=42).importances_mean
 
     # Create DataFrame of importances
-    feature_names = pipeline.named_steps['preprocessor'].transformers_[0][1].named_steps['scaler'].get_feature_names_out(numeric_features).tolist()
-    feature_names += pipeline.named_steps['preprocessor'].transformers_[1][1].named_steps['onehot'].get_feature_names_out(categorical_features).tolist()
     importance_df = pd.DataFrame({'Feature': feature_names, f'{name} Importance': importances})
     feature_importance_df = pd.concat([feature_importance_df, importance_df.set_index('Feature')], axis=1)
 
@@ -78,6 +84,7 @@ for name, model in models:
 for col in feature_importance_df.columns:
     print(f"\nTop 10 features for {col}:")
     print(feature_importance_df[col].sort_values(ascending=False).head(10))
+
 
 
 
