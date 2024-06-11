@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 
-# Sample DataFrame
+# Sample DataFrame (replace with your actual dataset)
 data = {
     'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, np.nan, 10],
     'Feature_2': [1.1, 2.2, np.nan, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
@@ -49,6 +49,13 @@ print(results.summary())
 significant_features = results.pvalues[results.pvalues < 0.10].index.tolist()
 if 'const' in significant_features:
     significant_features.remove('const')
+
+# Debug print to check selected significant features
+print("Significant Features:", significant_features)
+
+# Check if there are significant features selected
+if not significant_features:
+    raise ValueError("No significant features found with p-value < 0.10")
 
 # Train a new regression model using significant features
 X_train_sig = X_train[significant_features]
@@ -97,7 +104,6 @@ plt.show()
 
 # Print the DataFrame with imputed values
 print("\nDataFrame with Imputed Values:\n", df)
-
 
 
 
