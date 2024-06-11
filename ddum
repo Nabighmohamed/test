@@ -3,6 +3,140 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
+# Sample DataFrame
+data = {
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, np.nan, 10],
+    'Feature_2': [1.1, 2.2, np.nan, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A'],
+    'Target': [15.1, 25.3, 35.2, np.nan, 55.4, 65.7, 75.3, 85.1, 95.0, 105.6]
+}
+df = pd.DataFrame(data)
+
+# Select the target variable with missing values
+target_variable = 'Target'
+
+# Drop other variables with missing values
+df = df.drop(columns=['Feature_2'])
+
+# Create dataset for training (without missing target) and predicting (with missing target)
+train_data = df.dropna(subset=[target_variable])
+predict_data = df[df[target_variable].isnull()]
+
+# Split features and target
+X_train = train_data.drop(columns=[target_variable])
+y_train = train_data[target_variable]
+
+# One-hot encode categorical variables
+X_train = pd.get_dummies(X_train, drop_first=True)
+predict_features = pd.get_dummies(predict_data.drop(columns=[target_variable]), drop_first=True)
+
+# Align columns of prediction set to match the training set
+predict_features = predict_features.reindex(columns=X_train.columns, fill_value=0)
+
+# Add constant term for intercept
+X_train_sm = sm.add_constant(X_train)
+
+# Train the regression model and get summary
+model = sm.OLS(y_train, X_train_sm)
+results = model.fit()
+print(results.summary())
+
+# Select features with p-value < 0.10
+significant_features = results.pvalues[results.pvalues < 0.10].index.tolist()
+if 'const' in significant_features:
+    significant_features.remove('const')
+
+# Train a new regression model using significant features
+X_train_sig = X_train[significant_features]
+
+# Apply PCA
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train_sig)
+pca = PCA(n_components=3)
+X_train_pca = pca.fit_transform(X_train_scaled)
+
+# Train the regression model using principal components
+X_train_pca_sm = sm.add_constant(X_train_pca)
+model_pca = sm.OLS(y_train, X_train_pca_sm)
+results_pca = model_pca.fit()
+print(results_pca.summary())
+
+# Transform predict_features using PCA
+predict_features_sig = predict_features[significant_features]
+predict_features_scaled = scaler.transform(predict_features_sig)
+predict_features_pca = pca.transform(predict_features_scaled)
+predict_features_pca_sm = sm.add_constant(predict_features_pca)
+
+# Predict missing values using the PCA model
+y_pred = results_pca.predict(predict_features_pca_sm)
+df.loc[df[target_variable].isnull(), target_variable] = y_pred
+
+# Evaluate the model before PCA
+X_train_sm_full = sm.add_constant(X_train)
+model_full = sm.OLS(y_train, X_train_sm_full)
+results_full = model_full.fit()
+y_pred_full = results_full.predict(X_train_sm_full)
+mse_full = mean_squared_error(y_train, y_pred_full)
+r2_full = r2_score(y_train, y_pred_full)
+
+# Evaluate the model after PCA
+y_pred_pca = results_pca.predict(X_train_pca_sm)
+mse_pca = mean_squared_error(y_train, y_pred_pca)
+r2_pca = r2_score(y_train, y_pred_pca)
+
+# Plot the accuracies
+plt.figure(figsize=(10, 5))
+plt.bar(['Before PCA', 'After PCA'], [r2_full, r2_pca], color=['blue', 'green'])
+plt.title('R-squared Before and After PCA')
+plt.ylabel('R-squared')
+plt.show()
+
+# Print the DataFrame with imputed values
+print("\nDataFrame with Imputed Values:\n", df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 
 # Sample DataFrame
