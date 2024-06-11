@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 
 # Sample DataFrame
@@ -48,19 +50,32 @@ if 'const' in significant_features:
 
 # Train a new regression model using significant features
 X_train_sig = X_train[significant_features]
-X_train_sig_sm = sm.add_constant(X_train_sig)
-model_sig = sm.OLS(y_train, X_train_sig_sm)
-results_sig = model_sig.fit()
-print(results_sig.summary())
 
-# Predict missing values using the significant features model
+# Apply PCA
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train_sig)
+pca = PCA(n_components=min(len(significant_features), len(X_train_sig) - 1))
+X_train_pca = pca.fit_transform(X_train_scaled)
+
+# Train the regression model using principal components
+X_train_pca_sm = sm.add_constant(X_train_pca)
+model_pca = sm.OLS(y_train, X_train_pca_sm)
+results_pca = model_pca.fit()
+print(results_pca.summary())
+
+# Transform predict_features using PCA
 predict_features_sig = predict_features[significant_features]
-predict_features_sig_sm = sm.add_constant(predict_features_sig)
-y_pred = results_sig.predict(predict_features_sig_sm)
+predict_features_scaled = scaler.transform(predict_features_sig)
+predict_features_pca = pca.transform(predict_features_scaled)
+predict_features_pca_sm = sm.add_constant(predict_features_pca)
+
+# Predict missing values using the PCA model
+y_pred = results_pca.predict(predict_features_pca_sm)
 df.loc[df[target_variable].isnull(), target_variable] = y_pred
 
 # Print the DataFrame with imputed values
 print("\nDataFrame with Imputed Values:\n", df)
+
 
 
 
