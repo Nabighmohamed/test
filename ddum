@@ -29,8 +29,11 @@ X = df.drop(columns=['Target'])
 y = df['Target']
 
 # Define preprocessor
-numeric_features = ['Feature_1']
-categorical_features = ['Feature_3']
+# Automatically detect numeric and categorical features
+numeric_features = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
+categorical_features = X.select_dtypes(include=['object']).columns.tolist()
+
+# Define preprocessor
 numeric_transformer = Pipeline(steps=[
     ('scaler', StandardScaler())])
 categorical_transformer = Pipeline(steps=[
