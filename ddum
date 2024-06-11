@@ -1,4 +1,103 @@
 import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import statsmodels.api as sm
+
+# Sample DataFrame
+data = {
+    'Feature_1': [1, 2, 3, 4, 5, 6, 7, 8, np.nan, 10],
+    'Feature_2': [1.1, 2.2, np.nan, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+    'Feature_3': ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A'],
+    'Target': [15.1, 25.3, 35.2, np.nan, 55.4, 65.7, 75.3, 85.1, 95.0, 105.6]
+}
+df = pd.DataFrame(data)
+
+# Select the target variable with missing values
+target_variable = 'Target'
+
+# Drop other variables with missing values
+df = df.drop(columns=['Feature_2'])
+
+# Create dataset for training (without missing target) and predicting (with missing target)
+train_data = df.dropna(subset=[target_variable])
+predict_data = df[df[target_variable].isnull()]
+
+# Split features and target
+X_train = train_data.drop(columns=[target_variable])
+y_train = train_data[target_variable]
+
+# One-hot encode categorical variables
+X_train = pd.get_dummies(X_train, drop_first=True)
+predict_features = pd.get_dummies(predict_data.drop(columns=[target_variable]), drop_first=True)
+
+# Align columns of prediction set to match the training set
+predict_features = predict_features.reindex(columns=X_train.columns, fill_value=0)
+
+# Train the regression model
+regressor = LinearRegression()
+regressor.fit(X_train, y_train)
+
+# Predict missing values
+y_pred = regressor.predict(predict_features)
+df.loc[df[target_variable].isnull(), target_variable] = y_pred
+
+# Model summary using statsmodels
+X_train_sm = sm.add_constant(X_train)  # Add constant term for intercept
+model = sm.OLS(y_train, X_train_sm)
+results = model.fit()
+
+# Print the summary
+print(results.summary())
+
+# Print the DataFrame with imputed values
+print("\nDataFrame with Imputed Values:\n", df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
