@@ -1,3 +1,45 @@
+import numpy as np
+import pandas as pd
+import shap
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+
+# Load the Boston housing dataset
+boston = load_boston()
+X = pd.DataFrame(boston.data, columns=boston.feature_names)
+y = boston.target
+
+# Remove rows with missing values
+X = X.dropna()
+y = y[:len(X)]  # Ensure the target variable matches the dimensions of X after dropping rows
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train a Random Forest Regressor
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Create a SHAP explainer object
+explainer = shap.TreeExplainer(model)
+
+# Calculate SHAP values for the test set
+shap_values = explainer.shap_values(X_test)
+
+# Summary plot
+shap.summary_plot(shap_values, X_test)
+
+# Dependence plot for a specific feature (e.g., 'RM' - average number of rooms per dwelling)
+shap.dependence_plot('RM', shap_values, X_test)
+
+# Force plot for the first instance in the test set
+shap.force_plot(explainer.expected_value, shap_values[0, :], X_test.iloc[0, :], matplotlib=True)
+plt.show()
+
+
+
 Feature importance refers to techniques that assign a score to input features based on how useful they are at predicting a target variable. Understanding feature importance can help in feature selection, improving the model, and providing insights into the data. Here's an explanation of how feature importance works, focusing on a few common methods:
 
 1. Model-Based Feature Importance
