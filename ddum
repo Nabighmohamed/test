@@ -1,3 +1,17 @@
+Bonjour Fabien,
+
+Merci pour votre message. Tout fonctionne maintenant, c'était simplement un problème de demande d'accès. J'ai fait vérifier ma demande d'accès et tout fonctionne parfaitement maintenant.
+
+Merci pour votre aide.
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
