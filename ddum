@@ -2,6 +2,71 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100) * 100,
+    'B': np.random.rand(100) * 50 + 50,
+    'C': np.random.rand(100) * 20 - 10,
+    'D': np.random.randn(100) * 5,
+    'Target': np.random.rand(100) * 100
+})
+
+# Calculate correlation matrix
+corr_matrix = df.corr()
+
+# Display correlation matrix
+plt.figure(figsize=(12, 8))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", vmin=-1, vmax=1)
+plt.title('Correlation Matrix')
+plt.show()
+
+# Calculate R-squared values
+target_var = 'Target'
+r2_results = {}
+
+for col in df.columns:
+    if col != target_var:
+        X = df[[col]]
+        y = df[target_var]
+        model = LinearRegression().fit(X, y)
+        y_pred = model.predict(X)
+        r2 = r2_score(y, y_pred)
+        r2_results[col] = r2
+
+# Display R-squared results
+r2_df = pd.DataFrame.from_dict(r2_results, orient='index', columns=['R-Squared']).sort_values(by='R-Squared', ascending=False)
+print(r2_df)
+
+# Plot R-squared values
+plt.figure(figsize=(10, 6))
+sns.barplot(x=r2_df.index, y='R-Squared', data=r2_df, palette='viridis')
+plt.title('R-Squared Values of Variables Explaining Target')
+plt.xlabel('Variables')
+plt.ylabel('R-Squared')
+plt.xticks(rotation=45)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Sample DataFrame (replace this with your actual data)
 df = pd.DataFrame({
