@@ -1,5 +1,84 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+import xgboost as xgb
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+# Introduce some missing values for demonstration
+for col in df.columns:
+    df.loc[df.sample(frac=0.2).index, col] = np.nan
+
+# Function to copy target column, drop columns with missing values, and add target column back
+def prepare_dataframe(df, target_column):
+    df_copy = df.copy()
+    target = df_copy[[target_column]].copy()
+    df_copy = df_copy.dropna(axis=1, how='any')
+    df_copy = pd.concat([df_copy, target], axis=1)
+    return df_copy
+
+# Specify the target column
+target_column = 'A'
+
+# Prepare the DataFrame
+prepared_df = prepare_dataframe(df, target_column)
+
+# Split the data into training (non-missing target values) and testing (missing target values) sets
+train_df = prepared_df[prepared_df[target_column].notna()]
+test_df = prepared_df[prepared_df[target_column].isna()]
+
+# Define features and target
+X_train = train_df.drop(columns=[target_column])
+y_train = train_df[target_column]
+X_test = test_df.drop(columns=[target_column])
+
+# Train the XGBoost model
+xgb_model = xgb.XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42)
+xgb_model.fit(X_train, y_train)
+
+# Predict the missing values
+y_pred = xgb_model.predict(X_test)
+
+# Evaluate the model (Since we don't have true values for test set, we can't compute RMSE here)
+# In practice, you would compare y_pred with the true values if they were known
+
+# Add predictions back to the original DataFrame
+prepared_df.loc[prepared_df[target_column].isna(), target_column] = y_pred
+
+# Display the results
+print("Predicted values for the missing target variable:")
+print(prepared_df[prepared_df[target_column].isna()][[target_column]])
+
+# Optionally, if we had true values, we would compute the RMSE like this:
+# y_true = true_values_array_for_missing_entries
+# rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+# print(f"RMSE for XGBoost predictions: {rmse}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
