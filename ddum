@@ -1,3 +1,93 @@
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+# Introduce some missing values for demonstration
+for col in df.columns:
+    df.loc[df.sample(frac=0.2).index, col] = np.nan
+
+# Define the imputation methods
+imputation_methods = {
+    'Mean': SimpleImputer(strategy='mean'),
+    'Median': SimpleImputer(strategy='median'),
+    'KNN': KNNImputer(n_neighbors=5),
+    'MICE': IterativeImputer(estimator=RandomForestRegressor(), max_iter=10, random_state=42)
+}
+
+# Function to evaluate imputation techniques using cross-validation
+def evaluate_imputation_methods(df, imputation_methods):
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    results = {method: [] for method in imputation_methods.keys()}
+
+    for train_index, test_index in kf.split(df):
+        train_df, test_df = df.iloc[train_index], df.iloc[test_index]
+
+        for method_name, imputer in imputation_methods.items():
+            # Fit the imputer on the training set
+            imputer.fit(train_df)
+            
+            # Transform both the training and test sets
+            imputed_train_df = pd.DataFrame(imputer.transform(train_df), columns=df.columns)
+            imputed_test_df = pd.DataFrame(imputer.transform(test_df), columns=df.columns)
+            
+            for col in df.columns:
+                if train_df[col].isna().sum() > 0 or test_df[col].isna().sum() > 0:
+                    # Calculate RMSE for each column with missing values
+                    y_true = test_df[col].dropna()
+                    y_pred = imputed_test_df.loc[y_true.index, col]
+                    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+                    results[method_name].append(rmse)
+    
+    # Calculate the mean RMSE for each imputation method
+    mean_results = {method: np.mean(rmses) for method, rmses in results.items()}
+    
+    return mean_results
+
+# Evaluate the imputation methods
+results = evaluate_imputation_methods(df, imputation_methods)
+
+# Display the results
+print("Mean RMSE for different imputation methods:")
+for method, score in results.items():
+    print(f"{method}: {score}")
+
+# Determine the best imputation method
+best_method = min(results, key=results.get)
+print(f"\nBest imputation method: {best_method} with RMSE: {results[best_method]}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Handle Missing Values: Impute missing values to avoid complications in subsequent steps.
 Handle Outliers: Address outliers to ensure they do not skew the scaling and modeling.
 Handle Categorical Data: Encode categorical variables.
