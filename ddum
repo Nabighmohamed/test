@@ -55,6 +55,124 @@ imputation_methods = {
 # Function to evaluate imputation techniques
 def evaluate_imputation_methods(df, target_column, imputation_methods):
     results = {}
+    
+    # Extract the rows with missing values in the target column
+    missing_df = df[df[target_column].isna()]
+    
+    # Extract the rows with non-missing values in the target column
+    non_missing_df = df[df[target_column].notna()]
+    
+    # Extract the true values of the target column for evaluation
+    y_true = non_missing_df[target_column].copy()
+    
+    for method_name, imputer in imputation_methods.items():
+        df_copy = non_missing_df.dropna(axis=1, how='any')
+        df_copy[target_column] = non_missing_df[target_column]
+        
+        if isinstance(imputer, SimpleImputer) or isinstance(imputer, KNNImputer) or isinstance(imputer, IterativeImputer):
+            imputed_data = imputer.fit_transform(df_copy)
+            imputed_df = pd.DataFrame(imputed_data, columns=df_copy.columns)
+        else:
+            imputed_data = imputer.fit_transform(df_copy.values)
+            imputed_df = pd.DataFrame(imputed_data, columns=df_copy.columns)
+        
+        y_pred = imputed_df[target_column]
+        rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+        results[method_name] = rmse
+
+    return results
+
+# Evaluate the imputation methods
+results = evaluate_imputation_methods(prepared_df, target_column, imputation_methods)
+
+# Display the results
+print("RMSE for different imputation methods:")
+for method, score in results.items():
+    print(f"{method}: {score}")
+
+# Determine the best imputation method
+best_method = min(results, key=results.get)
+print(f"\nBest imputation method: {best_method} with RMSE: {results[best_method]}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.linear_model import BayesianRidge
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+import warnings
+from fancyimpute import IterativeSVD, MatrixFactorization, SoftImpute, BiScaler, KNN
+
+warnings.filterwarnings("ignore")
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+# Introduce some missing values for demonstration
+for col in df.columns:
+    df.loc[df.sample(frac=0.2).index, col] = np.nan
+
+# Function to copy target column, drop columns with missing values, and add target column back
+def prepare_dataframe(df, target_column):
+    df_copy = df.copy()
+    target = df_copy[[target_column]].copy()
+    df_copy = df_copy.dropna(axis=1, how='any')
+    df_copy = pd.concat([df_copy, target], axis=1)
+    return df_copy
+
+# Specify the target column
+target_column = 'A'
+
+# Prepare the DataFrame
+prepared_df = prepare_dataframe(df, target_column)
+
+# Define imputation methods
+imputation_methods = {
+    'Mean': SimpleImputer(strategy='mean'),
+    'Median': SimpleImputer(strategy='median'),
+    'Most_frequent': SimpleImputer(strategy='most_frequent'),
+    'KNN_5': KNNImputer(n_neighbors=5),
+    'KNN_10': KNNImputer(n_neighbors=10),
+    'Iterative_Ridge': IterativeImputer(estimator=BayesianRidge(), max_iter=10, random_state=42),
+    'Iterative_RF': IterativeImputer(estimator=RandomForestRegressor(), max_iter=10, random_state=42),
+    'IterativeSVD': IterativeSVD(),
+    'MatrixFactorization': MatrixFactorization(),
+    'SoftImpute': SoftImpute(),
+}
+
+# Function to evaluate imputation techniques
+def evaluate_imputation_methods(df, target_column, imputation_methods):
+    results = {}
     y_true = df[target_column][df[target_column].isna()]
 
     for method_name, imputer in imputation_methods.items():
