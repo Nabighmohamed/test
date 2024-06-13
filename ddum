@@ -1,3 +1,14 @@
+duplicates = df.duplicated(subset=['Column1', 'Column2'])
+print(duplicates)
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
