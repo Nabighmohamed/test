@@ -21,6 +21,9 @@ columns_with_missing_values = df.columns[df.isna().any()].tolist()
 columns_with_missing_values.remove(target_var)
 df_clean = df.drop(columns=columns_with_missing_values)
 
+# Ensure target variable is of integer type
+df_clean[target_var] = df_clean[target_var].astype(int)
+
 # Split the data into training, testing, and target (missing values) sets
 df_not_missing = df_clean.dropna(subset=[target_var])
 df_missing = df_clean[df_clean[target_var].isna()]
@@ -30,9 +33,9 @@ train, test = train_test_split(df_not_missing, test_size=0.2, random_state=42)
 
 # Define the features and target
 X_train = train.drop(columns=[target_var])
-y_train = train[target_var]
+y_train = train[target_var].astype(int)
 X_test = test.drop(columns=[target_var])
-y_test = test[target_var]
+y_test = test[target_var].astype(int)
 
 # Handle class imbalance using SMOTE with n_neighbors set to 1
 smote = SMOTE(random_state=42, k_neighbors=1)
@@ -71,7 +74,7 @@ for model_name, model in models.items():
     
     # Impute the missing values in the target dataset
     X_missing = df_missing.drop(columns=[target_var])
-    df_missing[target_var] = pipeline.predict(X_missing)
+    df_missing[target_var] = pipeline.predict(X_missing).astype(int)
     
     # Print the imputed values for the missing data
     print(f"Imputed missing values using {model_name}:")
