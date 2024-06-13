@@ -1,5 +1,69 @@
 import pandas as pd
 import numpy as np
+from scipy.stats import pearsonr
+
+# Sample DataFrame (replace this with your actual data)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+def calculate_correlation_matrix(df):
+    # Get the list of columns
+    cols = df.columns
+    n = len(cols)
+    
+    # Initialize matrices to store correlation coefficients and p-values
+    corr_matrix = pd.DataFrame(np.zeros((n, n)), columns=cols, index=cols)
+    p_value_matrix = pd.DataFrame(np.zeros((n, n)), columns=cols, index=cols)
+    
+    # Calculate correlation coefficients and p-values
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                corr_matrix.iloc[i, j] = 1.0
+                p_value_matrix.iloc[i, j] = 0.0
+            else:
+                corr, p_value = pearsonr(df.iloc[:, i], df.iloc[:, j])
+                corr_matrix.iloc[i, j] = corr
+                p_value_matrix.iloc[i, j] = p_value
+                
+    return corr_matrix, p_value_matrix
+
+# Calculate the correlation matrix and p-value matrix
+corr_matrix, p_value_matrix = calculate_correlation_matrix(df)
+
+# Display the matrices
+print("Correlation Matrix:")
+print(corr_matrix)
+print("\nP-Value Matrix:")
+print(p_value_matrix)
+
+# Combine the correlation matrix and p-value matrix into one DataFrame for display
+combined_matrix = corr_matrix.astype(str) + " (p=" + p_value_matrix.round(4).astype(str) + ")"
+
+print("\nCombined Matrix:")
+print(combined_matrix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
