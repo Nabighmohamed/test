@@ -1,3 +1,29 @@
+# Plotting the VIF values
+plt.figure(figsize=(10, 6))
+plt.bar(vif_data["Variable"], vif_data["VIF"], color='skyblue')
+plt.xlabel('Variables')
+plt.ylabel('VIF')
+plt.title('Variance Inflation Factor (VIF)')
+plt.axhline(y=5, color='r', linestyle='--')
+plt.axhline(y=10, color='r', linestyle='--')
+plt.xticks(rotation=45)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from statsmodels.stats.outliers_influence import variance_inflation_factor
