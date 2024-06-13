@@ -1,3 +1,60 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame (replace this with your actual data)
+df = pd.DataFrame({
+    'A': np.random.rand(100) * 100,
+    'B': np.random.rand(100) * 50 + 50,
+    'C': np.random.rand(100) * 20 - 10,
+    'D': np.random.randn(100) * 5
+})
+
+# Function to plot distribution and detect outliers
+def plot_distribution_and_outliers(df):
+    num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    
+    for col in num_cols:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        
+        # Histogram and KDE Plot
+        sns.histplot(df[col], kde=True, ax=axes[0], color='blue')
+        axes[0].set_title(f'Distribution of {col}')
+        axes[0].set_xlabel(col)
+        
+        # Box Plot for outliers
+        sns.boxplot(y=df[col], ax=axes[1], color='orange')
+        axes[1].set_title(f'Box Plot of {col}')
+        
+        plt.tight_layout()
+        plt.show()
+        
+        # Detect outliers using IQR method
+        Q1 = df[col].quantile(0.25)
+        Q3 = df[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
+        
+        print(f'{col}:')
+        print(f'Number of outliers: {outliers.shape[0]}')
+        if not outliers.empty:
+            print('Outliers:')
+            print(outliers[[col]])
+        print('\n')
+
+# Plot distributions and outliers
+plot_distribution_and_outliers(df)
+
+
+
+
+
+
+
+
 # Create a mask for the upper triangle
 mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
 
