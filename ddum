@@ -1,5 +1,117 @@
 import pandas as pd
 import numpy as np
+from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+# Introduce some missing values for demonstration
+for col in df.columns:
+    df.loc[df.sample(frac=0.2).index, col] = np.nan
+
+# Define the imputation methods
+imputation_methods = {
+    'Mean': SimpleImputer(strategy='mean'),
+    'Median': SimpleImputer(strategy='median'),
+    'KNN': KNNImputer(n_neighbors=5),
+    'MICE': IterativeImputer(estimator=RandomForestRegressor(), max_iter=10, random_state=42)
+}
+
+# Function to evaluate imputation techniques
+def evaluate_imputation_methods(df, target_column, imputation_methods):
+    results = {}
+
+    for method_name, imputer in imputation_methods.items():
+        # Create a copy of the DataFrame
+        df_copy = df.copy()
+        
+        # Split the data into train and test sets, including only non-missing target values
+        train_df = df_copy[df_copy[target_column].notna()]
+        test_df = df_copy[df_copy[target_column].isna()]
+        
+        if test_df.empty:
+            raise ValueError("No missing values in the target column to impute.")
+        
+        X_train = train_df.drop(columns=[target_column])
+        y_train = train_df[target_column]
+        
+        X_test = test_df.drop(columns=[target_column])
+        
+        # Impute missing values in the training set
+        imputed_train = imputer.fit_transform(train_df)
+        imputed_train_df = pd.DataFrame(imputed_train, columns=df_copy.columns)
+        
+        # Impute missing values in the test set
+        imputed_test = imputer.transform(test_df)
+        imputed_test_df = pd.DataFrame(imputed_test, columns=df_copy.columns)
+        
+        # Evaluate imputation
+        if target_column in imputed_test_df.columns:
+            # Compute RMSE for continuous variables
+            y_true = df_copy[target_column][df_copy[target_column].isna()]
+            y_pred = imputed_test_df[target_column]
+            rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+            results[method_name] = rmse
+        else:
+            # For categorical data, use an appropriate metric (e.g., accuracy)
+            pass
+
+    return results
+
+# Specify the target column (column with missing values to be imputed)
+target_column = 'A'
+
+# Evaluate the imputation methods
+results = evaluate_imputation_methods(df, target_column, imputation_methods)
+
+# Display the results
+print("RMSE for different imputation methods:")
+for method, score in results.items():
+    print(f"{method}: {score}")
+
+# Determine the best imputation method
+best_method = min(results, key=results.get)
+print(f"\nBest imputation method: {best_method} with RMSE: {results[best_method]}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
