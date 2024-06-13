@@ -34,8 +34,8 @@ y_train = train[target_var]
 X_test = test.drop(columns=[target_var])
 y_test = test[target_var]
 
-# Handle class imbalance using SMOTE
-smote = SMOTE(random_state=42)
+# Handle class imbalance using SMOTE with n_neighbors set to 1
+smote = SMOTE(random_state=42, k_neighbors=1)
 
 # Build the preprocessing step
 preprocessor = ColumnTransformer(
