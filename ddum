@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier,
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from xgboost import XGBClassifier
+from sklearn.compose import ColumnTransformer
 
 # Load your dataset
 df = pd.read_csv('your_dataset.csv')
@@ -13,8 +14,8 @@ df = pd.read_csv('your_dataset.csv')
 # Identify the categorical variable with missing values
 target_var = 'your_categorical_variable'
 
-# Drop other variables with missing values
-df_clean = df.dropna(axis=1, how='any')
+# Drop other variables with missing values except the target variable
+df_clean = df.dropna(axis=1, how='any', subset=df.columns.difference([target_var]))
 
 # Split the data into training, testing, and target (missing values) sets
 df_not_missing = df_clean.dropna(subset=[target_var])
@@ -28,6 +29,13 @@ X_train = train.drop(columns=[target_var])
 y_train = train[target_var]
 X_test = test.drop(columns=[target_var])
 y_test = test[target_var]
+
+# Build the preprocessing step
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(handle_unknown='ignore'), X_train.columns)
+    ]
+)
 
 # Define the models
 rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
@@ -43,7 +51,7 @@ voting_clf = VotingClassifier(estimators=[
 
 # Build the pipeline
 pipeline = Pipeline([
-    ('encoder', OneHotEncoder(handle_unknown='ignore')),
+    ('preprocessor', preprocessor),
     ('classifier', voting_clf)
 ])
 
@@ -60,8 +68,6 @@ df_missing[target_var] = pipeline.predict(X_missing)
 
 # Print the result
 print(df_missing)
-
-
 
 
 
