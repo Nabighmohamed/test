@@ -1,5 +1,62 @@
 import pandas as pd
 import numpy as np
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.tools.tools import add_constant
+
+# Sample DataFrame (replace this with your actual data)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100),
+    'E': np.random.rand(100),
+    'F': np.random.rand(100)
+})
+
+def calculate_vif(df):
+    # Add a constant to the dataframe
+    df_with_const = add_constant(df)
+    
+    # Calculate VIF for each variable
+    vif_data = pd.DataFrame()
+    vif_data["Variable"] = df_with_const.columns
+    vif_data["VIF"] = [variance_inflation_factor(df_with_const.values, i) for i in range(df_with_const.shape[1])]
+    
+    return vif_data
+
+# Calculate VIF
+vif_data = calculate_vif(df)
+
+# Display the VIF result
+print(vif_data)
+
+
+import matplotlib.pyplot as plt
+
+# Plotting the VIF values
+plt.figure(figsize=(10, 6))
+plt.bar(vif_data["Variable"], vif_data["VIF"], color='skyblue')
+plt.xlabel('Variables')
+plt.ylabel('VIF')
+plt.title('Variance Inflation Factor (VIF)')
+plt.axhline(y=5, color='r', linestyle='--')
+plt.axhline(y=10, color='r', linestyle='--')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from scipy.stats import pearsonr
 import seaborn as sns
 import matplotlib.pyplot as plt
