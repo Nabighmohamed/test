@@ -1,3 +1,58 @@
+
+
+import pandas as pd
+import numpy as np
+
+# Sample DataFrame (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.rand(100),
+    'B': np.random.rand(100),
+    'C': np.random.rand(100),
+    'D': np.random.rand(100)
+})
+
+# Introduce some missing values for demonstration
+for col in df.columns:
+    df.loc[df.sample(frac=0.2).index, col] = np.nan
+
+# Function to copy target column, drop columns with missing values, and add target column back
+def prepare_dataframe(df, target_column):
+    # Create a copy of the DataFrame
+    df_copy = df.copy()
+    
+    # Separate the target column
+    target = df_copy[[target_column]].copy()
+    
+    # Drop columns with missing values
+    df_copy = df_copy.dropna(axis=1, how='any')
+    
+    # Add the target column back
+    df_copy = pd.concat([df_copy, target], axis=1)
+    
+    return df_copy
+
+# Specify the target column
+target_column = 'A'
+
+# Prepare the DataFrame
+prepared_df = prepare_dataframe(df, target_column)
+
+# Display the prepared DataFrame
+print(prepared_df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer, KNNImputer
