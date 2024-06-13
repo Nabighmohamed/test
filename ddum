@@ -1,4 +1,80 @@
 import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from xgboost import XGBClassifier
+
+# Load your dataset
+df = pd.read_csv('your_dataset.csv')
+
+# Identify the categorical variable with missing values
+target_var = 'your_categorical_variable'
+
+# Drop other variables with missing values
+df_clean = df.dropna(axis=1, how='any')
+
+# Split the data into training, testing, and target (missing values) sets
+df_not_missing = df_clean.dropna(subset=[target_var])
+df_missing = df_clean[df_clean[target_var].isna()]
+
+# Further split the not_missing data into training and testing sets
+train, test = train_test_split(df_not_missing, test_size=0.2, random_state=42)
+
+# Define the features and target
+X_train = train.drop(columns=[target_var])
+y_train = train[target_var]
+X_test = test.drop(columns=[target_var])
+y_test = test[target_var]
+
+# Define the models
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+gb_model = GradientBoostingClassifier(n_estimators=100, random_state=42)
+xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+
+# Combine models using VotingClassifier
+voting_clf = VotingClassifier(estimators=[
+    ('rf', rf_model),
+    ('gb', gb_model),
+    ('xgb', xgb_model)
+], voting='soft')
+
+# Build the pipeline
+pipeline = Pipeline([
+    ('encoder', OneHotEncoder(handle_unknown='ignore')),
+    ('classifier', voting_clf)
+])
+
+# Train the classifier on the training set
+pipeline.fit(X_train, y_train)
+
+# Validate the model on the testing set
+y_pred = pipeline.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+# Impute the missing values in the target dataset
+X_missing = df_missing.drop(columns=[target_var])
+df_missing[target_var] = pipeline.predict(X_missing)
+
+# Print the result
+print(df_missing)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 
 def drop_single_value_columns(df):
     # Identify columns with only one unique value
