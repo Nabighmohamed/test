@@ -1,5 +1,58 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame with categorical variables (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'Category1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Category3': np.random.choice(['M', 'N'], size=100)
+})
+
+# Function to generate statistical summaries for categorical variables
+def categorical_summary(df):
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    
+    for col in cat_cols:
+        print(f"Summary for {col}:")
+        print(df[col].value_counts())
+        print("\n")
+        
+        # Plotting the distribution of the categorical variable
+        plt.figure(figsize=(8, 6))
+        sns.countplot(data=df, x=col, palette='viridis')
+        plt.title(f'Distribution of {col}')
+        plt.xlabel(col)
+        plt.ylabel('Count')
+        plt.xticks(rotation=45)
+        plt.show()
+
+# Generate and plot summaries for categorical variables
+categorical_summary(df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 
 # Sample data
 data = {'values': [1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10]}
