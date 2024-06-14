@@ -1,5 +1,50 @@
 import pandas as pd
 import numpy as np
+from scipy.stats.mstats import winsorize
+
+# Sample DataFrame with numeric data (replace this with your actual data)
+np.random.seed(42)
+df = pd.DataFrame({
+    'A': np.random.randn(100) * 100,
+    'B': np.random.randn(100) * 50 + 50,
+    'C': np.random.rand(100) * 20 - 10,
+    'D': np.random.randn(100) * 5
+})
+
+# Function to apply Winsorization to all numeric columns in the DataFrame
+def winsorize_dataframe(df, limits=(0.05, 0.05)):
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    df_winsorized = df.copy()
+    
+    for col in numeric_cols:
+        df_winsorized[col] = winsorize(df[col], limits=limits)
+    
+    return df_winsorized
+
+# Apply Winsorization to the DataFrame
+winsorized_df = winsorize_dataframe(df, limits=(0.05, 0.05))
+
+# Display the original and Winsorized DataFrame
+print("Original DataFrame:")
+print(df.describe())
+
+print("\nWinsorized DataFrame:")
+print(winsorized_df.describe())
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from scipy.stats import f_oneway
