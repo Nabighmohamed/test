@@ -1,8 +1,38 @@
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from scipy.stats import f_oneway
 
-D'accord, merci Solène.
+# Sample DataFrame with categorical variables and a continuous target variable
+np.random.seed(42)
+df = pd.DataFrame({
+    'Category1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Category3': np.random.choice(['M', 'N'], size=100),
+    'Target': np.random.rand(100) * 100  # Continuous target variable
+})
 
-Je vais vérifier si c'est dû à la même ancienneté entre deux mois de stock profil. Je te tiens au courant.
+# Function to perform ANOVA test for each categorical variable against the continuous target variable
+def anova_test(df, target_var):
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    
+    for col in cat_cols:
+        print(f"ANOVA test for {col} in relation to {target_var}:")
+        
+        # Perform ANOVA using statsmodels
+        formula = f'{target_var} ~ C({col})'
+        model = ols(formula, data=df).fit()
+        anova_table = sm.stats.anova_lm(model, typ=2)
+        
+        print(anova_table)
+        print("\n")
 
+# Specify the target column
+target_column = 'Target'
+
+# Perform ANOVA tests
+anova_test(df, target_column)
 
 
 
