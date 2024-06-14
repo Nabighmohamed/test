@@ -1,10 +1,9 @@
-Bonjour Solène,
 
-Pas de souci, on reporte à lundi matin 9h30. En attendant, j'ai une question concernant les données.
+Here's your revised response:
 
-Est-il possible que plusieurs observations aient les mêmes CCLI et CCLIKPI ? Je parle d'une base de données avec des clients ayant exactement deux mois d'ancienneté de EER.
+Merci pour la clarification, Solène.
 
-
+Dans une base de données de 45,000 observations liées aux sous-données où le CNOUVSEG = ER, j'ai trouvé 2,200 doublons avec les mêmes CCLI et CCLIKPI. Je vais vérifier la manière dont j'ai fusionné les données pour voir s'il y a des erreurs
 
 
 
