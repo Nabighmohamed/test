@@ -3,6 +3,66 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# Sample DataFrame with categorical variables and a continuous target variable
+np.random.seed(42)
+df = pd.DataFrame({
+    'Category1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Category3': np.random.choice(['M', 'N'], size=100),
+    'Target': np.random.rand(100) * 100  # Continuous target variable
+})
+
+# Function to generate statistical summaries and plots for categorical variables in relation to a continuous target variable
+def categorical_summary_with_target(df, target_var):
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    
+    for col in cat_cols:
+        print(f"Summary for {col} in relation to {target_var}:")
+        summary = df.groupby(col)[target_var].describe()
+        print(summary)
+        print("\n")
+        
+        # Plotting the distribution of the continuous target variable for each category using box plot
+        plt.figure(figsize=(8, 6))
+        sns.boxplot(data=df, x=col, y=target_var, palette='viridis')
+        plt.title(f'{target_var} distribution by {col}')
+        plt.xlabel(col)
+        plt.ylabel(target_var)
+        plt.xticks(rotation=45)
+        plt.show()
+
+        # Plotting the distribution of the continuous target variable for each category using violin plot
+        plt.figure(figsize=(8, 6))
+        sns.violinplot(data=df, x=col, y=target_var, palette='viridis')
+        plt.title(f'{target_var} distribution by {col}')
+        plt.xlabel(col)
+        plt.ylabel(target_var)
+        plt.xticks(rotation=45)
+        plt.show()
+
+# Specify the target column
+target_column = 'Target'
+
+# Generate and plot summaries for categorical variables in relation to the continuous target variable
+categorical_summary_with_target(df, target_column)
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 # Sample DataFrame with categorical variables (replace this with your actual data)
 np.random.seed(42)
 df = pd.DataFrame({
