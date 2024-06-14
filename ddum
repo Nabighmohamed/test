@@ -1,4 +1,59 @@
 import pandas as pd
+import numpy as np
+
+# Sample data
+data = {'values': [1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10]}
+df = pd.DataFrame(data)
+
+# Central Tendency
+mean = df['values'].mean()
+median = df['values'].median()
+mode = df['values'].mode()
+
+# Variability
+range_ = df['values'].max() - df['values'].min()
+variance = df['values'].var()
+std_dev = df['values'].std()
+iqr = df['values'].quantile(0.75) - df['values'].quantile(0.25)
+
+# Shape
+skewness = df['values'].skew()
+kurtosis = df['values'].kurt()
+
+# Summary
+summary = df['values'].describe()
+
+print("Mean:", mean)
+print("Median:", median)
+print("Mode:", mode[0])
+print("Range:", range_)
+print("Variance:", variance)
+print("Standard Deviation:", std_dev)
+print("Interquartile Range (IQR):", iqr)
+print("Skewness:", skewness)
+print("Kurtosis:", kurtosis)
+print("\nSummary:\n", summary)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 
 # Sample data
 data = {
