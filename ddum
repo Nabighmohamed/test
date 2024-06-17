@@ -1,12 +1,26 @@
-Bonjour,
+import pandas as pd
 
-Je m'excuse sincèrement pour mon retard à répondre à votre email.
+# Sample dataframe
+data = {
+    'ccli': [1, 1, 2, 2, 3, 3, 3],
+    'cclikpi': [10, 10, 20, 20, 30, 30, 30],
+    'date': ['2023-01-01', '2023-01-02', '2023-01-01', '2023-01-03', '2023-01-01', '2023-01-02', '2023-01-04'],
+    'value': [100, 200, 300, 400, 500, 600, 700]
+}
 
-Oui, je peux revoir ma demande et limiter l'autorisation au 29.06. Merci de me l'avoir signalé.
+df = pd.DataFrame(data)
 
-Cordialement,
+# Convert date column to datetime
+df['date'] = pd.to_datetime(df['date'])
 
-Mohamed
+# Sort the dataframe by 'ccli', 'cclikpi' and 'date'
+df = df.sort_values(by=['ccli', 'cclikpi', 'date'])
+
+# Drop duplicates keeping the last one based on 'ccli' and 'cclikpi'
+df_unique = df.drop_duplicates(subset=['ccli', 'cclikpi'], keep='last')
+
+# Display the resulting dataframe
+print(df_unique)
 
 
 
