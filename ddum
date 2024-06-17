@@ -1,3 +1,43 @@
+
+import pandas as pd
+
+def get_indices_not_in_data2(data1, data2, col_name):
+    # Convert the column in data2 to the same type as in data1
+    data2_converted = data2[col_name].astype(data1[col_name].dtype)
+    
+    # Get the unique values in the converted column of data2
+    data2_values = set(data2_converted.unique())
+    
+    # Find the indices in data1 where the values in the specified column are not in data2_values
+    indices_not_in_data2 = data1[~data1[col_name].isin(data2_values)].index.tolist()
+    
+    return indices_not_in_data2
+
+# Sample data for testing
+data1 = pd.DataFrame({
+    'col': [1, 2, 3, 4, 5],
+    'value': ['a', 'b', 'c', 'd', 'e']
+})
+
+data2 = pd.DataFrame({
+    'col': [3.0, 4.0, 5.0],
+    'value': ['x', 'y', 'z']
+})
+
+col_name = 'col'
+indices = get_indices_not_in_data2(data1, data2, col_name)
+print(indices)
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 def get_indices_not_in_data2(data1, data2, col_name):
