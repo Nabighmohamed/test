@@ -4,6 +4,41 @@ import pandas as pd
 data = {
     'ccli': [1, 1, 2, 2, 3, 3, 3],
     'cclikpi': [10, 10, 20, 20, 30, 30, 30],
+    'col': [1, 12, 2, 11, 3, 6, 12],  # The column with values from 1 to 12
+    'value': [100, 200, 300, 400, 500, 600, 700]
+}
+
+df = pd.DataFrame(data)
+
+# Sort the dataframe by 'ccli', 'cclikpi' and 'col'
+df = df.sort_values(by=['ccli', 'cclikpi', 'col'])
+
+# Drop duplicates keeping the last one based on 'ccli' and 'cclikpi'
+df_unique = df.drop_duplicates(subset=['ccli', 'cclikpi'], keep='last')
+
+# Display the resulting dataframe
+print(df_unique)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample dataframe
+data = {
+    'ccli': [1, 1, 2, 2, 3, 3, 3],
+    'cclikpi': [10, 10, 20, 20, 30, 30, 30],
     'date': ['2023-01-01', '2023-01-02', '2023-01-01', '2023-01-03', '2023-01-01', '2023-01-02', '2023-01-04'],
     'value': [100, 200, 300, 400, 500, 600, 700]
 }
