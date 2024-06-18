@@ -1,8 +1,56 @@
-Bonjour Arthur,
+import pandas as pd
 
-Merci beaucoup pour votre offre d'aide. Je vous envoie ci-joint un fichier Excel contenant le nom des variables. Pourriez-vous s'il vous plaît m'aider à définir la priorité des classes ? Votre soutien est grandement apprécié.
+def filter_dataframe_and_find_unmatched(df, id_list, id_column, class_column):
+    # Filter the DataFrame to get rows where the id is in the id_list
+    matched_df = df[df[id_column].isin(id_list)]
+    
+    # Find the IDs from the id_list that don't have a match in the DataFrame
+    matched_ids = matched_df[id_column].unique()
+    unmatched_ids = [id for id in id_list if id not in matched_ids]
+    
+    # Calculate frequency and percentage of class distribution for matched IDs
+    matched_class_freq = matched_df[class_column].value_counts()
+    matched_class_percentage = matched_df[class_column].value_counts(normalize=True) * 100
+    
+    # Filter the DataFrame to get rows where the id is not in the id_list
+    unmatched_df = df[~df[id_column].isin(id_list)]
+    
+    # Calculate frequency and percentage of class distribution for unmatched IDs
+    unmatched_class_freq = unmatched_df[class_column].value_counts()
+    unmatched_class_percentage = unmatched_df[class_column].value_counts(normalize=True) * 100
+    
+    return (matched_df, unmatched_ids, matched_class_freq, matched_class_percentage,
+            unmatched_class_freq, unmatched_class_percentage)
 
-Cordialement,
+# Sample large dataframe for testing
+large_df = pd.DataFrame({
+    'id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'value': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+})
+
+# Sample list of IDs
+id_list = [2, 4, 6, 11]
+
+# Specify the column names for IDs and class
+id_column = 'id'
+class_column = 'value'
+
+# Get the results
+(matched_df, unmatched_ids, matched_class_freq, matched_class_percentage,
+ unmatched_class_freq, unmatched_class_percentage) = filter_dataframe_and_find_unmatched(large_df, id_list, id_column, class_column)
+
+print("Matched DataFrame:")
+print(matched_df)
+print("\nUnmatched IDs:")
+print(unmatched_ids)
+print("\nMatched Class Frequency:")
+print(matched_class_freq)
+print("\nMatched Class Percentage:")
+print(matched_class_percentage)
+print("\nUnmatched Class Frequency:")
+print(unmatched_class_freq)
+print("\nUnmatched Class Percentage:")
+print(unmatched_class_percentage)
 
 
 
