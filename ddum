@@ -1,4 +1,37 @@
 import pandas as pd
+
+def get_duplicates(data):
+    # Find duplicate rows based on all columns
+    duplicate_rows = data[data.duplicated(keep=False)]
+    
+    # Sort the duplicate rows to place duplicates next to each other
+    duplicate_rows_sorted = duplicate_rows.sort_values(by=list(data.columns))
+    
+    return duplicate_rows_sorted
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'col1': [1, 2, 2, 4, 5, 2, 1],
+    'col2': ['a', 'b', 'b', 'd', 'e', 'b', 'a'],
+    'col3': [10, 20, 20, 40, 50, 20, 10]
+})
+
+duplicates = get_duplicates(data)
+print(duplicates)
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 import numpy as np
 
 def get_indices_not_in_data2(data1, data2, col_name):
