@@ -1,3 +1,26 @@
+
+Of course! Here's a response that includes your update and question:
+
+Bonjour,
+
+Je voulais vous informer que je n'ai pas pu faire une nouvelle demande de TT. J'ai donc consulté le kiosque IT, et ils m'ont informé que je ne pouvais pas postuler pour un TT pour une durée de 10 jours, surtout que mon stage se prolonge jusqu'au 30 septembre.
+
+Pouvez-vous m'expliquer pourquoi je ne peux pas postuler jusqu'au 30 septembre ?
+
+Merci d'avance pour votre aide.
+
+Cordialement,
+
+Mohamed
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 def filter_dataframe_and_find_unmatched(df, id_list, id_column, class_column):
