@@ -1,5 +1,35 @@
 import pandas as pd
 
+def filter_by_id_pattern(df, id_column, pattern):
+    # Convert the id column to string
+    df[id_column] = df[id_column].astype(str)
+    
+    # Filter rows where the id starts with the specific pattern
+    filtered_df = df[df[id_column].str.startswith(pattern)]
+    
+    return filtered_df
+
+# Sample large dataframe for testing
+large_df = pd.DataFrame({
+    'id': [3001, 3002, 123, 4003, 3004, 567, 3005],
+    'value': ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+})
+
+# Specify the column name for IDs and the pattern
+id_column = 'id'
+pattern = '300'
+
+# Get the filtered DataFrame
+filtered_df = filter_by_id_pattern(large_df, id_column, pattern)
+
+print("Filtered DataFrame:")
+print(filtered_df)
+
+
+
+
+import pandas as pd
+
 def filter_dataframe_and_find_unmatched(df, id_list, id_column):
     # Filter the DataFrame to get rows where the id is in the id_list
     matched_df = df[df[id_column].isin(id_list)]
