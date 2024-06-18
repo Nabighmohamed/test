@@ -1,5 +1,40 @@
 import pandas as pd
 
+def get_duplicates_across_columns(data, col1, col2):
+    # Find duplicate rows based on the specified columns
+    duplicate_rows = data[data.duplicated(subset=[col1, col2], keep=False)]
+    
+    # Sort the duplicate rows to place duplicates next to each other
+    duplicate_rows_sorted = duplicate_rows.sort_values(by=[col1, col2])
+    
+    return duplicate_rows_sorted
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'col1': [1, 2, 2, 4, 5, 2, 1],
+    'col2': ['a', 'b', 'b', 'd', 'e', 'b', 'a'],
+    'col3': [10, 20, 30, 40, 50, 60, 70]
+})
+
+# Specify the columns to check for duplicates
+col1 = 'col1'
+col2 = 'col2'
+
+duplicates = get_duplicates_across_columns(data, col1, col2)
+print(duplicates)
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 def get_duplicates(data):
     # Find duplicate rows based on all columns
     duplicate_rows = data[data.duplicated(keep=False)]
