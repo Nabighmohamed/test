@@ -1,5 +1,36 @@
 import pandas as pd
 
+def get_values_for_same_col1(data, col1, col2):
+    # Group by the first column and collect the values of the second column
+    result = data.groupby(col1)[col2].apply(list).to_dict()
+    return result
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'col1': [1, 2, 2, 4, 5, 2, 1],
+    'col2': ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+    'col3': [10, 20, 30, 40, 50, 60, 70]
+})
+
+# Specify the columns to use
+col1 = 'col1'
+col2 = 'col2'
+
+values_for_same_col1 = get_values_for_same_col1(data, col1, col2)
+print(values_for_same_col1)
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 def get_duplicates_across_columns(data, col1, col2):
     # Find duplicate rows based on the specified columns
     duplicate_rows = data[data.duplicated(subset=[col1, col2], keep=False)]
