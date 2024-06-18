@@ -1,3 +1,18 @@
+Bonjour Solène,
+
+Je suis en train d'agréger les données, mais j'ai un problème avec l'agrégation des variables catégorielles comme "type de foyer" ou "CNOUVSEG". Aurais-tu des idées ou des suggestions pour m'aider à résoudre ce problème?
+
+Merci d'avance pour ton aide.
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 def get_values_for_same_col1(data, col1, col2):
