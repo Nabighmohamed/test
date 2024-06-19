@@ -1,5 +1,63 @@
 import numpy as np
 import pandas as pd
+from sklearn.datasets import load_iris
+from mdlp.discretization import MDLP
+
+# Load Iris dataset
+iris = load_iris()
+X, y = iris.data, iris.target
+
+# Create DataFrame from the Iris dataset
+df = pd.DataFrame(X, columns=iris.feature_names)
+df['target'] = y
+
+# Apply MDLP discretization
+transformer = MDLP()
+X_disc = transformer.fit_transform(X, y)
+
+# Create a new DataFrame with the discretized columns
+df_disc = pd.DataFrame(X_disc, columns=iris.feature_names)
+df_disc['target'] = y
+
+# Function to plot before and after discretization
+def plot_discretization(df, df_disc, feature_name):
+    # Create a figure with subplots
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+    
+    # Plot the continuous variable (before discretization)
+    axs[0].hist(df[feature_name], bins=30, color='skyblue', edgecolor='black')
+    axs[0].set_title(f'Before Discretization: {feature_name}')
+    axs[0].set_xlabel(feature_name)
+    axs[0].set_ylabel('Frequency')
+    
+    # Plot the discrete variable (after discretization)
+    axs[1].hist(df_disc[feature_name], bins=np.arange(df_disc[feature_name].min(), df_disc[feature_name].max() + 1), color='lightcoral', edgecolor='black')
+    axs[1].set_title(f'After Discretization: {feature_name}')
+    axs[1].set_xlabel(f'{feature_name} (discretized)')
+    axs[1].set_ylabel('Frequency')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Plot for each feature
+for feature_name in iris.feature_names:
+    plot_discretization(df, df_disc, feature_name)
+
+# Print the new DataFrame with discretized columns
+print("New DataFrame with discretized columns:")
+print(df_disc.head())
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from mdlp.discretization import MDLP
