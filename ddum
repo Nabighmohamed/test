@@ -1,5 +1,33 @@
 import pandas as pd
 
+def get_column_types(df):
+    # Create a dictionary with column names as keys and their data types as values
+    column_types = {col: df[col].dtype for col in df.columns}
+    return column_types
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'id': [1, 2, 3, 4, 5],
+    'type_de_client': ['A', 'B', 'C', 'D', 'E'],
+    'value1': [10, 20, 30, 40, 50],
+    'value2': [100.0, 200.0, 300.0, 400.0, 500.0]
+})
+
+# Get the column types
+column_types = get_column_types(data)
+print("Column Types:")
+print(column_types)
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 # Sample dataframe for testing
 data = pd.DataFrame({
     'id': [1, 1, 2, 2, 3, 3, 3],
