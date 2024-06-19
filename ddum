@@ -1,4 +1,81 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from mdlp.discretization import MDLP
+
+# Sample DataFrame for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B']  # Example category column
+})
+
+# The target variable with negative numbers
+target = pd.Series([-1, -2, 0, 1, -1], name='target')
+
+# Normalize the target variable to be non-negative
+target_shift = target - target.min()
+target_shifted = target_shift
+
+# Apply MDLP discretization
+transformer = MDLP()
+
+# Assuming 'pnb' and 'pnb2023' are the columns to be discretized
+columns_to_discretize = ['pnb', 'pnb2023']
+
+# Apply discretization and create a new DataFrame
+X_disc = transformer.fit_transform(data[columns_to_discretize].values, target_shifted.values)
+
+# Convert the discretized data back to a DataFrame with the same column names
+df_disc = pd.DataFrame(X_disc, columns=columns_to_discretize)
+
+# Combine the discretized columns with the original DataFrame (excluding the original columns)
+data_disc = pd.concat([data.drop(columns=columns_to_discretize), df_disc], axis=1)
+
+# Function to plot the original and discretized distributions
+def plot_discretization_comparison(data, data_disc, column_name):
+    plt.figure(figsize=(14, 6))
+    
+    # Plot the original distribution
+    plt.subplot(1, 2, 1)
+    plt.hist(data[column_name], bins=30, color='skyblue', edgecolor='black')
+    plt.title(f'Original Distribution of {column_name}')
+    plt.xlabel(column_name)
+    plt.ylabel('Frequency')
+    
+    # Plot the discretized distribution
+    plt.subplot(1, 2, 2)
+    plt.hist(data_disc[column_name], bins=np.arange(data_disc[column_name].min(), data_disc[column_name].max() + 1), color='lightcoral', edgecolor='black', align='left')
+    plt.title(f'Discretized Distribution of {column_name}')
+    plt.xlabel(f'{column_name} (discretized)')
+    plt.ylabel('Frequency')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Plot comparison for each column
+for column in columns_to_discretize:
+    plot_discretization_comparison(data, data_disc, column)
+
+print("Original DataFrame:")
+print(data)
+
+print("\nDiscretized DataFrame:")
+print(data_disc)
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 from mdlp.discretization import MDLP
 import numpy as np
 
