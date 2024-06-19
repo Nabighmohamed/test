@@ -11,6 +11,51 @@ df2 = pd.DataFrame({
     'value2': [100, 200, 300, 400, 500]
 })
 
+def find_new_rows_added(df1, df2, id_column, merge_column):
+    # Perform the merge
+    merged_df = pd.merge(df1, df2[[id_column, merge_column]], on=id_column, how='left', indicator=True)
+    
+    # Find new rows added by checking for rows in df2 but not in df1
+    new_rows = merged_df[merged_df['_merge'] == 'right_only']
+    
+    return new_rows
+
+# Specify the column names
+id_column = 'cclikpi'
+merge_column = 'value2'
+
+# Find new rows added during the merge
+new_rows_added = find_new_rows_added(df1, df2, id_column, merge_column)
+
+print("New Rows Added:")
+print(new_rows_added)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data for testing
+df1 = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'value1': ['a', 'b', 'c', 'd', 'e']
+})
+
+df2 = pd.DataFrame({
+    'cclikpi': [3, 4, 5, 6, 7],
+    'value2': [100, 200, 300, 400, 500]
+})
+
 def merge_dataframes(df1, df2, id_column, merge_column):
     # Merge the two DataFrames on the id_column
     merged_df = pd.merge(df1, df2[[id_column, merge_column]], on=id_column, how='left')
