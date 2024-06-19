@@ -1,4 +1,42 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550]
+})
+
+# Reshape the data to have a long format
+data_long = pd.melt(data, id_vars=['cclikpi'], value_vars=['pnb', 'pnb2023'],
+                    var_name='year', value_name='pnb_value')
+
+# Map the variable names to actual years
+data_long['year'] = data_long['year'].map({'pnb': 2018, 'pnb2023': 2023})
+
+# Plot the evolution of PNB for each company
+plt.figure(figsize=(10, 6))
+for key, grp in data_long.groupby(['cclikpi']):
+    plt.plot(grp['year'], grp['pnb_value'], marker='o', label=f'Company {key}')
+
+plt.xlabel('Year')
+plt.ylabel('PNB Value')
+plt.title('Evolution of PNB from 2018 to 2023 for Each Company')
+plt.legend(title='cclikpi')
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 
 # Sample data for testing
 df1 = pd.DataFrame({
