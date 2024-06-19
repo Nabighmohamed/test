@@ -1,6 +1,87 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+
+# Sample DataFrame for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B']  # Example category column
+})
+
+# The continuous target variable
+target = pd.Series([1.5, 2.0, 0.5, 2.5, 1.0], name='target')
+
+# Function to find split points using a decision tree regressor
+def find_splits(data, target):
+    tree = DecisionTreeRegressor(criterion='mse', max_leaf_nodes=6)
+    tree.fit(data.reshape(-1, 1), target)
+    
+    thresholds = tree.tree_.threshold
+    split_points = sorted(threshold for threshold in thresholds if threshold != -2)
+    return split_points
+
+# Apply decision tree regressor to find splits for each continuous column
+columns_to_discretize = ['pnb', 'pnb2023']
+split_points_dict = {col: find_splits(data[col].values, target.values) for col in columns_to_discretize}
+
+# Discretize the data based on the split points
+def discretize(data, split_points):
+    return np.digitize(data, split_points, right=True)
+
+df_disc = data.copy()
+for col, splits in split_points_dict.items():
+    df_disc[col] = discretize(data[col].values, splits)
+
+# Function to plot the original and discretized distributions
+def plot_discretization_comparison(data, data_disc, column_name):
+    plt.figure(figsize=(14, 6))
+    
+    # Plot the original distribution
+    plt.subplot(1, 2, 1)
+    plt.hist(data[column_name], bins=30, color='skyblue', edgecolor='black')
+    plt.title(f'Original Distribution of {column_name}')
+    plt.xlabel(column_name)
+    plt.ylabel('Frequency')
+    
+    # Plot the discretized distribution
+    plt.subplot(1, 2, 2)
+    plt.hist(data_disc[column_name], bins=np.arange(data_disc[column_name].min(), data_disc[column_name].max() + 1), color='lightcoral', edgecolor='black', align='left')
+    plt.title(f'Discretized Distribution of {column_name}')
+    plt.xlabel(f'{column_name} (discretized)')
+    plt.ylabel('Frequency')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Plot comparison for each column
+for column in columns_to_discretize:
+    plot_discretization_comparison(data, df_disc, column)
+
+print("Original DataFrame:")
+print(data)
+
+print("\nDiscretized DataFrame:")
+print(df_disc)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
 
 # Sample DataFrame for testing
