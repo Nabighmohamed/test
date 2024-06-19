@@ -1,5 +1,77 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier, BaggingClassifier
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+
+# Sample DataFrame for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B'],  # Example category column
+    'target': [1, 0, 1, 0, 1]  # Example binary target variable
+})
+
+# Discretize the continuous variables as described before
+# For simplicity, using already discretized values
+data['pnb'] = np.digitize(data['pnb'], bins=[150, 250, 350, 450])
+data['pnb2023'] = np.digitize(data['pnb2023'], bins=[200, 300, 400, 500])
+
+# Define features and target
+X = data[['pnb', 'pnb2023']]
+y = data['target']
+
+# Initialize the models
+models = {
+    'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
+    'Gradient Boosting': GradientBoostingClassifier(n_estimators=100, random_state=42),
+    'AdaBoost': AdaBoostClassifier(n_estimators=100, random_state=42),
+    'Extra Trees': ExtraTreesClassifier(n_estimators=100, random_state=42),
+    'Voting Classifier': VotingClassifier(estimators=[
+        ('rf', RandomForestClassifier(n_estimators=50, random_state=42)),
+        ('gb', GradientBoostingClassifier(n_estimators=50, random_state=42)),
+        ('et', ExtraTreesClassifier(n_estimators=50, random_state=42))
+    ], voting='soft'),
+    'Bagging Classifier': BaggingClassifier(n_estimators=100, random_state=42)
+}
+
+# Define cross-validation
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+# Function to evaluate models
+def evaluate_model(model, X, y, cv):
+    scoring = ['accuracy', 'f1', 'precision', 'recall', 'roc_auc']
+    scores = cross_val_score(model, X, y, cv=cv, scoring='accuracy')
+    results = {
+        'Accuracy': np.mean(cross_val_score(model, X, y, cv=cv, scoring='accuracy')),
+        'F1 Score': np.mean(cross_val_score(model, X, y, cv=cv, scoring='f1')),
+        'Precision': np.mean(cross_val_score(model, X, y, cv=cv, scoring='precision')),
+        'Recall': np.mean(cross_val_score(model, X, y, cv=cv, scoring='recall')),
+        'ROC-AUC': np.mean(cross_val_score(model, X, y, cv=cv, scoring='roc_auc'))
+    }
+    return results
+
+# Evaluate all models
+results = {}
+for model_name, model in models.items():
+    results[model_name] = evaluate_model(model, X, y, kf)
+
+# Display results
+results_df = pd.DataFrame(results).T
+print("Evaluation Results:")
+print(results_df)
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 
