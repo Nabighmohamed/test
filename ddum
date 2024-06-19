@@ -1,3 +1,48 @@
+import pandas as pd
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'id': [1, 1, 2, 2, 3, 3, 3],
+    'type_de_client': ['A', 'B', 'A', 'A', 'B', 'B', 'A'],
+    'category': ['X', 'Y', 'X', 'Y', 'X', 'X', 'Y'],
+    'value1': [10, 20, 30, 40, 50, 60, 70],
+    'value2': [100, 200, 300, 400, 500, 600, 700]
+})
+
+# Define priority order for categorical variables
+priority_orders = {
+    'type_de_client': ['A', 'B'],  # Priority order for 'type_de_client'
+    'category': ['X', 'Y']         # Priority order for 'category'
+}
+
+# Custom aggregation function for categorical variables
+def agg_priority(series, priority_order):
+    for priority in priority_order:
+        if priority in series.values:
+            return priority
+    return series.values[0]  # Fallback to the first value if no priority match found
+
+# Wrapper function to apply the correct priority order
+def agg_wrapper(column, priority_orders):
+    return lambda series: agg_priority(series, priority_orders[column])
+
+# Perform the groupby operation and apply the custom aggregation functions
+agg_dict = {
+    'type_de_client': agg_wrapper('type_de_client', priority_orders),
+    'category': agg_wrapper('category', priority_orders),
+    'value1': 'sum',  # Example aggregation for numerical columns
+    'value2': 'mean'  # Example aggregation for numerical columns
+}
+
+grouped_data = data.groupby('id').agg(agg_dict).reset_index()
+
+print("Grouped DataFrame:")
+print(grouped_data)
+
+
+
+
+
 
 import pandas as pd
 
