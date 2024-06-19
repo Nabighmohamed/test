@@ -1,3 +1,116 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def entropy(y):
+    """Calculate the entropy of a distribution for the classes in y."""
+    if len(y) == 0:
+        return 0
+    _, counts = np.unique(y, return_counts=True)
+    probabilities = counts / len(y)
+    return -np.sum(probabilities * np.log2(probabilities))
+
+def mdlp_cut(data, labels):
+    """Find the optimal cut point for discretization using MDLPC."""
+    best_cut = None
+    min_mdlp_value = float('inf')
+    
+    sorted_idx = np.argsort(data)
+    sorted_data = data[sorted_idx]
+    sorted_labels = labels[sorted_idx]
+    
+    for i in range(1, len(data)):
+        if sorted_data[i] == sorted_data[i - 1]:
+            continue
+        
+        left_labels = sorted_labels[:i]
+        right_labels = sorted_labels[i:]
+        
+        left_entropy = entropy(left_labels)
+        right_entropy = entropy(right_labels)
+        
+        left_prob = len(left_labels) / len(labels)
+        right_prob = len(right_labels) / len(labels)
+        
+        total_entropy = left_prob * left_entropy + right_prob * right_entropy
+        
+        mdlp_value = entropy(labels) - total_entropy - (log(len(data) - 1) / len(data))
+        
+        if mdlp_value < min_mdlp_value:
+            min_mdlp_value = mdlp_value
+            best_cut = sorted_data[i]
+    
+    return best_cut
+
+def mdlp_discretize(data, labels):
+    """Apply the MDLPC algorithm to discretize the data."""
+    data = np.array(data)
+    labels = np.array(labels)
+    
+    cut_points = []
+    intervals = [(0, len(data))]
+    
+    while intervals:
+        start, end = intervals.pop()
+        best_cut = mdlp_cut(data[start:end], labels[start:end])
+        
+        if best_cut is not None:
+            cut_points.append(best_cut)
+            left_end = np.searchsorted(data, best_cut, side='right')
+            right_start = np.searchsorted(data, best_cut, side='left')
+            
+            intervals.append((start, left_end))
+            intervals.append((right_start, end))
+    
+    cut_points = sorted(cut_points)
+    
+    discretized_data = np.digitize(data, cut_points, right=True)
+    
+    return discretized_data, cut_points
+
+# Sample usage
+data = pd.DataFrame({
+    'continuous_variable': np.random.rand(100),
+    'label': np.random.choice([0, 1], size=100)
+})
+
+discretized_data, cut_points = mdlp_discretize(data['continuous_variable'], data['label'])
+data['discretized_variable'] = discretized_data
+
+# Visualization
+plt.figure(figsize=(12, 6))
+
+# Histogram of continuous variable
+plt.subplot(1, 2, 1)
+sns.histplot(data['continuous_variable'], bins=20, kde=True)
+plt.title('Continuous Variable Before Discretization')
+plt.xlabel('Continuous Variable')
+plt.ylabel('Frequency')
+
+# Bar plot of discretized variable
+plt.subplot(1, 2, 2)
+sns.countplot(x='discretized_variable', data=data)
+plt.title('Discretized Variable After MDLPC')
+plt.xlabel('Discretized Variable')
+plt.ylabel('Count')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
