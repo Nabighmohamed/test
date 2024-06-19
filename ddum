@@ -1,17 +1,34 @@
 
-Of course! Here's a response that includes your update and question:
+import pandas as pd
 
-Bonjour,
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'id': [1, 1, 2, 2, 3, 3, 3],
+    'type_de_client': ['A', 'B', 'A', 'A', 'B', 'B', 'A'],
+    'value1': [10, 20, 30, 40, 50, 60, 70],
+    'value2': [100, 200, 300, 400, 500, 600, 700]
+})
 
-Je voulais vous informer que je n'ai pas pu faire une nouvelle demande de TT. J'ai donc consulté le kiosque IT, et ils m'ont informé que je ne pouvais pas postuler pour un TT pour une durée de 10 jours, surtout que mon stage se prolonge jusqu'au 30 septembre.
+# Define priority order for categorical variables
+priority_order = ['A', 'B']  # You can easily change this list later
 
-Pouvez-vous m'expliquer pourquoi je ne peux pas postuler jusqu'au 30 septembre ?
+# Custom aggregation function for categorical variables
+def agg_priority(series):
+    # Get the first value in the series that matches the priority order
+    for priority in priority_order:
+        if priority in series.values:
+            return priority
+    return series.values[0]  # Fallback to the first value if no priority match found
 
-Merci d'avance pour votre aide.
+# Perform the groupby operation and apply the custom aggregation function
+grouped_data = data.groupby('id').agg({
+    'type_de_client': agg_priority,  # Apply the custom aggregation function
+    'value1': 'sum',                 # Example aggregation for numerical columns
+    'value2': 'mean'                 # Example aggregation for numerical columns
+}).reset_index()
 
-Cordialement,
-
-Mohamed
+print("Grouped DataFrame:")
+print(grouped_data)
 
 
 
