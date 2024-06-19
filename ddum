@@ -1,5 +1,76 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor, ExtraTreesRegressor, VotingRegressor, BaggingRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# Sample DataFrame for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B'],  # Example category column
+    'target': [1.5, 2.0, 0.5, 2.5, 1.0]  # Example continuous target variable
+})
+
+# Discretize the continuous variables as described before
+# For simplicity, using already discretized values
+data['pnb'] = np.digitize(data['pnb'], bins=[150, 250, 350, 450])
+data['pnb2023'] = np.digitize(data['pnb2023'], bins=[200, 300, 400, 500])
+
+# Define features and target
+X = data[['pnb', 'pnb2023']]
+y = data['target']
+
+# Initialize the models
+models = {
+    'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42),
+    'Gradient Boosting': GradientBoostingRegressor(n_estimators=100, random_state=42),
+    'AdaBoost': AdaBoostRegressor(n_estimators=100, random_state=42),
+    'Extra Trees': ExtraTreesRegressor(n_estimators=100, random_state=42),
+    'Voting Regressor': VotingRegressor(estimators=[
+        ('rf', RandomForestRegressor(n_estimators=50, random_state=42)),
+        ('gb', GradientBoostingRegressor(n_estimators=50, random_state=42)),
+        ('et', ExtraTreesRegressor(n_estimators=50, random_state=42))
+    ]),
+    'Bagging Regressor': BaggingRegressor(n_estimators=100, random_state=42)
+}
+
+# Define cross-validation
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# Function to evaluate models
+def evaluate_model(model, X, y, cv):
+    scoring = {
+        'MAE': 'neg_mean_absolute_error',
+        'MSE': 'neg_mean_squared_error',
+        'R2': 'r2'
+    }
+    
+    results = {
+        'MAE': -np.mean(cross_val_score(model, X, y, cv=cv, scoring='neg_mean_absolute_error')),
+        'MSE': -np.mean(cross_val_score(model, X, y, cv=cv, scoring='neg_mean_squared_error')),
+        'R2': np.mean(cross_val_score(model, X, y, cv=cv, scoring='r2'))
+    }
+    return results
+
+# Evaluate all models
+results = {}
+for model_name, model in models.items():
+    results[model_name] = evaluate_model(model, X, y, kf)
+
+# Display results
+results_df = pd.DataFrame(results).T
+print("Evaluation Results:")
+print(results_df)
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier, BaggingClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
