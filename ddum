@@ -21,6 +21,58 @@ data_long['year'] = data_long['year'].map({'pnb': 2018, 'pnb2023': 2023})
 palette = sns.color_palette("husl", data_long['category'].nunique())
 color_map = {category: palette[i] for i, category in enumerate(data_long['category'].unique())}
 
+# Plot the evolution of PNB for each company with lines colored based on the category
+plt.figure(figsize=(10, 6))
+for key, grp in data_long.groupby(['cclikpi']):
+    category = grp['category'].values[0]
+    plt.plot(grp['year'], grp['pnb_value'], marker='o', label=f'Company {key}', color=color_map[category])
+
+# Create a custom legend for the categories
+handles = [plt.Line2D([0], [0], color=color_map[cat], lw=4, label=cat) for cat in color_map]
+plt.legend(handles=handles, title='Category')
+
+plt.xlabel('Year')
+plt.ylabel('PNB Value')
+plt.title('Evolution of PNB from 2018 to 2023 for Each Company')
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B']  # Example category column
+})
+
+# Reshape the data to have a long format
+data_long = pd.melt(data, id_vars=['cclikpi', 'category'], value_vars=['pnb', 'pnb2023'],
+                    var_name='year', value_name='pnb_value')
+
+# Map the variable names to actual years
+data_long['year'] = data_long['year'].map({'pnb': 2018, 'pnb2023': 2023})
+
+# Define a color palette for the categories
+palette = sns.color_palette("husl", data_long['category'].nunique())
+color_map = {category: palette[i] for i, category in enumerate(data_long['category'].unique())}
+
 # Function to plot batches of companies
 def plot_batches(data, batch_size=10):
     unique_ids = data['cclikpi'].unique()
