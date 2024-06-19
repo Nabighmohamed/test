@@ -15,6 +15,58 @@ data_long = pd.melt(data, id_vars=['cclikpi'], value_vars=['pnb', 'pnb2023'],
 # Map the variable names to actual years
 data_long['year'] = data_long['year'].map({'pnb': 2018, 'pnb2023': 2023})
 
+# Function to plot batches of companies
+def plot_batches(data, batch_size=10):
+    unique_ids = data['cclikpi'].unique()
+    num_batches = len(unique_ids) // batch_size + (1 if len(unique_ids) % batch_size != 0 else 0)
+    
+    for i in range(num_batches):
+        plt.figure(figsize=(10, 6))
+        batch_ids = unique_ids[i * batch_size: (i + 1) * batch_size]
+        batch_data = data[data['cclikpi'].isin(batch_ids)]
+        
+        for key, grp in batch_data.groupby(['cclikpi']):
+            plt.plot(grp['year'], grp['pnb_value'], marker='o', label=f'Company {key}')
+        
+        plt.xlabel('Year')
+        plt.ylabel('PNB Value')
+        plt.title(f'Evolution of PNB from 2018 to 2023 for Companies {i * batch_size + 1} to {(i + 1) * batch_size}')
+        plt.legend(title='cclikpi')
+        plt.grid(True)
+        plt.show()
+
+# Plot the data in batches
+plot_batches(data_long, batch_size=2)  # Adjust batch_size as needed
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample dataframe for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550]
+})
+
+# Reshape the data to have a long format
+data_long = pd.melt(data, id_vars=['cclikpi'], value_vars=['pnb', 'pnb2023'],
+                    var_name='year', value_name='pnb_value')
+
+# Map the variable names to actual years
+data_long['year'] = data_long['year'].map({'pnb': 2018, 'pnb2023': 2023})
+
 # Plot the evolution of PNB for each company
 plt.figure(figsize=(10, 6))
 for key, grp in data_long.groupby(['cclikpi']):
