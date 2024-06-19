@@ -1,5 +1,58 @@
 import pandas as pd
 from mdlp.discretization import MDLP
+import numpy as np
+
+# Sample DataFrame for testing
+data = pd.DataFrame({
+    'cclikpi': [1, 2, 3, 4, 5],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb2023': [150, 250, 350, 450, 550],
+    'category': ['A', 'B', 'A', 'C', 'B']  # Example category column
+})
+
+# The target variable with negative numbers
+target = pd.Series([-1, -2, 0, 1, -1], name='target')
+
+# Normalize the target variable to be non-negative
+target_shift = target - target.min()
+target_shifted = target_shift
+
+# Apply MDLP discretization
+transformer = MDLP()
+
+# Assuming 'pnb' and 'pnb2023' are the columns to be discretized
+columns_to_discretize = ['pnb', 'pnb2023']
+
+# Apply discretization and create a new DataFrame
+X_disc = transformer.fit_transform(data[columns_to_discretize].values, target_shifted.values)
+
+# Convert the discretized data back to a DataFrame with the same column names
+df_disc = pd.DataFrame(X_disc, columns=columns_to_discretize)
+
+# Combine the discretized columns with the original DataFrame (excluding the original columns)
+data_disc = pd.concat([data.drop(columns=columns_to_discretize), df_disc], axis=1)
+
+print("Original DataFrame:")
+print(data)
+
+print("\nDiscretized DataFrame:")
+print(data_disc)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+from mdlp.discretization import MDLP
 
 # Sample DataFrame with negative numbers for testing
 data = pd.DataFrame({
