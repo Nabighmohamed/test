@@ -1,3 +1,21 @@
+import csv
+
+def list_to_csv(int_list, filename='output.csv'):
+    # Convert each integer to a string and add '0' at the beginning
+    str_list = ['0' + str(i) for i in int_list]
+    
+    # Write the list to a CSV file
+    with open(filename, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # Writing the list as a single row
+        csvwriter.writerow(str_list)
+
+# Example usage
+int_list = [123, 456, 789]
+list_to_csv(int_list)
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import cross_val_score, KFold
