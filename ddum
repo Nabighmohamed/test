@@ -1,3 +1,11 @@
+Environ 32,2 % des clients ont été perdus tous types confondus entre 2019 et 2023.
+
+Pour des analyses plus détaillées et interactives, veuillez consulter le tableau de bord Power BI.
+
+Cordialement,
+
+
+
 import pandas as pd
 
 # Sample data for testing
