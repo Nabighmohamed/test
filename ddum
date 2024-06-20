@@ -1,3 +1,62 @@
+Rapport sur la Perte de Clients Professionnels (CCLIKPI)
+
+Introduction:
+Ce rapport présente les statistiques détaillées sur le nombre de clients professionnels perdus par année, en se concentrant sur deux segments : les entreprises (CNOUVSEG=ER) et les autres clients professionnels (CNOUVSEG=AC PL AG). Les données incluent également des mesures de fréquence et des pourcentages de pertes annuelles.
+
+1. Perte de Clients pour les Entreprises (CNOUVSEG=ER) :
+
+Année	Nombre de clients perdus	% de perte annuelle
+2023	5635	8.8%
+2022	5596	8.7%
+2021	4776	7.9%
+2020	4875	8%
+Observations :
+
+En 2023, le nombre de clients perdus pour les entreprises a légèrement augmenté, atteignant 5635, avec un taux de perte de 8.8%.
+La perte annuelle de clients a fluctué entre 7.9% et 8.8% de 2020 à 2023, indiquant une tendance stable mais légèrement croissante.
+2. Perte de Clients pour les Autres Professionnels (CNOUVSEG=AC PL AG) :
+
+Année	Nombre de clients perdus	% de perte annuelle
+2023	35819	10.7%
+2022	33410	10.4%
+2021	29445	9.5%
+2020	30937	10.3%
+Observations :
+
+Le nombre de clients perdus dans ce segment a considérablement augmenté en 2023, atteignant 35819, avec un taux de perte de 10.7%.
+La perte annuelle de clients dans ce segment montre une tendance à la hausse, passant de 9.5% en 2021 à 10.7% en 2023.
+Analyse des Tendances de Perte de Clients :
+
+Entre 2019 et 2020 :
+
+Entreprises (ER) : 8% de clients perdus.
+Autres Professionnels (AC AG PL) : 10.3% de clients perdus.
+Entre 2020 et 2021 :
+
+Entreprises (ER) : 7.9% de clients perdus.
+Autres Professionnels (AC AG PL) : 9.5% de clients perdus.
+Entre 2021 et 2022 :
+
+Entreprises (ER) : 8.7% de clients perdus.
+Autres Professionnels (AC AG PL) : 10.4% de clients perdus.
+Entre 2022 et 2023 :
+
+Entreprises (ER) : 8.8% de clients perdus.
+Autres Professionnels (AC AG PL) : 10.7% de clients perdus.
+Conclusion:
+Les données montrent une tendance inquiétante de perte de clients dans les deux segments de clients professionnels. Les entreprises et les autres clients professionnels voient tous deux une augmentation progressive des pertes de clients au fil des années, avec des pourcentages de perte annuels relativement élevés. Cette analyse souligne la nécessité de stratégies de rétention client plus efficaces pour inverser cette tendance.
+
+Cordialement,
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
