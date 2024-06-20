@@ -1,15 +1,65 @@
-Bien sûr, je vais commencer à travailler dessus maintenant.
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-Cordialement,  
-[Votre Nom]
+# Sample data for testing
+data_2018 = pd.DataFrame({'cclikpi': [1, 2, 3, 4, 5], 'revenue_2018': [100, 200, 300, 400, 500], 'category': ['A', 'B', 'C', 'A', 'B']})
+data_2019 = pd.DataFrame({'cclikpi': [2, 3, 4, 5, 6], 'revenue_2019': [150, 250, 350, 450, 550], 'category': ['B', 'C', 'A', 'B', 'C']})
+data_2020 = pd.DataFrame({'cclikpi': [3, 4, 5, 6, 7], 'revenue_2020': [200, 300, 400, 500, 600], 'category': ['C', 'A', 'B', 'C', 'A']})
+data_2021 = pd.DataFrame({'cclikpi': [4, 5, 6, 7, 8], 'revenue_2021': [250, 350, 450, 550, 650], 'category': ['A', 'B', 'C', 'A', 'B']})
+data_2022 = pd.DataFrame({'cclikpi': [5, 6, 7, 8, 9], 'revenue_2022': [300, 400, 500, 600, 700], 'category': ['B', 'C', 'A', 'B', 'C']})
 
+# List of dataframes and corresponding years
+dataframes = [data_2018, data_2019, data_2020, data_2021, data_2022]
+years = [2018, 2019, 2020, 2021, 2022]
 
-Bonjour Solène,
+# Initialize a list to store lost client details each year
+lost_clients_details = []
 
-Voici la liste des CCLIKPI qui manquent pour 2023.
+# Compare each year's clients with the previous year's clients to identify losses
+for i in range(1, len(dataframes)):
+    previous_year_df = dataframes[i-1]
+    current_year_df = dataframes[i]
+    
+    previous_year_clients = set(previous_year_df['cclikpi'])
+    current_year_clients = set(current_year_df['cclikpi'])
+    
+    lost_clients = previous_year_clients - current_year_clients
+    
+    lost_clients_df = previous_year_df[previous_year_df['cclikpi'].isin(lost_clients)].copy()
+    lost_clients_df['lost_year'] = years[i]
+    
+    lost_clients_details.append(lost_clients_df)
 
-Cordialement,  
+# Combine all the lost clients details into a single DataFrame
+lost_clients_combined_df = pd.concat(lost_clients_details, ignore_index=True)
 
+print(lost_clients_combined_df)
+
+# Export the combined DataFrame to a CSV file for use in Power BI
+lost_clients_combined_df.to_csv('lost_clients_analysis.csv', index=False)
+print("Data exported to 'lost_clients_analysis.csv' for use in Power BI.")
+
+# Plot the number of lost clients each year by category
+plt.figure(figsize=(10, 6))
+sns.countplot(data=lost_clients_combined_df, x='lost_year', hue='category', palette='Set2')
+plt.title('Number of Clients Lost Each Year by Category')
+plt.xlabel('Year')
+plt.ylabel('Number of Lost Clients')
+plt.legend(title='Category')
+plt.grid(True)
+plt.show()
+
+# Plot the distribution of lost client revenues by year and category
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=lost_clients_combined_df.melt(id_vars=['cclikpi', 'category', 'lost_year'], 
+                                               value_vars=['revenue_2018', 'revenue_2019', 'revenue_2020', 'revenue_2021'], 
+                                               var_name='year', value_name='revenue'),
+            x='year', y='revenue', hue='category', palette='Set2')
+plt.title('Distribution of Lost Client Revenues by Year and Category')
+plt.xlabel('Year')
+plt.ylabel('Revenue')
+plt
 
 
 
