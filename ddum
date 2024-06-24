@@ -1,4 +1,74 @@
 import pandas as pd
+
+# Sample data for testing
+df1 = pd.DataFrame({
+    'cclikpi': [1, 2, 1, 2, 3],
+    'month': [1, 1, 2, 2, 2],
+    'year': [2020, 2020, 2020, 2020, 2020]
+})
+
+df2 = pd.DataFrame({
+    'cclikpi': [2, 3, 2, 3, 4],
+    'month': [1, 1, 2, 2, 2],
+    'year': [2021, 2021, 2021, 2021, 2021]
+})
+
+# Combine dataframes into one
+dataframes = [df1, df2]
+combined_df = pd.concat(dataframes, ignore_index=True)
+combined_df = combined_df.sort_values(by=['year', 'month'])
+
+# Initialize the 'status' column
+combined_df['status'] = 'stayed'
+
+# Create sets to keep track of clients across months and years
+all_clients = set(combined_df['cclikpi'].unique())
+previous_clients = set()
+
+# Iterate through the dataframe to determine the status
+for index, row in combined_df.iterrows():
+    cclikpi = row['cclikpi']
+    year = row['year']
+    month = row['month']
+    
+    current_clients = set(combined_df[(combined_df['year'] == year) & (combined_df['month'] <= month)]['cclikpi'])
+    
+    if cclikpi not in previous_clients and cclikpi in current_clients:
+        combined_df.at[index, 'status'] = 'joined'
+    elif cclikpi in previous_clients and cclikpi in current_clients:
+        combined_df.at[index, 'status'] = 'stayed'
+    
+    previous_clients.add(cclikpi)
+
+# Mark clients as 'left' if they are not present in the next month
+for year in combined_df['year'].unique():
+    for month in range(1, 12):  # Only go up to month 11 to compare with next month
+        current_month_df = combined_df[(combined_df['year'] == year) & (combined_df['month'] == month)]
+        next_month_df = combined_df[(combined_df['year'] == year) & (combined_df['month'] == month + 1)]
+        current_month_clients = set(current_month_df['cclikpi'])
+        next_month_clients = set(next_month_df['cclikpi'])
+        
+        left_clients = current_month_clients - next_month_clients
+        
+        for client in left_clients:
+            combined_df.loc[(combined_df['cclikpi'] == client) & (combined_df['year'] == year) & (combined_df['month'] == month), 'status'] = 'left'
+
+print(combined_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 import matplotlib.pyplot as plt
 
 # Sample data for testing
