@@ -1,5 +1,95 @@
 import pandas as pd
 
+def summarize_key_existence(original_df, key, stop_dfs):
+    summaries = []
+    current_df = original_df.copy()
+
+    for i, stop_df in enumerate(stop_dfs):
+        unique_keys_original = set(current_df[key].unique())
+        unique_keys_stop = set(stop_df[key].unique())
+
+        # Find keys that exist in both dataframes
+        keys_exist = unique_keys_original & unique_keys_stop
+        
+        # Find keys that are in the original dataframe but not in the current stop dataframe
+        keys_missing = unique_keys_original - unique_keys_stop
+
+        # Update the current_df to only keep keys that exist in the current stop dataframe
+        current_df = current_df[current_df[key].isin(keys_exist)]
+
+        # Summarize the results
+        summary = {
+            'stop_number': i + 1,
+            'keys_exist': len(keys_exist),
+            'keys_missing': len(keys_missing),
+            'total_keys_left': len(current_df)
+        }
+        summaries.append(summary)
+
+    return summaries
+
+# Sample dataframes for testing
+original_df = pd.DataFrame({
+    'key': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'value': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+})
+
+df1 = pd.DataFrame({
+    'key': [2, 4, 6, 8, 10],
+    'value': ['b', 'd', 'f', 'h', 'j']
+})
+
+df2 = pd.DataFrame({
+    'key': [2, 3, 6, 7],
+    'value': ['b', 'c', 'f', 'g']
+})
+
+df3 = pd.DataFrame({
+    'key': [1, 3, 5, 7],
+    'value': ['a', 'c', 'e', 'g']
+})
+
+df4 = pd.DataFrame({
+    'key': [1, 2, 3, 9],
+    'value': ['a', 'b', 'c', 'i']
+})
+
+df5 = pd.DataFrame({
+    'key': [1, 5, 9],
+    'value': ['a', 'e', 'i']
+})
+
+# List of stop dataframes
+stop_dfs = [df1, df2, df3, df4, df5]
+
+# Specify the key column
+key_column = 'key'
+
+# Get the summaries
+summaries = summarize_key_existence(original_df, key_column, stop_dfs)
+
+for summary in summaries:
+    print(f"Stop {summary['stop_number']}: Keys exist = {summary['keys_exist']}, Keys missing = {summary['keys_missing']}, Total keys left = {summary['total_keys_left']}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 def check_key_existence(df1, df2, key):
     # Get unique values of the key from the first dataframe
     unique_keys_df1 = set(df1[key].unique())
