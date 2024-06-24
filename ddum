@@ -21,6 +21,81 @@ combined_df = combined_df.sort_values(by=['year', 'month'])
 # Initialize the 'status' column
 combined_df['status'] = 'stayed'
 
+# Create a list to store the final rows including the left clients
+final_rows = []
+
+# Create sets to keep track of clients across months and years
+all_clients = set(combined_df['cclikpi'].unique())
+previous_clients = set()
+
+# Iterate through the dataframe to determine the status
+for index, row in combined_df.iterrows():
+    cclikpi = row['cclikpi']
+    year = row['year']
+    month = row['month']
+    
+    # Get the clients present in the current month
+    current_month_clients = set(combined_df[(combined_df['year'] == year) & (combined_df['month'] == month)]['cclikpi'])
+    
+    if cclikpi not in previous_clients and cclikpi in current_month_clients:
+        row['status'] = 'joined'
+    elif cclikpi in previous_clients and cclikpi in current_month_clients:
+        row['status'] = 'stayed'
+    elif cclikpi in previous_clients and cclikpi not in current_month_clients:
+        row['status'] = 'left'
+        final_rows.append(row.copy())
+        continue  # Skip adding this row to previous_clients
+    
+    previous_clients.add(cclikpi)
+    final_rows.append(row.copy())
+
+# Ensure clients who left are marked as 'left' in the subsequent years and months
+for client in previous_clients:
+    if client not in current_month_clients:
+        for year in range(2021, 2023):  # Adjust years according to the data
+            for month in range(1, 13):
+                left_row = {'cclikpi': client, 'month': month, 'year': year, 'status': 'left'}
+                final_rows.append(left_row)
+
+# Create the final dataframe
+final_df = pd.DataFrame(final_rows).sort_values(by=['year', 'month', 'cclikpi'])
+
+print(final_df)
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data for testing
+df1 = pd.DataFrame({
+    'cclikpi': [1, 2, 1, 2, 3],
+    'month': [1, 1, 2, 2, 2],
+    'year': [2020, 2020, 2020, 2020, 2020]
+})
+
+df2 = pd.DataFrame({
+    'cclikpi': [2, 3, 2, 3, 4],
+    'month': [1, 1, 2, 2, 2],
+    'year': [2021, 2021, 2021, 2021, 2021]
+})
+
+# Combine dataframes into one
+dataframes = [df1, df2]
+combined_df = pd.concat(dataframes, ignore_index=True)
+combined_df = combined_df.sort_values(by=['year', 'month'])
+
+# Initialize the 'status' column
+combined_df['status'] = 'stayed'
+
 # Create sets to keep track of clients across months and years
 all_clients = set(combined_df['cclikpi'].unique())
 previous_clients = set()
