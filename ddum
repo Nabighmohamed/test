@@ -2,6 +2,136 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Sample data for testing
+df1 = pd.DataFrame({
+    'CCLIKPI': [1, 2, 3, 4, 5],
+    'Cnouvseg': ['A', 'B', 'C', 'A', 'B'],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb-rep': [10, 20, 30, 40, 50],
+    'section': ['X', 'Y', 'Z', 'X', 'Y'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2018, 2018, 2018, 2018, 2018]
+})
+
+df2 = pd.DataFrame({
+    'CCLIKPI': [2, 3, 4, 5, 6],
+    'Cnouvseg': ['B', 'C', 'A', 'B', 'C'],
+    'pnb': [150, 250, 350, 450, 550],
+    'pnb-rep': [15, 25, 35, 45, 55],
+    'section': ['Y', 'Z', 'X', 'Y', 'Z'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2019, 2019, 2019, 2019, 2019]
+})
+
+df3 = pd.DataFrame({
+    'CCLIKPI': [3, 4, 5, 6, 7],
+    'Cnouvseg': ['C', 'A', 'B', 'C', 'A'],
+    'pnb': [200, 300, 400, 500, 600],
+    'pnb-rep': [20, 30, 40, 50, 60],
+    'section': ['Z', 'X', 'Y', 'Z', 'X'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2020, 2020, 2020, 2020, 2020]
+})
+
+df4 = pd.DataFrame({
+    'CCLIKPI': [4, 5, 6, 7, 8],
+    'Cnouvseg': ['A', 'B', 'C', 'A', 'B'],
+    'pnb': [250, 350, 450, 550, 650],
+    'pnb-rep': [25, 35, 45, 55, 65],
+    'section': ['X', 'Y', 'Z', 'X', 'Y'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2021, 2021, 2021, 2021, 2021]
+})
+
+df5 = pd.DataFrame({
+    'CCLIKPI': [5, 6, 7, 8, 9],
+    'Cnouvseg': ['B', 'C', 'A', 'B', 'C'],
+    'pnb': [300, 400, 500, 600, 700],
+    'pnb-rep': [30, 40, 50, 60, 70],
+    'section': ['Y', 'Z', 'X', 'Y', 'Z'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2022, 2022, 2022, 2022, 2022]
+})
+
+# List of dataframes
+dataframes = [df1, df2, df3, df4, df5]
+
+# Identify lost clients year by year
+lost_clients_count_year = []
+for i in range(1, len(dataframes)):
+    previous_year_df = dataframes[i-1]
+    current_year_df = dataframes[i]
+    
+    previous_year_clients = set(previous_year_df['CCLIKPI'])
+    current_year_clients = set(current_year_df['CCLIKPI'])
+    
+    lost_clients = previous_year_clients - current_year_clients
+    
+    lost_clients_count_year.append(len(lost_clients))
+
+loss_df_year = pd.DataFrame({
+    'Year': [df['year'].iloc[0] for df in dataframes[1:]],
+    'Lost Clients': lost_clients_count_year
+})
+
+print(loss_df_year)
+
+# Combine all dataframes into one with month and year information
+combined_df = pd.concat(dataframes, ignore_index=True)
+
+# Identify lost clients month by month
+lost_clients_count_month = []
+combined_df = combined_df.sort_values(by=['year', 'month'])
+for i in range(1, len(combined_df)):
+    previous_month_df = combined_df.iloc[:i]
+    current_month_df = combined_df.iloc[i:]
+    
+    previous_month_clients = set(previous_month_df['CCLIKPI'])
+    current_month_clients = set(current_month_df['CCLIKPI'])
+    
+    lost_clients = previous_month_clients - current_month_clients
+    
+    lost_clients_count_month.append(len(lost_clients))
+
+loss_df_month = pd.DataFrame({
+    'Year-Month': combined_df['year'].astype(str) + '-' + combined_df['month'].astype(str),
+    'Lost Clients': [0] + lost_clients_count_month  # Adding 0 for the first month
+})
+
+print(loss_df_month)
+
+# Plot the number of lost clients each year
+plt.figure(figsize=(10, 6))
+plt.plot(loss_df_year['Year'], loss_df_year['Lost Clients'], marker='o', linestyle='-', color='r')
+plt.title('Number of Clients Lost Each Year')
+plt.xlabel('Year')
+plt.ylabel('Number of Lost Clients')
+plt.grid(True)
+plt.show()
+
+# Plot the number of lost clients each month
+plt.figure(figsize=(10, 6))
+plt.plot(loss_df_month['Year-Month'], loss_df_month['Lost Clients'], marker='o', linestyle='-', color='r')
+plt.title('Number of Clients Lost Each Month')
+plt.xlabel('Year-Month')
+plt.ylabel('Number of Lost Clients')
+plt.xticks(rotation=45)
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample data for testing
 data_2018_jan = pd.DataFrame({'cclikpi': [1, 2, 3], 'revenue': [100, 200, 300], 'category': ['A', 'B', 'C']})
 data_2018_feb = pd.DataFrame({'cclikpi': [2, 3, 4], 'revenue': [150, 250, 350], 'category': ['B', 'C', 'A']})
 data_2019_jan = pd.DataFrame({'cclikpi': [2, 3, 4], 'revenue': [200, 300, 400], 'category': ['B', 'C', 'A']})
