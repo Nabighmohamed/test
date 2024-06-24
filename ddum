@@ -1,4 +1,75 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample data for testing
+data_2018_jan = pd.DataFrame({'cclikpi': [1, 2, 3], 'revenue': [100, 200, 300], 'category': ['A', 'B', 'C']})
+data_2018_feb = pd.DataFrame({'cclikpi': [2, 3, 4], 'revenue': [150, 250, 350], 'category': ['B', 'C', 'A']})
+data_2019_jan = pd.DataFrame({'cclikpi': [2, 3, 4], 'revenue': [200, 300, 400], 'category': ['B', 'C', 'A']})
+data_2019_feb = pd.DataFrame({'cclikpi': [3, 4, 5], 'revenue': [250, 350, 450], 'category': ['C', 'A', 'B']})
+
+# List of dataframes and corresponding months and years
+dataframes_2018 = [(data_2018_jan, '2018-01'), (data_2018_feb, '2018-02')]
+dataframes_2019 = [(data_2019_jan, '2019-01'), (data_2019_feb, '2019-02')]
+
+# Combine dataframes into a list with month information
+dataframes = dataframes_2018 + dataframes_2019
+
+# Add a 'month' column to each dataframe
+for df, month in dataframes:
+    df['month'] = month
+
+# Initialize a list to store lost client details each year
+lost_clients_details = []
+
+# Combine dataframes for each year
+combined_data = pd.concat([df for df, month in dataframes], ignore_index=True)
+
+# Initialize a list to store the number of lost clients each year
+lost_clients_count = []
+
+# Identify lost clients between each month
+for i in range(1, len(dataframes)):
+    previous_month_df = dataframes[i-1][0]
+    current_month_df = dataframes[i][0]
+    
+    previous_month_clients = set(previous_month_df['cclikpi'])
+    current_month_clients = set(current_month_df['cclikpi'])
+    
+    lost_clients = previous_month_clients - current_month_clients
+    lost_clients_df = previous_month_df[previous_month_df['cclikpi'].isin(lost_clients)].copy()
+    lost_clients_df['lost_month'] = dataframes[i][1]
+    lost_clients_df['status'] = 'Left'
+    
+    lost_clients_details.append(lost_clients_df)
+    lost_clients_count.append(len(lost_clients))
+
+# Create a DataFrame to store the number of lost clients each month
+loss_df = pd.DataFrame({
+    'Month': [month for _, month in dataframes[1:]],
+    'Lost Clients': lost_clients_count
+})
+
+# Print the results
+print(loss_df)
+
+# Plot the number of lost clients each month
+plt.figure(figsize=(10, 6))
+plt.plot(loss_df['Month'], loss_df['Lost Clients'], marker='o', linestyle='-', color='r')
+plt.title('Number of Clients Lost Each Month')
+plt.xlabel('Month')
+plt.ylabel('Number of Lost Clients')
+plt.xticks(rotation=45)
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+import pandas as pd
 
 # Sample data for testing
 df1 = pd.DataFrame({
