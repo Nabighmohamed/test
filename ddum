@@ -1,3 +1,83 @@
+Rapport sur la Perte de Clients Professionnels (CCLIKPI)
+Introduction:
+Ce rapport présente une analyse détaillée de la perte de clients professionnels (CCLIKPI) de 2018 à 2023, divisée en deux axes principaux pour mieux comprendre les tendances et les causes des pertes.
+
+1. Axe 1 : Perte Totale de Clients Professionnels de 2018 à 2023
+
+Perte Globale de Clients
+Cette section fournit une vue d'ensemble de la perte totale de clients professionnels au fil des ans. Les chiffres montrent l'évolution annuelle des pertes, ce qui permet d'identifier les tendances et les années avec des fluctuations significatives.
+
+Année	Nombre total de clients perdus	Pourcentage de perte
+2019	43082	10.91%
+2020	37769	9.42%
+2021	34718	8.52%
+2022	38501	9.08%
+2023	45615	10.36%
+Nous observons que le nombre total de clients perdus a varié chaque année, avec une augmentation notable en 2023, atteignant 10.36%. Ces données montrent l'importance de surveiller continuellement les tendances de perte de clients pour identifier les causes sous-jacentes et ajuster les stratégies de rétention.
+
+Perte de Clients pour les Entreprises (CNOUVSEG=ER)
+Cette sous-section se concentre spécifiquement sur les pertes de clients parmi les entreprises (CNOUVSEG=ER). Les données permettent de comprendre comment ce segment particulier a évolué par rapport aux autres.
+
+Année	Nombre de clients perdus	Pourcentage de perte
+2019	8110	12.27%
+2020	5831	8.87%
+2021	5196	7.80%
+2022	6216	9.04%
+2023	7799	11.17%
+Pour les entreprises, nous notons une baisse des pertes en 2020 et 2021, suivie d'une augmentation en 2022 et 2023. Ces fluctuations peuvent être dues à divers facteurs économiques ou à des changements dans les offres de services.
+
+Perte de Clients pour les Autres Clients Professionnels (CNOUVSEG=AC AG PL)
+Cette section examine la perte de clients pour les autres types de clients professionnels (CNOUVSEG=AC AG PL), offrant une vue comparative avec le segment des entreprises.
+
+Année	Nombre de clients perdus	Pourcentage de perte
+2019	36982	11.18%
+2020	33854	10.05%
+2021	31239	9.13%
+2022	34118	8.59%
+2023	40085	10.94%
+La perte de clients parmi les autres clients professionnels montre une tendance similaire à celle des entreprises, avec une baisse en 2020 et 2021 et une remontée en 2022 et 2023. Ces données peuvent aider à cibler des interventions spécifiques pour chaque segment.
+
+2. Axe 2 : Perte de Clients Professionnels dans le Cadre de l'Étude de Cas
+
+Cette section suit un groupe spécifique de clients ayant une ancienneté de 2 mois à partir de 2018, observant leur fidélité au fil des ans. Cette approche permet de voir comment ces clients spécifiques ont réagi sur une période prolongée.
+
+Année	Clients restants	Clients perdus	Total de clients initiaux	Pourcentage de perte
+2019	37119	2990	40109	7.45%
+2020	32797	4322	37119	11.64%
+2021	29384	3413	32797	10.41%
+2022	26275	3109	29384	10.58%
+2023	20360	3189	26275	12.13%
+Nous observons que, dans cette étude de cas, 42% des clients initiaux ont été perdus d'ici 2023. Ces chiffres montrent une perte progressive et significative de ce groupe de clients, soulignant l'importance de stratégies de rétention ciblées pour maintenir la fidélité des clients sur le long terme.
+
+Conclusion :
+Environ 42 % des clients initiaux ont été perdus dans le cadre de notre étude de cas d'ici 2023. Ces analyses montrent l'importance de surveiller et de comprendre les tendances de perte de clients pour mieux adapter les stratégies de rétention et améliorer la satisfaction et la fidélité des clients.
+
+Pour des analyses plus détaillées et interactives, veuillez consulter le tableau de bord Power BI.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 def summarize_key_existence(original_df, key, stop_dfs):
