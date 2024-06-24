@@ -58,6 +58,109 @@ dataframes = [df1, df2, df3, df4, df5]
 combined_df = pd.concat(dataframes, ignore_index=True)
 combined_df = combined_df.sort_values(by=['year', 'month'])
 
+# Initialize a dictionary to track the status of each client
+client_status = {}
+
+# Initialize the 'status' column
+combined_df['status'] = 'Stayed'
+
+# Update the status and pnb/pnb-rep columns
+for index, row in combined_df.iterrows():
+    cclikpi = row['CCLIKPI']
+    
+    if cclikpi in client_status:
+        if client_status[cclikpi] == 'Left':
+            combined_df.at[index, 'status'] = 'Left'
+            combined_df.at[index, 'pnb'] = 0
+            combined_df.at[index, 'pnb-rep'] = 0
+    else:
+        # Check if the client is present in the next month's data
+        next_month_df = combined_df[(combined_df['year'] == row['year']) & (combined_df['month'] == (row['month'] + 1))]
+        
+        if cclikpi not in set(next_month_df['CCLIKPI']):
+            combined_df.at[index, 'status'] = 'Left'
+            client_status[cclikpi] = 'Left'
+        else:
+            client_status[cclikpi] = 'Stayed'
+
+# Update all remaining occurrences of clients marked as 'Left'
+for cclikpi, status in client_status.items():
+    if status == 'Left':
+        combined_df.loc[combined_df['CCLIKPI'] == cclikpi, 'status'] = 'Left'
+        combined_df.loc[combined_df['CCLIKPI'] == cclikpi, 'pnb'] = 0
+        combined_df.loc[combined_df['CCLIKPI'] == cclikpi, 'pnb-rep'] = 0
+
+print(combined_df)
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data for testing
+df1 = pd.DataFrame({
+    'CCLIKPI': [1, 2, 3, 4, 5],
+    'Cnouvseg': ['A', 'B', 'C', 'A', 'B'],
+    'pnb': [100, 200, 300, 400, 500],
+    'pnb-rep': [10, 20, 30, 40, 50],
+    'section': ['X', 'Y', 'Z', 'X', 'Y'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2018, 2018, 2018, 2018, 2018]
+})
+
+df2 = pd.DataFrame({
+    'CCLIKPI': [2, 3, 4, 5, 6],
+    'Cnouvseg': ['B', 'C', 'A', 'B', 'C'],
+    'pnb': [150, 250, 350, 450, 550],
+    'pnb-rep': [15, 25, 35, 45, 55],
+    'section': ['Y', 'Z', 'X', 'Y', 'Z'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2019, 2019, 2019, 2019, 2019]
+})
+
+df3 = pd.DataFrame({
+    'CCLIKPI': [3, 4, 5, 6, 7],
+    'Cnouvseg': ['C', 'A', 'B', 'C', 'A'],
+    'pnb': [200, 300, 400, 500, 600],
+    'pnb-rep': [20, 30, 40, 50, 60],
+    'section': ['Z', 'X', 'Y', 'Z', 'X'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2020, 2020, 2020, 2020, 2020]
+})
+
+df4 = pd.DataFrame({
+    'CCLIKPI': [4, 5, 6, 7, 8],
+    'Cnouvseg': ['A', 'B', 'C', 'A', 'B'],
+    'pnb': [250, 350, 450, 550, 650],
+    'pnb-rep': [25, 35, 45, 55, 65],
+    'section': ['X', 'Y', 'Z', 'X', 'Y'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2021, 2021, 2021, 2021, 2021]
+})
+
+df5 = pd.DataFrame({
+    'CCLIKPI': [5, 6, 7, 8, 9],
+    'Cnouvseg': ['B', 'C', 'A', 'B', 'C'],
+    'pnb': [300, 400, 500, 600, 700],
+    'pnb-rep': [30, 40, 50, 60, 70],
+    'section': ['Y', 'Z', 'X', 'Y', 'Z'],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2022, 2022, 2022, 2022, 2022]
+})
+
+# List of dataframes
+dataframes = [df1, df2, df3, df4, df5]
+
+# Combine all dataframes into one DataFrame
+combined_df = pd.concat(dataframes, ignore_index=True)
+combined_df = combined_df.sort_values(by=['year', 'month'])
+
 # Create a column to store the status
 combined_df['status'] = 'Stayed'
 
