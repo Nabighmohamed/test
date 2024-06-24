@@ -1,3 +1,75 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Data for the plots
+data_global = {
+    'Année': [2019, 2020, 2021, 2022, 2023],
+    'Nombre total de clients perdus': [43082, 37769, 34718, 38501, 45615],
+    'Pourcentage de perte': [0.1091, 0.0942, 0.0852, 0.0908, 0.1036]
+}
+
+data_er = {
+    'Année': [2019, 2020, 2021, 2022, 2023],
+    'Nombre de clients perdus': [8110, 5831, 5196, 6216, 7799],
+    'Pourcentage de perte': [0.1227, 0.0887, 0.0779, 0.0904, 0.1117]
+}
+
+data_ac_ag_pl = {
+    'Année': [2019, 2020, 2021, 2022, 2023],
+    'Nombre de clients perdus': [36982, 33854, 31239, 34118, 40085],
+    'Pourcentage de perte': [0.1118, 0.1005, 0.0913, 0.0859, 0.1094]
+}
+
+data_case_study = {
+    'Année': [2019, 2020, 2021, 2022, 2023],
+    'Clients restants': [37119, 32797, 29384, 26275, 20360],
+    'Clients perdus': [2990, 4322, 3413, 3109, 3189],
+    'Pourcentage de perte': [0.0745, 0.1164, 0.1041, 0.1058, 0.1213]
+}
+
+# Creating DataFrames
+df_global = pd.DataFrame(data_global)
+df_er = pd.DataFrame(data_er)
+df_ac_ag_pl = pd.DataFrame(data_ac_ag_pl)
+df_case_study = pd.DataFrame(data_case_study)
+
+# Plotting
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+# Global losses plot
+axes[0, 0].plot(df_global['Année'], df_global['Nombre total de clients perdus'], marker='o', linestyle='-')
+axes[0, 0].set_title('Perte Globale de Clients')
+axes[0, 0].set_xlabel('Année')
+axes[0, 0].set_ylabel('Nombre total de clients perdus')
+
+# ER losses plot
+axes[0, 1].plot(df_er['Année'], df_er['Nombre de clients perdus'], marker='o', linestyle='-', color='orange')
+axes[0, 1].set_title('Perte de Clients pour les Entreprises (ER)')
+axes[0, 1].set_xlabel('Année')
+axes[0, 1].set_ylabel('Nombre de clients perdus')
+
+# AC AG PL losses plot
+axes[1, 0].plot(df_ac_ag_pl['Année'], df_ac_ag_pl['Nombre de clients perdus'], marker='o', linestyle='-', color='green')
+axes[1, 0].set_title('Perte de Clients pour les Autres Professionnels (AC AG PL)')
+axes[1, 0].set_xlabel('Année')
+axes[1, 0].set_ylabel('Nombre de clients perdus')
+
+# Case study losses plot
+axes[1, 1].plot(df_case_study['Année'], df_case_study['Clients perdus'], marker='o', linestyle='-', color='red')
+axes[1, 1].set_title('Perte de Clients dans l\'Étude de Cas')
+axes[1, 1].set_xlabel('Année')
+axes[1, 1].set_ylabel('Nombre de clients perdus')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
 Rapport sur la Perte de Clients Professionnels (CCLIKPI)
 Introduction:
 Ce rapport présente les statistiques détaillées sur le nombre de clients professionnels perdus par année, en se concentrant sur deux axes principaux. Le premier axe examine la perte totale de clients professionnels de 2018 à 2023. Le deuxième axe se concentre sur une étude de cas spécifique, suivant la perte de clients ayant une ancienneté de 2 mois à partir de 2018.
