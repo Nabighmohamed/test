@@ -3,6 +3,90 @@ import pandas as pd
 # Sample data for testing
 df1 = pd.DataFrame({
     'cclikpi': [1, 2, 1, 2, 3],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2018, 2018, 2018, 2018, 2018]
+})
+
+df2 = pd.DataFrame({
+    'cclikpi': [2, 3, 2, 3, 4],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2019, 2019, 2019, 2019, 2019]
+})
+
+df3 = pd.DataFrame({
+    'cclikpi': [3, 4, 3, 4, 5],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2020, 2020, 2020, 2020, 2020]
+})
+
+df4 = pd.DataFrame({
+    'cclikpi': [4, 5, 4, 5, 6],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2021, 2021, 2021, 2021, 2021]
+})
+
+df5 = pd.DataFrame({
+    'cclikpi': [5, 6, 5, 6, 7],
+    'month': [1, 2, 3, 4, 5],
+    'year': [2022, 2022, 2022, 2022, 2022]
+})
+
+# List of cclikpi to track
+cclikpi_list = [1, 2, 3, 4, 5]
+
+# Combine dataframes into one
+dataframes = [df1, df2, df3, df4, df5]
+combined_df = pd.concat(dataframes, ignore_index=True)
+combined_df = combined_df.sort_values(by=['year', 'month'])
+
+# Filter combined_df to include only cclikpi from the original list
+filtered_df = combined_df[combined_df['cclikpi'].isin(cclikpi_list)]
+
+# Initialize an empty DataFrame to store the results
+losses_per_month = pd.DataFrame(columns=['year', 'month', 'losses'])
+
+# Iterate over each year and month to calculate the number of losses
+for year in filtered_df['year'].unique():
+    for month in range(1, 13):
+        if month == 12:
+            next_year = year + 1
+            next_month = 1
+        else:
+            next_year = year
+            next_month = month + 1
+        
+        current_month_df = filtered_df[(filtered_df['year'] == year) & (filtered_df['month'] == month)]
+        next_month_df = filtered_df[(filtered_df['year'] == next_year) & (filtered_df['month'] == next_month)]
+        
+        current_clients = set(current_month_df['cclikpi'])
+        next_clients = set(next_month_df['cclikpi'])
+        
+        lost_clients = current_clients - next_clients
+        losses_per_month = losses_per_month.append({'year': year, 'month': month, 'losses': len(lost_clients)}, ignore_index=True)
+
+print(losses_per_month)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data for testing
+df1 = pd.DataFrame({
+    'cclikpi': [1, 2, 1, 2, 3],
     'month': [1, 1, 2, 2, 2],
     'year': [2020, 2020, 2020, 2020, 2020]
 })
