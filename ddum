@@ -1,3 +1,14 @@
+
+Année	Clients restants	Clients perdus	Total de clients initiaux	Pourcentage de perte
+2019	37119	2990	40109	7.45%
+2020	32797	4322	40109	10.78%
+2021	29384	3413	40109	8.51%
+2022	26275	3109	40109	7.75%
+2023	20360	3189	40109	7.95%
+
+
+
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
