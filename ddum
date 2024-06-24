@@ -1,5 +1,65 @@
 import pandas as pd
 
+def check_key_existence(df1, df2, key):
+    # Get unique values of the key from the first dataframe
+    unique_keys_df1 = set(df1[key].unique())
+    
+    # Get unique values of the key from the second dataframe
+    unique_keys_df2 = set(df2[key].unique())
+    
+    # Find keys that exist in both dataframes
+    keys_exist = unique_keys_df1 & unique_keys_df2
+    
+    # Find keys that are in the first dataframe but not in the second
+    keys_missing = unique_keys_df1 - unique_keys_df2
+    
+    result = {
+        'total_keys_df1': len(unique_keys_df1),
+        'keys_exist_in_both': len(keys_exist),
+        'keys_missing_in_df2': len(keys_missing)
+    }
+    
+    return result
+
+# Sample dataframes for testing
+df1 = pd.DataFrame({
+    'key': [1, 2, 3, 4, 5],
+    'value': ['a', 'b', 'c', 'd', 'e']
+})
+
+df2 = pd.DataFrame({
+    'key': [2, 4, 5, 6],
+    'value': ['b', 'd', 'e', 'f']
+})
+
+# Specify the key column
+key_column = 'key'
+
+# Get the result
+result = check_key_existence(df1, df2, key_column)
+
+print(result)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 # Sample data for testing
 df1 = pd.DataFrame({
     'cclikpi': [1, 2, 1, 2, 3],
