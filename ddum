@@ -1,3 +1,22 @@
+# Convert the 'value' column to numeric, setting errors='coerce' to handle non-numeric values
+df['value'] = pd.to_numeric(df['value'], errors='coerce')
+
+# Fill NaN values with a specific value, e.g., 0
+df['value'] = df['value'].fillna(0).astype(int)
+
+print("\nDataFrame after converting 'value' to int:")
+print(df)
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 # Sample data for testing
