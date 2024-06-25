@@ -1,3 +1,74 @@
+import pandas as pd
+
+# Sample data for testing
+og = pd.DataFrame({
+    'id': [1, 2, 3, 4, 5],
+    'value': ['a', 'b', 'c', 'd', 'e']
+})
+
+df1 = pd.DataFrame({
+    'id': [1, 2, 6],
+    'pnb': [100, 200, 300]
+})
+
+df2 = pd.DataFrame({
+    'id': [2, 3, 7],
+    'pnb': [150, 250, 350]
+})
+
+df3 = pd.DataFrame({
+    'id': [3, 4, 8],
+    'pnb': [200, 300, 400]
+})
+
+df4 = pd.DataFrame({
+    'id': [4, 5, 9],
+    'pnb': [250, 350, 450]
+})
+
+df5 = pd.DataFrame({
+    'id': [5, 1, 10],
+    'pnb': [300, 400, 500]
+})
+
+# List of dataframes
+dataframes = [df1, df2, df3, df4, df5]
+
+# Function to filter dataframes and sum the pnb values
+def sum_pnb_for_og_ids(og_df, dataframes, key='id', target_col='pnb'):
+    # Get the unique ids from the og dataframe
+    og_ids = set(og_df[key].unique())
+    
+    # Initialize the total sum
+    total_sum_pnb = 0
+    
+    # Iterate through each dataframe
+    for df in dataframes:
+        # Filter the dataframe to only include rows where the id is in the og dataframe
+        filtered_df = df[df[key].isin(og_ids)]
+        
+        # Sum the pnb column for the filtered dataframe
+        sum_pnb = filtered_df[target_col].sum()
+        
+        # Add the sum to the total sum
+        total_sum_pnb += sum_pnb
+    
+    return total_sum_pnb
+
+# Calculate the target variable
+target_variable = sum_pnb_for_og_ids(og, dataframes)
+
+print("Target Variable (Total pnb):", target_variable)
+
+
+
+
+
+
+
+
+
+
 Step 2: Robust Feature Selection
 Feature Selection Method:
 Instead of traditional feature importance metrics, this approach uses error reduction on cross-validated datasets.
