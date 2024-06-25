@@ -1,3 +1,54 @@
+Step 2: Robust Feature Selection
+Feature Selection Method:
+Instead of traditional feature importance metrics, this approach uses error reduction on cross-validated datasets.
+Error Reduction Illustration:
+The error reduction is observed by removing certain features and evaluating the resulting error on both train and hold-out sets.
+This is done for different age groups and contract lengths.
+Error Reduction Metrics:
+For example, removing a certain age range might reduce the error on the training set by 0.05 and on the hold-out set by 0.02 when using XGBoost.
+The feature importance is estimated based on how much error reduction a feature provides.
+Comparison Across Models:
+Features are compared across models like GBM (Gradient Boosting Machines) and XGBoost to evaluate their importance.
+Step 3: Gradient Boosting with Only Tree Stump & Transform to Linear Output
+Tree Stump Gradient Boosting:
+The model uses decision trees of depth 1 (tree stumps) to perform gradient boosting.
+Each tree considers only one feature, one threshold, and one cut at each iteration.
+Predictive Relationship:
+The goal is to find predictive relationships between features and the target variable.
+Example:
+Customers are split based on age and revenue, which helps in categorizing risk levels.
+Linearization:
+The summed trees are then transformed into a linear function format similar to logistic regression.
+This is achieved by summing the impacts of each decision tree split to create a corresponding coefficient table.
+Step 4: Identify and Add the Most Important Interaction Pairs
+Refinement with Bivariate Effects:
+The model identifies important interaction pairs to refine predictive power.
+Temporary Level 2 Trees:
+These trees are used to identify the most important interactions.
+Interaction Pairs:
+Interaction pairs are determined based on cross-validated errors.
+Implementation:
+These interaction pairs are then added sequentially to the model using XGBoost, starting from the most important pairs until no further improvement is seen.
+Example Interaction Pairs:
+Var2 & Var6 (97.83% importance), Var13 & Var14 (0.87% importance), etc.
+Summary
+Feature Selection: Important features are identified based on their contribution to error reduction.
+Model Building: The model uses tree stumps for gradient boosting, transforming the results into a linear output.
+Interaction Refinement: Important interaction pairs are added to enhance the model’s predictive power.
+This workflow combines robust feature selection with simplified tree-based gradient boosting and interaction pair refinement to create an accurate predictive model.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Rapport sur la Perte de Clients Professionnels (CCLIKPI)
 Introduction:
