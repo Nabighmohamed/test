@@ -1,6 +1,49 @@
 import pandas as pd
 
 # Sample data for testing
+df1 = pd.DataFrame({
+    'id': [1, 2, 3, 4, 5],
+    'value1': ['a', 'b', 'c', 'd', 'e']
+})
+
+df2 = pd.DataFrame({
+    'id': [2, 4, 5, 6, 7],
+    'value2': ['v', 'w', 'x', 'y', 'z']
+})
+
+# Inner Join
+inner_merged_df = pd.merge(df1, df2, on='id', how='inner')
+print("Inner Merge:")
+print(inner_merged_df)
+
+# Left Join
+left_merged_df = pd.merge(df1, df2, on='id', how='left')
+print("\nLeft Merge:")
+print(left_merged_df)
+
+# Right Join
+right_merged_df = pd.merge(df1, df2, on='id', how='right')
+print("\nRight Merge:")
+print(right_merged_df)
+
+# Outer Join
+outer_merged_df = pd.merge(df1, df2, on='id', how='outer')
+print("\nOuter Merge:")
+print(outer_merged_df)
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data for testing
 og = pd.DataFrame({
     'id': [1, 2, 3, 4, 5],
     'value': ['a', 'b', 'c', 'd', 'e']
