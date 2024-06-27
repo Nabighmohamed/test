@@ -1,3 +1,16 @@
+pip install pandas numpy openpyxl requests beautifulsoup4 flask django fastapi jinja2 sqlalchemy scikit-learn tensorflow keras torch matplotlib seaborn scipy nltk spacy textblob selenium pyautogui click argparse plotly bokeh twisted pymongo pytest tqdm pyyaml configparser
+
+
+
+
+
+
+
+
+
+
+
+
 import os
 
 packages = [
