@@ -1,3 +1,22 @@
+Problème d'importation de package après installation via pip sur Domino
+
+Contexte :
+Je rencontre un problème avec l'installation d'un package via pip sur Domino. Lorsque j'exécute la commande pip install pour un package spécifique, l'installation semble se dérouler correctement et le package est téléchargé avec succès. Cependant, lorsque j'essaie d'importer ce package dans mon code, je rencontre un problème.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Convert the 'value' column to numeric, setting errors='coerce' to handle non-numeric values
 df['value'] = pd.to_numeric(df['value'], errors='coerce')
 
