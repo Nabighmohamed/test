@@ -1,12 +1,85 @@
+import os
 
-Bonjour Solène,
+packages = [
+    # Data Handling and Analysis
+    "pandas",
+    "numpy",
+    "openpyxl",
+    "requests",
+    "beautifulsoup4",
+    
+    # Web Development
+    "flask",
+    "django",
+    "fastapi",
+    "jinja2",
+    "sqlalchemy",
+    
+    # Machine Learning and Data Science
+    "scikit-learn",
+    "tensorflow",
+    "keras",
+    "torch",  # PyTorch
+    "matplotlib",
+    "seaborn",
+    "scipy",
+    
+    # Natural Language Processing
+    "nltk",
+    "spacy",
+    "textblob",
+    
+    # Automation
+    "selenium",
+    "pyautogui",
+    
+    # Utilities
+    "logging",
+    "os",
+    "datetime",
+    "click",
+    "argparse",
+    
+    # Visualization
+    "plotly",
+    "bokeh",
+    
+    # Networking
+    "socket",
+    "twisted",
+    
+    # Database
+    "sqlite3",
+    "pymongo",
+    
+    # Testing
+    "unittest",
+    "pytest",
+    
+    # Deployment
+    "docker",
+    "heroku",
+    
+    # Others
+    "tqdm",
+    "pyyaml",
+    "configparser"
+]
 
-Je descends prendre un café et je voulais savoir si tu souhaites que je t'en prenne un aussi.
+for package in packages:
+    os.system(f"pip install {package}")
+python install_packages.py
 
 
 
 
-Problème d'importation de package après installation via pip sur Domino
+
+
+
+
+
+
+
 
 Contexte :
 Je rencontre un problème avec l'installation d'un package via pip sur Domino. Lorsque j'exécute la commande pip install pour un package spécifique, l'installation semble se dérouler correctement et le package est téléchargé avec succès. Cependant, lorsque j'essaie d'importer ce package dans mon code, je rencontre un problème.
