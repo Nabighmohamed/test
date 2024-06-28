@@ -5,6 +5,102 @@ from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SequentialFeatureSelector
+from sklearn.metrics import r2_score
+
+# Generate some sample data
+np.random.seed(0)
+n_samples = 100
+n_features = 5
+
+X = np.random.rand(n_samples, n_features)
+y = 4 + 3 * X[:, 0] + 2 * X[:, 1] + np.random.randn(n_samples)
+
+# Convert to DataFrame for convenience
+df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(n_features)])
+df['target'] = y
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df.drop(columns='target'), df['target'], test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrame for feature selection
+X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X_train.columns)
+X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=X_test.columns)
+
+# Define models to try
+models = {
+    "Linear Regression": LinearRegression(),
+    "Ridge Regression": Ridge(),
+    "Lasso Regression": Lasso(),
+    "ElasticNet Regression": ElasticNet(),
+    "Random Forest": RandomForestRegressor(random_state=42),
+    "Gradient Boosting": GradientBoostingRegressor(random_state=42),
+    "Decision Tree": DecisionTreeRegressor(random_state=42),
+    "K-Neighbors Regressor": KNeighborsRegressor(),
+    "Polynomial Regression": Pipeline([('poly', PolynomialFeatures(degree=2)), ('linear', LinearRegression())]),
+    "Polynomial Ridge Regression": Pipeline([('poly', PolynomialFeatures(degree=2)), ('ridge', Ridge())])
+}
+
+best_model = None
+best_r2 = -np.inf
+best_selected_features = None
+best_model_name = ""
+
+# Evaluate each model
+for model_name, model in models.items():
+    # Use Sequential Feature Selector (SFS) to select the best features
+    sfs = SequentialFeatureSelector(model, n_features_to_select='auto', direction='forward', scoring='r2', cv=5)
+    sfs.fit(X_train_scaled_df, y_train)
+    
+    # Get the selected features
+    selected_features = X_train_scaled_df.columns[sfs.get_support()]
+    
+    # Refit the model with the selected features
+    X_train_selected = X_train_scaled_df[selected_features]
+    X_test_selected = X_test_scaled_df[selected_features]
+    
+    model.fit(X_train_selected, y_train)
+    y_pred = model.predict(X_test_selected)
+    
+    # Calculate the performance of the model
+    r2 = r2_score(y_test, y_pred)
+    print(f"{model_name} R-squared: {r2}")
+    
+    # Update best model if this model is better
+    if r2 > best_r2:
+        best_r2 = r2
+        best_model = model
+        best_selected_features = selected_features
+        best_model_name = model_name
+
+print(f"\nBest model: {best_model_name}")
+print(f"Best R-squared: {best_r2}")
+print(f"Selected features: {best_selected_features.tolist()}")
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SequentialFeatureSelector
