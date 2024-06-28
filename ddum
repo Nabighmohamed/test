@@ -1,3 +1,53 @@
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+data = load_breast_cancer()
+X = pd.DataFrame(data.data, columns=data.feature_names)
+y = pd.Series(data.target)
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Initialize and train the logistic regression model
+model = LogisticRegression(max_iter=10000)
+model.fit(X_train, y_train)
+
+# Predict probabilities for the test set
+y_pred_prob = model.predict_proba(X_test)[:, 1]
+
+# Calculate ROC curve and ROC area
+fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
+roc_auc = auc(fpr, tpr)
+
+# Plot the coefficients
+plt.figure(figsize=(12, 6))
+coefficients = pd.Series(model.coef_[0], index=X.columns)
+coefficients.sort_values().plot(kind='bar')
+plt.title('Logistic Regression Coefficients')
+plt.show()
+
+# Plot the ROC curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='blue', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='gray', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc="lower right")
+plt.show()
+
+
+
+
 For a classification machine learning problem, you'll need functions to handle data preprocessing, model training, evaluation, and possibly deployment. Below is a comprehensive list of functions that cover these aspects using popular libraries like `pandas`, `scikit-learn`, `TensorFlow`, and `PyTorch`.
 
 ### Data Handling and Preprocessing
