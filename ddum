@@ -1,40 +1,30 @@
-Bonjour,
+import pandas as pd
 
-Veuillez trouver ci-joint le document de mon dépôt de demande de renouvellement.
+# Sample data
+data = {
+    'A': [1, 2, 3, 4, 5],
+    'B': [5, 4, 3, 2, 1],
+    'C': [2, 3, 4, 5, 6],
+    'Target': [1, 2, 1, 2, 1]
+}
 
-Merci pour votre assistance.
+# Create DataFrame
+df = pd.DataFrame(data)
 
-Cordialement,
+# Specify the target variable
+target_variable = 'Target'
 
+# Calculate the correlation matrix
+correlation_matrix = df.corr()
 
+# Extract the correlations with the target variable
+target_correlation = correlation_matrix[target_variable].drop(target_variable)
 
-
-
-
-
-
-
-
-
-
+print(target_correlation)
 
 
 
 
-
-Bonjour Baptiste,
-
-Je me permets de vous relancer concernant le message que je vous ai envoyé précédemment. Je suis de l'équipe Solène Bienaise et je rencontre toujours des difficultés avec l'installation du package agboost. Voici quelques détails supplémentaires sur le problème :
-
-Commande utilisée: [Indiquez la commande que vous avez essayée]
-Message d'erreur reçu: [Copiez-collez le message d'erreur exact]
-Système d'exploitation: [Précisez votre système d'exploitation, par exemple, Windows 10, macOS Catalina, etc.]
-Version de Python: [Indiquez la version de Python que vous utilisez]
-J'apprécierais vraiment votre aide pour résoudre ce problème. Peut-être pourriez-vous me guider sur une méthode alternative ou me fournir des conseils supplémentaires?
-
-Merci d'avance pour votre aide et votre compréhension.
-
-Cordialement,
 
 
 
