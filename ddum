@@ -1,3 +1,17 @@
+Certainly! Here's a refined version of the question in French:
+
+---
+
+**Comment expliquer pourquoi nos clients quittent notre banque et comment prévoir pour prévenir leur départ?**
+
+---
+
+Feel free to ask if you need any further adjustments!
+
+
+
+
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
