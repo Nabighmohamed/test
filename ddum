@@ -1,7 +1,8 @@
-Bonjour Baptiste,
+# Drop rows from df_main where the 'id' is in df_drop
+df_filtered = df_main[~df_main['id'].isin(df_drop['id'])]
 
-Je suis de l'équipe Solène Bienaise. J'ai des difficultés à installer le package agboost et j'aimerais obtenir de l'aide. J'ai essayé de suivre la commande, mais cela n'a pas fonctionné.
-
+print("\nFiltered df_main:")
+print(df_filtered)
 
 
 
