@@ -1,3 +1,18 @@
+Bonjour Willy,
+
+J'espère que tu vas bien. Pourrais-tu me rappeler le contenu discuté lors de la dernière réunion des stagiaires IA au café ?
+
+Merci d'avance et bonne journée !
+
+
+
+
+
+
+
+
+
+
 # Drop rows from df_main where the 'id' is in df_drop
 df_filtered = df_main[~df_main['id'].isin(df_drop['id'])]
 
