@@ -14,6 +14,54 @@ df = pd.DataFrame(data)
 # Specify the target variable
 target_variable = 'Target'
 
+# Function to calculate different correlations
+def calculate_correlations(df, target_variable):
+    correlations = {}
+    for method in ['pearson', 'spearman', 'kendall']:
+        correlation_matrix = df.corr(method=method)
+        target_correlation = correlation_matrix[target_variable].drop(target_variable)
+        correlations[method] = target_correlation
+    return correlations
+
+# Calculate correlations
+correlations = calculate_correlations(df, target_variable)
+
+# Display the results
+for method, corr in correlations.items():
+    print(f"\n{method.capitalize()} Correlation:\n{corr}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Sample data
+data = {
+    'A': [1, 2, 3, 4, 5],
+    'B': [5, 4, 3, 2, 1],
+    'C': [2, 3, 4, 5, 6],
+    'Target': [1, 2, 1, 2, 1]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Specify the target variable
+target_variable = 'Target'
+
 # Calculate the correlation matrix
 correlation_matrix = df.corr()
 
