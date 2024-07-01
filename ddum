@@ -1,3 +1,29 @@
+# Function to calculate different correlations
+def calculate_correlations(df, target_variable):
+    correlations = {}
+    for method in ['pearson', 'spearman', 'kendall']:
+        correlation_matrix = df.corr(method=method)
+        correlations[method] = correlation_matrix
+    return correlations
+
+# Calculate correlations
+correlations = calculate_correlations(df, target_variable)
+
+# Plot heatmaps
+for method, corr_matrix in correlations.items():
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+    plt.title(f'{method.capitalize()} Correlation Matrix')
+    plt.show()
+
+
+
+
+
+
+
+
+
 import pandas as pd
 
 # Sample data
