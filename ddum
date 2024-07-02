@@ -1,3 +1,23 @@
+Here's the follow-up message in French:
+
+---
+
+Bonjour Baptiste,
+
+Je voulais juste vous informer que j'ai réussi à résoudre le problème. J'ai dû rétrograder vers la version 1.26 de NumPy et maintenant tout fonctionne correctement.
+
+Merci pour votre temps et votre aide.
+
+Cordialement,  
+[Votre Nom]
+
+---
+
+Feel free to customize it if needed!
+
+
+
+
 Bonjour Baptiste,
 
 Merci de votre attention à mon message précédent. L'installation du package agboost a été réussie, mais lorsque j'essaie d'importer le package, je rencontre l'erreur suivante :
