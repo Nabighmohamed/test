@@ -1,3 +1,34 @@
+Bonjour Baptiste,
+
+Merci de votre attention à mon message précédent. L'installation du package agboost a été réussie, mais lorsque j'essaie d'importer le package, je rencontre l'erreur suivante :
+
+css
+Copy code
+numpy.dtypes size changed, may indicate binary incompatibility. Expected 96 from C header got 88 from pyobject.
+Voici quelques détails supplémentaires :
+
+Commande utilisée pour l'importation: import agboost
+Version de NumPy: [Indiquez la version de NumPy que vous utilisez]
+Version d'agboost: [Indiquez la version d'agboost que vous avez installée]
+Système d'exploitation: [Précisez votre système d'exploitation, par exemple, Windows 10, macOS Catalina, etc.]
+Version de Python: [Indiquez la version de Python que vous utilisez]
+Pourriez-vous m'aider à comprendre et résoudre ce problème d'incompatibilité binaire?
+
+Merci beaucoup pour votre aide et votre temps.
+
+Cordialement,
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Function to calculate different correlations
 def calculate_correlations(df, target_variable):
