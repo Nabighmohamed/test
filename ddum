@@ -1,3 +1,68 @@
+((y + 1)^{\lambda} - 1) / \lambda & \text{if } y \geq 0 \\
+- ((-y + 1)^{2 - \lambda} - 1) / (2 - \lambda) & \text{if } y < 0
+\end{array} \right. \]
+Let's visualize how these transformations work on right-skewed data using Python.
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+# Set the style
+sns.set(style="whitegrid")
+# Generate right-skewed data
+np.random.seed(0)
+right_skewed_data = np.random.exponential(scale=2, size=1000)
+# Apply transformations
+log_transformed = np.log1p(right_skewed_data)
+sqrt_transformed = np.sqrt(right_skewed_data)
+cbrt_transformed = np.cbrt(right_skewed_data)
+boxcox_transformed, _ = stats.boxcox(right_skewed_data + 1) # adding 1 to ensure positivity
+reciprocal_transformed = 1 / (right_skewed_data + 1) # adding 1 to avoid division by zero
+yeojohnson_transformed, _ = stats.yeojohnson(right_skewed_data)
+# Plotting
+fig, axs = plt.subplots(3, 2, figsize=(15, 18))
+fig.suptitle('Transformations to Correct Right-Skewed Data', fontsize=20)
+# Original Right-Skewed Data
+sns.histplot(right_skewed_data, kde=True, ax=axs[0, 0])
+axs[0, 0].set_title('Original Right-Skewed Data')
+# Log Transformation
+sns.histplot(log_transformed, kde=True, ax=axs[0, 1])
+axs[0, 1].set_title('Log Transformation')
+# Square Root Transformation
+sns.histplot(sqrt_transformed, kde=True, ax=axs[1, 0])
+axs[1, 0].set_title('Square Root Transformation')
+# Cube Root Transformation
+sns.histplot(cbrt_transformed, kde=True, ax=axs[1, 1])
+axs[1, 1].set_title('Cube Root Transformation')
+# Box-Cox Transformation
+sns.histplot(boxcox_transformed, kde=True, ax=axs[2, 0])
+axs[2, 0].set_title('Box-Cox Transformation')
+# Reciprocal Transformation
+sns.histplot(reciprocal_transformed, kde=True, ax=axs[2, 1])
+axs[2, 1].set_title('Reciprocal Transformation')
+plt.tight_layout(rect=[0, 0, 1, 0.96])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
