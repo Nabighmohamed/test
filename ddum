@@ -1,3 +1,93 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+
+# Set the style
+sns.set(style="whitegrid")
+
+# Generate data
+np.random.seed(0)
+normal_data = np.random.normal(0, 1, 1000)
+right_skewed_data = np.random.exponential(1, 1000)
+left_skewed_data = -np.random.exponential(1, 1000)
+bimodal_data = np.concatenate([np.random.normal(-3, 1, 500), np.random.normal(3, 1, 500)])
+uniform_data = np.random.uniform(-3, 3, 1000)
+
+# Transformations
+log_transformed = np.log1p(right_skewed_data)
+sqrt_transformed = np.sqrt(right_skewed_data)
+square_transformed = np.square(left_skewed_data)
+inverse_log_transformed = -np.log(-left_skewed_data)
+
+# Plotting
+fig, axs = plt.subplots(5, 3, figsize=(18, 20))
+fig.suptitle('Distributions and Their Transformations', fontsize=20)
+
+# Normal Distribution
+sns.histplot(normal_data, kde=True, ax=axs[0, 0])
+axs[0, 0].set_title('Normal Distribution')
+
+# Right-Skewed Distribution
+sns.histplot(right_skewed_data, kde=True, ax=axs[1, 0])
+axs[1, 0].set_title('Right-Skewed Distribution')
+
+# Left-Skewed Distribution
+sns.histplot(left_skewed_data, kde=True, ax=axs[2, 0])
+axs[2, 0].set_title('Left-Skewed Distribution')
+
+# Bimodal Distribution
+sns.histplot(bimodal_data, kde=True, ax=axs[3, 0])
+axs[3, 0].set_title('Bimodal Distribution')
+
+# Uniform Distribution
+sns.histplot(uniform_data, kde=True, ax=axs[4, 0])
+axs[4, 0].set_title('Uniform Distribution')
+
+# Log Transformation
+sns.histplot(log_transformed, kde=True, ax=axs[1, 1])
+axs[1, 1].set_title('Log Transformation of Right-Skewed')
+
+# Square Root Transformation
+sns.histplot(sqrt_transformed, kde=True, ax=axs[1, 2])
+axs[1, 2].set_title('Square Root Transformation of Right-Skewed')
+
+# Square Transformation
+sns.histplot(square_transformed, kde=True, ax=axs[2, 1])
+axs[2, 1].set_title('Square Transformation of Left-Skewed')
+
+# Inverse Log Transformation
+sns.histplot(inverse_log_transformed, kde=True, ax=axs[2, 2])
+axs[2, 2].set_title('Inverse Log Transformation of Left-Skewed')
+
+# Bimodal and Uniform do not require transformation
+axs[3, 1].axis('off')
+axs[3, 2].axis('off')
+axs[4, 1].axis('off')
+axs[4, 2].axis('off')
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
