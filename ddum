@@ -6,6 +6,53 @@ import matplotlib.pyplot as plt
 # Create a sample DataFrame with different types of distributions
 np.random.seed(0)
 df = pd.DataFrame({
+    f'Var{i}': np.random.normal(0, 1, 40000) for i in range(60)  # Using 60 variables for demonstration
+})
+
+# Select numerical columns
+num_cols = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Function to plot box plots in chunks
+def plot_box_plots_in_chunks(df, num_cols, chunk_size=10):
+    num_chunks = (len(num_cols) + chunk_size - 1) // chunk_size
+    for chunk in range(num_chunks):
+        chunk_cols = num_cols[chunk * chunk_size:(chunk + 1) * chunk_size]
+        plt.figure(figsize=(15, 5 * len(chunk_cols)))
+        for i, col in enumerate(chunk_cols, 1):
+            plt.subplot(len(chunk_cols), 1, i)
+            sns.boxplot(x=df[col])
+            plt.title(f'Box plot of {col}')
+        plt.tight_layout()
+        plt.show()
+
+# Plot the box plots in chunks
+plot_box_plots_in_chunks(df, num_cols, chunk_size=10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
     f'Var{i}': np.random.normal(0, 1, 40000) for i in range(10)  # Using 10 variables for demonstration
 })
 
