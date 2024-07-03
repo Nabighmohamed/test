@@ -1,3 +1,105 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
+    f'Var{i}': np.random.normal(0, 1, 40000) for i in range(60)
+})
+
+# Function to plot distributions in batches
+def plot_distributions(data, columns, batch_size=10, sample_size=5000, kde=True, bins=30):
+    num_batches = (len(columns) + batch_size - 1) // batch_size  # Calculate the number of batches
+    for batch in range(num_batches):
+        batch_cols = columns[batch * batch_size:(batch + 1) * batch_size]
+        plt.figure(figsize=(15, 5 * len(batch_cols)))
+        for i, col in enumerate(batch_cols, 1):
+            plt.subplot(len(batch_cols), 1, i)
+            sns.histplot(data[col].sample(sample_size, random_state=0), kde=kde, bins=bins)
+            plt.title(f'Distribution of {col}')
+            plt.grid(True)  # Add grid to each plot
+        plt.tight_layout()
+        plt.show()
+
+# Select numerical columns
+num_cols = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Plot distributions in batches
+plot_distributions(df, num_cols, batch_size=10, sample_size=5000, kde=True, bins=30)
+
+# Function to calculate the correlation matrix with p-values
+def calculate_correlation_matrix(df, threshold=0.70):
+    # Get the list of columns
+    cols = df.columns
+    n = len(cols)
+    
+    # Initialize matrices to store correlation coefficients and p-values
+    corr_matrix = pd.DataFrame(np.zeros((n, n)), columns=cols, index=cols)
+    p_value_matrix = pd.DataFrame(np.zeros((n, n)), columns=cols, index=cols)
+    
+    # Calculate correlation coefficients and p-values
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                corr_matrix.iloc[i, j] = 1.0
+                p_value_matrix.iloc[i, j] = 0.0
+            else:
+                corr, p_value = pearsonr(df.iloc[:, i], df.iloc[:, j])
+                corr_matrix.iloc[i, j] = corr
+                p_value_matrix.iloc[i, j] = p_value
+    
+    # Filter pairs with correlation above the threshold
+    corr_matrix_filtered = corr_matrix.copy()
+    p_value_matrix_filtered = p_value_matrix.copy()
+    
+    for i in range(n):
+        for j in range(n):
+            if abs(corr_matrix.iloc[i, j]) < threshold:
+                corr_matrix_filtered.iloc[i, j] = np.nan
+                p_value_matrix_filtered.iloc[i, j] = np.nan
+    
+    return corr_matrix_filtered, p_value_matrix_filtered
+
+# Calculate the correlation matrix and p-value matrix
+corr_matrix, p_value_matrix = calculate_correlation_matrix(df, threshold=0.70)
+
+# Create a mask for the upper triangle
+mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+
+# Set up the matplotlib figure
+plt.figure(figsize=(20, 16))
+
+# Draw the heatmap with the mask and correct aspect ratio
+sns.heatmap(corr_matrix, mask=mask, annot=True, fmt=".2f", cmap="coolwarm", vmin=-1, vmax=1,
+            cbar_kws={"shrink": .8}, linewidths=0.5)
+
+# Annotate the heatmap with p-values
+for i in range(len(corr_matrix)):
+    for j in range(len(corr_matrix)):
+        if i < j and not np.isnan(corr_matrix.iloc[i, j]):
+            plt.text(j + 0.5, i + 0.5, f"p={p_value_matrix.iloc[i, j]:.4f}", ha='center', va='center', color='black')
+
+plt.title('Correlation Matrix with p-values (Filtered)')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Bonjour [Nom du destinataire],
 
 J'espère que vous allez bien.
