@@ -1,3 +1,22 @@
+Bonjour [Nom du destinataire],
+
+J'espère que vous allez bien.
+
+Je vous écris pour vous informer que j'ai reçu un email destiné à quelqu'un d'autre. Il semble qu'il ait été envoyé à mon adresse par erreur. Je vous prie de bien vouloir vérifier l'adresse email et de le renvoyer au bon destinataire.
+
+Merci de votre compréhension.
+
+Cordialement,
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
