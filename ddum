@@ -1,3 +1,141 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+import xgboost as xgb
+import shap
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.manifold import Isomap
+from sklearn.decomposition import PCA
+
+# Sample data for testing
+np.random.seed(42)
+df = pd.DataFrame({
+    'feature1': np.random.rand(100),
+    'feature2': np.random.choice(['A', 'B', 'C'], 100),
+    'feature3': np.random.choice(['X', 'Y', 'Z'], 100),
+    'target': np.random.rand(100) * 100
+})
+
+# Prepare the data
+X = df.drop('target', axis=1)
+y = df['target']
+
+# Identify categorical and numerical columns
+categorical_cols = ['feature2', 'feature3']
+numerical_cols = ['feature1']
+
+# Preprocessing for numerical data
+numerical_transformer = StandardScaler()
+
+# Preprocessing for categorical data
+categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+
+# Bundle preprocessing for numerical and categorical data
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, numerical_cols),
+        ('cat', categorical_transformer, categorical_cols)
+    ])
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Preprocess the data
+X_train_preprocessed = preprocessor.fit_transform(X_train)
+X_test_preprocessed = preprocessor.transform(X_test)
+
+# PCA
+pca = PCA(n_components=0.95)  # Retain 95% of variance
+
+# Create pipeline for PCA
+pipeline_pca = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('pca', pca),
+    ('model', xgb.XGBRegressor(objective='reg:squarederror', random_state=42))
+])
+
+# Fit the model with PCA
+pipeline_pca.fit(X_train, y_train)
+
+# Predict on the test set with PCA
+y_test_pred_pca = pipeline_pca.predict(X_test)
+
+# Calculate evaluation metrics for the test set with PCA
+test_rmse_pca = np.sqrt(mean_squared_error(y_test, y_test_pred_pca))
+test_r2_pca = r2_score(y_test, y_test_pred_pca)
+test_r2_adj_pca = 1 - (1 - test_r2_pca) * (len(y_test) - 1) / (len(y_test) - X_test.shape[1] - 1)
+
+# Print the results for PCA
+print(f"\nTest Set Metrics with PCA:\nRMSE: {test_rmse_pca}\nR²: {test_r2_pca}\nAdjusted R²: {test_r2_adj_pca}")
+
+# PLS
+pls = PLSRegression(n_components=2)  # Using 2 components for demonstration
+
+# Create pipeline for PLS
+pipeline_pls = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('pls', pls),
+    ('model', xgb.XGBRegressor(objective='reg:squarederror', random_state=42))
+])
+
+# Fit the model with PLS
+pipeline_pls.fit(X_train, y_train)
+
+# Predict on the test set with PLS
+y_test_pred_pls = pipeline_pls.predict(X_test)
+
+# Calculate evaluation metrics for the test set with PLS
+test_rmse_pls = np.sqrt(mean_squared_error(y_test, y_test_pred_pls))
+test_r2_pls = r2_score(y_test, y_test_pred_pls)
+test_r2_adj_pls = 1 - (1 - test_r2_pls) * (len(y_test) - 1) / (len(y_test) - X_test.shape[1] - 1)
+
+# Print the results for PLS
+print(f"\nTest Set Metrics with PLS:\nRMSE: {test_rmse_pls}\nR²: {test_r2_pls}\nAdjusted R²: {test_r2_adj_pls}")
+
+# Isomap
+isomap = Isomap(n_components=2)  # Using 2 components for demonstration
+
+# Create pipeline for Isomap
+pipeline_isomap = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('isomap', isomap),
+    ('model', xgb.XGBRegressor(objective='reg:squarederror', random_state=42))
+])
+
+# Fit the model with Isomap
+pipeline_isomap.fit(X_train, y_train)
+
+# Predict on the test set with Isomap
+y_test_pred_isomap = pipeline_isomap.predict(X_test)
+
+# Calculate evaluation metrics for the test set with Isomap
+test_rmse_isomap = np.sqrt(mean_squared_error(y_test, y_test_pred_isomap))
+test_r2_isomap = r2_score(y_test, y_test_pred_isomap)
+test_r2_adj_isomap = 1 - (1 - test_r2_isomap) * (len(y_test) - 1) / (len(y_test) - X_test.shape[1] - 1)
+
+# Print the results for Isomap
+print(f"\nTest Set Metrics with Isomap:\nRMSE: {test_rmse_isomap}\nR²: {test_r2_isomap}\nAdjusted R²: {test_r2_adj_isomap}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 
