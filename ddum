@@ -2,6 +2,46 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
+    f'Var{i}': np.random.normal(0, 1, 40000) for i in range(10)  # Using 10 variables for demonstration
+})
+
+# Select numerical columns
+num_cols = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Plot the box plots for each numerical column
+plt.figure(figsize=(15, 20))
+for i, col in enumerate(num_cols, 1):
+    plt.subplot(len(num_cols), 1, i)
+    sns.boxplot(x=df[col])
+    plt.title(f'Box plot of {col}')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 
 # Function to calculate correlation matrix and filter by threshold
