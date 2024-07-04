@@ -1,5 +1,64 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats.mstats import winsorize
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
+    f'Var{i}': np.random.normal(0, 1, 100) for i in range(10)  # Using 10 variables for demonstration
+})
+
+# Function to apply winsorizing to a DataFrame
+def winsorize_df(df, limits):
+    df_winsorized = df.copy()
+    for col in df.columns:
+        df_winsorized[col] = winsorize(df[col], limits=limits)
+    return df_winsorized
+
+# Set the limits for winsorizing (e.g., 5th and 95th percentiles)
+limits = (0.05, 0.05)
+
+# Apply winsorizing to the DataFrame
+df_winsorized = winsorize_df(df, limits)
+
+# Function to plot box plots before and after winsorizing
+def plot_box_plots_before_after(df, df_winsorized):
+    num_cols = df.columns
+    for col in num_cols:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+        
+        # Original box plot
+        sns.boxplot(x=df[col], ax=axes[0])
+        axes[0].set_title(f'Original Box plot of {col}')
+        
+        # Winsorized box plot
+        sns.boxplot(x=df_winsorized[col], ax=axes[1])
+        axes[1].set_title(f'Winsorized Box plot of {col}')
+        
+        plt.tight_layout()
+        plt.show()
+
+# Plot the box plots before and after winsorizing
+plot_box_plots_before_after(df, df_winsorized)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 from itertools import combinations
 from scipy.stats import spearmanr, kendalltau, chi2_contingency
 
