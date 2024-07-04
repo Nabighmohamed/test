@@ -1,3 +1,54 @@
+import pandas as pd
+
+def filter_columns_by_cardinality(df, threshold):
+    """
+    Filters columns in the DataFrame based on the cardinality of unique values.
+
+    Parameters:
+    df (pd.DataFrame): The input DataFrame.
+    threshold (int): The threshold for the maximum number of unique values.
+
+    Returns:
+    pd.DataFrame: A DataFrame containing only the columns with unique values less than the threshold.
+    """
+    low_cardinality_cols = [col for col in df.columns if df[col].nunique() < threshold]
+    return df[low_cardinality_cols]
+
+# Example usage
+# Create a sample DataFrame
+data = {
+    'A': [1, 2, 3, 4, 5],
+    'B': ['apple', 'banana', 'apple', 'banana', 'apple'],
+    'C': ['cat', 'dog', 'cat', 'dog', 'cat'],
+    'D': [100, 200, 300, 400, 500],
+    'E': ['red', 'blue', 'green', 'blue', 'red'],
+    'F': [1, 2, 3, 4, 1]
+}
+
+df = pd.DataFrame(data)
+
+# Set the threshold for cardinality
+threshold = 4
+
+# Get the sub DataFrame with columns having unique values less than the threshold
+sub_df = filter_columns_by_cardinality(df, threshold)
+
+print("Original DataFrame:")
+print(df)
+print("\nSub DataFrame with columns having unique values less than the threshold:")
+print(sub_df)
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
