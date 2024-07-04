@@ -6,6 +6,70 @@ import matplotlib.pyplot as plt
 # Create a sample DataFrame with different types of distributions
 np.random.seed(0)
 df = pd.DataFrame({
+    f'Var{i}': np.random.exponential(scale=2, size=40000) for i in range(60)  # Using 60 variables for demonstration
+})
+
+# Select numerical columns
+num_cols = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Apply log transformation
+df_log_transformed = df.copy()
+for col in num_cols:
+    df_log_transformed[col] = np.log1p(df[col])  # log(1 + data) to handle zero values
+
+# Function to plot box plots in chunks before and after log transformation
+def plot_box_plots_before_after(df, df_log_transformed, num_cols, chunk_size=10):
+    num_chunks = (len(num_cols) + chunk_size - 1) // chunk_size
+    for chunk in range(num_chunks):
+        chunk_cols = num_cols[chunk * chunk_size:(chunk + 1) * chunk_size]
+        fig, axes = plt.subplots(len(chunk_cols), 2, figsize=(15, 5 * len(chunk_cols)))
+        if len(chunk_cols) == 1:
+            axes = [axes]
+        for i, col in enumerate(chunk_cols):
+            sns.boxplot(x=df[col], ax=axes[i, 0])
+            axes[i, 0].set_title(f'Original Box plot of {col}')
+            sns.boxplot(x=df_log_transformed[col], ax=axes[i, 1])
+            axes[i, 1].set_title(f'Log-Transformed Box plot of {col}')
+        plt.tight_layout()
+        plt.show()
+
+# Plot the box plots before and after log transformation in chunks
+plot_box_plots_before_after(df, df_log_transformed, num_cols, chunk_size=10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
     f'Var{i}': np.random.normal(0, 1, 40000) for i in range(60)  # Using 60 variables for demonstration
 })
 
