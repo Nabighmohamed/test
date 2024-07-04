@@ -2,6 +2,83 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import shapiro, boxcox, normaltest
+
+# Create a sample DataFrame with different types of distributions
+np.random.seed(0)
+df = pd.DataFrame({
+    f'Var{i}': np.random.normal(0, 1, 40000) for i in range(10)  # Using 10 variables for demonstration
+})
+
+# Define transformations
+def apply_transformations(data):
+    transformations = {
+        'Original': data,
+        'Log': np.log1p(data),  # log(1 + data)
+        'Square Root': np.sqrt(data),
+        'Box-Cox': boxcox(data + 1)[0] if np.all(data + 1 > 0) else np.nan * data,  # Ensure positivity
+    }
+    return transformations
+
+# Function to plot distributions and transformations
+def plot_and_test_transformations(df):
+    num_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    
+    for col in num_cols:
+        data = df[col].dropna()
+        
+        # Apply transformations
+        transformations = apply_transformations(data)
+        
+        # Plot original and transformed distributions
+        plt.figure(figsize=(15, 10))
+        for i, (name, transformed_data) in enumerate(transformations.items()):
+            plt.subplot(2, 2, i+1)
+            sns.histplot(transformed_data, kde=True)
+            plt.title(f'{name} Transformation of {col}')
+        
+        plt.tight_layout()
+        plt.show()
+        
+        # Perform normality tests
+        print(f'Normality tests for {col}:')
+        for name, transformed_data in transformations.items():
+            transformed_data = transformed_data[~np.isnan(transformed_data)]  # Remove NaNs
+            stat, p_value = shapiro(transformed_data)
+            print(f'  {name} Transformation: W={stat:.4f}, p-value={p_value:.4f}')
+        print()
+
+# Plot and test transformations
+plot_and_test_transformations(df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Create a sample DataFrame with different types of distributions
 np.random.seed(0)
