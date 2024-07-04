@@ -16,6 +16,105 @@ df = pd.DataFrame({
 # Function to perform Chi-Squared test and group similar categories for nominal variables
 def group_nominal(df, col, target):
     categories = df[col].unique()
+    cluster_info = []
+    while True:
+        min_p_value = 1
+        to_merge = None
+        for cat1, cat2 in combinations(categories, 2):
+            contingency_table = pd.crosstab(df[col].replace({cat1: 'group', cat2: 'group'}), df[target])
+            chi2, p, _, _ = chi2_contingency(contingency_table)
+            if p < min_p_value:
+                min_p_value = p
+                to_merge = (cat1, cat2)
+        if min_p_value > 0.05:  # No significant difference found
+            break
+        else:
+            df[col] = df[col].replace({to_merge[0]: to_merge[1]})
+            cluster_info.append((to_merge[0], to_merge[1], min_p_value))
+            categories = df[col].unique()
+    return df, cluster_info
+
+# Function to perform Kruskal-Wallis test and group similar categories for discrete numeric variables
+def group_discrete(df, col, target):
+    categories = df[col].unique()
+    cluster_info = []
+    while True:
+        min_p_value = 1
+        to_merge = None
+        for cat1, cat2 in combinations(categories, 2):
+            stat, p = kruskal(df[df[col] == cat1][target], df[df[col] == cat2][target])
+            if p < min_p_value:
+                min_p_value = p
+                to_merge = (cat1, cat2)
+        if min_p_value > 0.05:  # No significant difference found
+            break
+        else:
+            df[col] = df[col].replace({to_merge[0]: to_merge[1]})
+            cluster_info.append((to_merge[0], to_merge[1], min_p_value))
+            categories = df[col].unique()
+    return df, cluster_info
+
+# Apply grouping for all nominal variables and store cluster information
+nominal_vars = df.select_dtypes(include=['object']).columns
+nominal_clusters = {}
+for col in nominal_vars:
+    df, clusters = group_nominal(df, col, 'Target')
+    nominal_clusters[col] = clusters
+
+# Apply grouping for all discrete numeric variables and store cluster information
+discrete_vars = df.select_dtypes(include=['int64']).columns.difference(['Target'])
+discrete_clusters = {}
+for col in discrete_vars:
+    df, clusters = group_discrete(df, col, 'Target')
+    discrete_clusters[col] = clusters
+
+# Display the cluster information for nominal variables
+print("Nominal Variable Clusters:")
+for col, clusters in nominal_clusters.items():
+    print(f"\nColumn: {col}")
+    for cluster in clusters:
+        print(f"  Merged {cluster[0]} and {cluster[1]} with p-value: {cluster[2]:.4f}")
+
+# Display the cluster information for discrete numeric variables
+print("\nDiscrete Numeric Variable Clusters:")
+for col, clusters in discrete_clusters.items():
+    print(f"\nColumn: {col}")
+    for cluster in clusters:
+        print(f"  Merged {cluster[0]} and {cluster[1]} with p-value: {cluster[2]:.4f}")
+
+# Display the modified DataFrame
+print("\nModified DataFrame:")
+print(df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from scipy.stats import chi2_contingency, kruskal
+from itertools import combinations
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Discrete1': np.random.choice([1, 2, 3], size=100),
+    'Discrete2': np.random.choice([1, 2, 3, 4], size=100),
+    'Target': np.random.choice([0, 1], size=100)  # Binary target variable
+})
+
+# Function to perform Chi-Squared test and group similar categories for nominal variables
+def group_nominal(df, col, target):
+    categories = df[col].unique()
     grouped = False
     while not grouped:
         min_p_value = 1
