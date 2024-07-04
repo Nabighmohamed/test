@@ -2,6 +2,80 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import spearmanr, chi2_contingency
+from scipy.special import kl_div
+
+# Create a sample DataFrame with continuous, discrete, and nominal data
+np.random.seed(0)
+df = pd.DataFrame({
+    'Continuous1': np.random.normal(0, 1, 1000),
+    'Continuous2': np.random.normal(5, 2, 1000),
+    'Discrete1': np.random.randint(1, 6, size=1000),
+    'Discrete2': np.random.randint(1, 4, size=1000),
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=1000)
+})
+
+# Function to calculate Cramér's V for nominal data
+def cramers_v(x, y):
+    confusion_matrix = pd.crosstab(x, y)
+    chi2 = chi2_contingency(confusion_matrix)[0]
+    n = sum(confusion_matrix.sum())
+    return np.sqrt(chi2 / (n * (min(confusion_matrix.shape) - 1)))
+
+# Function to extract variable types
+def extract_variable_types(df):
+    continuous_vars = df.select_dtypes(include=['float64']).columns.tolist()
+    discrete_vars = df.select_dtypes(include=['int64']).columns.tolist()
+    nominal_vars = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    return continuous_vars, discrete_vars, nominal_vars
+
+# Function to calculate correlations
+def calculate_correlations(df):
+    continuous_vars, discrete_vars, nominal_vars = extract_variable_types(df)
+    all_vars = continuous_vars + discrete_vars + nominal_vars
+    corr_matrix = pd.DataFrame(index=all_vars, columns=all_vars)
+    
+    for var1 in all_vars:
+        for var2 in all_vars:
+            if var1 == var2:
+                corr_matrix.loc[var1, var2] = 1.0
+            elif var1 in continuous_vars and var2 in continuous_vars:
+                corr_matrix.loc[var1, var2] = df[[var1, var2]].corr().iloc[0, 1]
+            elif var1 in discrete_vars and var2 in discrete_vars:
+                corr_matrix.loc[var1, var2] = spearmanr(df[var1], df[var2])[0]
+            elif var1 in nominal_vars and var2 in nominal_vars:
+                corr_matrix.loc[var1, var2] = cramers_v(df[var1], df[var2])
+            else:
+                # For mixed type pairs, use a general correlation approach or set to NaN
+                corr_matrix.loc[var1, var2] = np.nan
+    
+    return corr_matrix.astype(float)
+
+# Calculate correlation matrix
+correlation_matrix = calculate_correlations(df)
+
+# Plot the correlation matrix
+plt.figure(figsize=(12, 10))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1, linewidths=0.5)
+plt.title('Correlation Matrix')
+plt.show()
+
+# Show the correlation matrix
+print(correlation_matrix)
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Create a sample DataFrame with different types of distributions
 np.random.seed(0)
