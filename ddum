@@ -2,6 +2,68 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import chi2_contingency
+
+# Create a sample DataFrame with nominal data
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Nominal3': np.random.choice(['D', 'E', 'F'], size=1000)
+})
+
+# Function to calculate Cramér's V for nominal data
+def cramers_v(x, y):
+    confusion_matrix = pd.crosstab(x, y)
+    chi2 = chi2_contingency(confusion_matrix)[0]
+    n = confusion_matrix.sum().sum()
+    k = min(confusion_matrix.shape)
+    return np.sqrt(chi2 / (n * (k - 1)))
+
+# Function to extract nominal variables and calculate their correlations
+def calculate_nominal_correlations(df):
+    nominal_vars = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    corr_matrix = pd.DataFrame(index=nominal_vars, columns=nominal_vars)
+    
+    for var1 in nominal_vars:
+        for var2 in nominal_vars:
+            if var1 == var2:
+                corr_matrix.loc[var1, var2] = 1.0
+            else:
+                corr_matrix.loc[var1, var2] = cramers_v(df[var1], df[var2])
+    
+    return corr_matrix.astype(float)
+
+# Calculate correlation matrix for nominal variables
+nominal_correlation_matrix = calculate_nominal_correlations(df)
+
+# Plot the correlation matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(nominal_correlation_matrix, annot=True, cmap='coolwarm', vmin=0, vmax=1, linewidths=0.5)
+plt.title('Cramér\'s V Correlation Matrix for Nominal Variables')
+plt.show()
+
+# Show the correlation matrix
+print(nominal_correlation_matrix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import spearmanr, chi2_contingency
 from scipy.special import kl_div
 
