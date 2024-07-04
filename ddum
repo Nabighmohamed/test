@@ -1,3 +1,63 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming the dataframes are named df1, df2, ..., df12 and are already loaded into the environment.
+dataframes = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
+
+# Initialize a list to store mean differences
+mean_differences = []
+
+# Loop through each dataframe, starting from the second one
+for i in range(1, len(dataframes)):
+    current_df = dataframes[i]
+    previous_df = dataframes[i - 1]
+    
+    # Merge the two dataframes on cclikpi to align the clients
+    merged_df = current_df.merge(previous_df, on='cclikpi', suffixes=('_current', '_previous'))
+    
+    # Calculate the difference in pnb_annuel
+    merged_df['pnb_diff'] = merged_df['pnb_annuel_current'] - merged_df['pnb_annuel_previous']
+    
+    # Compute the mean of the differences
+    mean_difference = merged_df['pnb_diff'].mean()
+    
+    # Append the mean difference to the list
+    mean_differences.append(mean_difference)
+
+# Create a DataFrame to store the results for plotting
+mean_differences_df = pd.DataFrame({
+    'Year': range(2, len(dataframes) + 1),
+    'Mean Difference': mean_differences
+})
+
+# Plot the mean differences
+plt.figure(figsize=(10, 6))
+plt.plot(mean_differences_df['Year'], mean_differences_df['Mean Difference'], marker='o', linestyle='-')
+plt.xlabel('Year')
+plt.ylabel('Mean Difference in PNB Annuel')
+plt.title('Mean Difference in PNB Annuel Across Years')
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
