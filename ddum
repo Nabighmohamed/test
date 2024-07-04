@@ -1,4 +1,44 @@
 import pandas as pd
+
+# Assuming you have 12 dataframes, named df1, df2, ..., df12
+# Replace these with your actual dataframes
+dfs = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
+
+# Combine all dataframes into a single dataframe
+combined_df = pd.concat(dfs)
+
+# Group by 'cclikpi' to get unique clients
+unique_clients = combined_df.drop_duplicates(subset=['cclikpi'])
+
+# Calculate the proportion of unique clients for each value in 'col'
+unique_clients_prop = unique_clients['col'].value_counts(normalize=True).reset_index()
+unique_clients_prop.columns = ['col', 'proportion']
+
+# Display the results
+import ace_tools as tools; tools.display_dataframe_to_user(name="Proportion of Unique Clients", dataframe=unique_clients_prop)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 import numpy as np
 from scipy.stats import chi2_contingency, kruskal
 from itertools import combinations
