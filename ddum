@@ -1,5 +1,61 @@
 import pandas as pd
 
+# Assuming the dataframes are named df1, df2, ..., df12 and are already loaded into the environment.
+dataframes = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
+
+# Function to calculate proportions
+def calculate_proportions(df):
+    unique_clients = df['cclikpi'].unique()
+    total_clients = len(unique_clients)
+    
+    positive_clients = df[df['pnb_annuel'] > 0]['cclikpi'].nunique()
+    negative_clients = df[df['pnb_annuel'] < 0]['cclikpi'].nunique()
+    
+    positive_proportion = positive_clients / total_clients if total_clients else 0
+    negative_proportion = negative_clients / total_clients if total_clients else 0
+    
+    return positive_proportion, negative_proportion
+
+# Initialize a list to store results
+results = []
+
+# Loop through each dataframe and calculate proportions
+for i, df in enumerate(dataframes, 1):
+    pos_prop, neg_prop = calculate_proportions(df)
+    results.append({
+        'Month': i,
+        'Positive Proportion': pos_prop,
+        'Negative Proportion': neg_prop
+    })
+
+# Create a DataFrame to display results
+results_df = pd.DataFrame(results)
+
+import ace_tools as tools; tools.display_dataframe_to_user(name="Proportions of Positive and Negative PNB Annuel", dataframe=results_df)
+
+results_df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
 # Assuming you have 12 dataframes, named df1, df2, ..., df12
 # Replace these with your actual dataframes
 dfs = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
