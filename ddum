@@ -3,6 +3,52 @@ import pandas as pd
 # Assuming the dataframes are named df1, df2, ..., df12 and are already loaded into the environment.
 dataframes = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
 
+# Specific cclikpi to track
+specific_cclikpi = 'your_specific_cclikpi'  # Replace with the actual cclikpi value
+
+# Initialize a list to store results
+pnb_annuel_across_months = []
+
+# Loop through each dataframe and extract pnb_annuel for the specific cclikpi
+for i, df in enumerate(dataframes, 1):
+    filtered_df = df[df['cclikpi'] == specific_cclikpi]
+    for _, row in filtered_df.iterrows():
+        pnb_annuel_across_months.append({
+            'Month': i,
+            'pnb_annuel': row['pnb_annuel']
+        })
+
+# Create a DataFrame to display results
+pnb_annuel_df = pd.DataFrame(pnb_annuel_across_months)
+
+import ace_tools as tools; tools.display_dataframe_to_user(name="PNB Annuel for Specific cclikpi Across Months", dataframe=pnb_annuel_df)
+
+pnb_annuel_df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Assuming the dataframes are named df1, df2, ..., df12 and are already loaded into the environment.
+dataframes = [df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12]
+
 # Function to calculate proportions
 def calculate_proportions(df):
     unique_clients = df['cclikpi'].unique()
