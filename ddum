@@ -39,6 +39,80 @@ def compute_correlations(df, discrete_vars):
 # Compute correlations and tests
 correlation_results = compute_correlations(df, discrete_vars)
 
+# Define a threshold for filtering highly correlated variables
+correlation_threshold = 0.5  # Adjust as needed
+p_value_threshold = 0.05
+
+# Filter results for highly correlated pairs
+highly_correlated = correlation_results[
+    ((correlation_results["Spearman's Correlation"].abs() >= correlation_threshold) & (correlation_results["Spearman's p-value"] <= p_value_threshold)) |
+    ((correlation_results["Kendall's Tau"].abs() >= correlation_threshold) & (correlation_results["Kendall's p-value"] <= p_value_threshold)) |
+    ((correlation_results['Chi-Squared'] > chi2_contingency(pd.crosstab(df[correlation_results['Variable 1']], df[correlation_results['Variable 2']]))[0]) & (correlation_results['Chi-Squared p-value'] <= p_value_threshold))
+]
+
+# Display the filtered results
+print("Highly Correlated Variables:")
+print(highly_correlated)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from itertools import combinations
+from scipy.stats import spearmanr, kendalltau, chi2_contingency
+
+# Create a sample DataFrame with discrete numeric values
+np.random.seed(0)
+df = pd.DataFrame({
+    'Discrete1': np.random.randint(1, 6, size=100),
+    'Discrete2': np.random.randint(1, 4, size=100),
+    'Discrete3': np.random.randint(1, 6, size=100),
+    'Discrete4': np.random.randint(1, 5, size=100)
+})
+
+# Identify discrete numeric columns
+discrete_vars = df.select_dtypes(include=['int64']).columns.tolist()
+
+# Function to compute all correlations and tests
+def compute_correlations(df, discrete_vars):
+    results = []
+    for var1, var2 in combinations(discrete_vars, 2):
+        spearman_corr, spearman_p_value = spearmanr(df[var1], df[var2])
+        kendall_corr, kendall_p_value = kendalltau(df[var1], df[var2])
+        contingency_table = pd.crosstab(df[var1], df[var2])
+        chi2, chi2_p_value, _, _ = chi2_contingency(contingency_table)
+        
+        results.append({
+            'Variable 1': var1,
+            'Variable 2': var2,
+            "Spearman's Correlation": spearman_corr,
+            "Spearman's p-value": spearman_p_value,
+            "Kendall's Tau": kendall_corr,
+            "Kendall's p-value": kendall_p_value,
+            'Chi-Squared': chi2,
+            'Chi-Squared p-value': chi2_p_value
+        })
+    return pd.DataFrame(results)
+
+# Compute correlations and tests
+correlation_results = compute_correlations(df, discrete_vars)
+
 # Display the results
 print(correlation_results)
 
