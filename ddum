@@ -2,6 +2,94 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import spearmanr, kendalltau, f_oneway
+from sklearn.feature_selection import mutual_info_regression
+from sklearn.linear_model import LinearRegression
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Discrete1': np.random.choice([1, 2, 3, 4, 5], size=100),
+    'Discrete2': np.random.choice([1, 2, 3], size=100),
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Encode nominal variables
+df_encoded = df.copy()
+for col in df.select_dtypes(include=['object']).columns:
+    df_encoded[col] = df_encoded[col].astype('category').cat.codes
+
+# Function to compute dependency and explanatory power
+def compute_dependency_and_explanatory_power(df, df_encoded, target):
+    results = []
+    
+    for col in df.columns.difference([target]):
+        if df[col].dtype == 'object':  # Nominal variables
+            groups = [df[target][df[col] == category] for category in df[col].unique()]
+            f_stat, p_value = f_oneway(*groups)
+            eta_squared = f_stat / (f_stat + (len(df) - len(groups)))
+            results.append({
+                'Variable': col,
+                'Metric': 'Eta Squared',
+                'Value': eta_squared
+            })
+        else:  # Discrete numeric variables
+            spearman_corr, spearman_p = spearmanr(df[col], df[target])
+            kendall_tau, kendall_p = kendalltau(df[col], df[target])
+            mi = mutual_info_regression(df_encoded[[col]], df[target])[0]
+            results.extend([
+                {'Variable': col, 'Metric': 'Spearman Correlation', 'Value': spearman_corr},
+                {'Variable': col, 'Metric': 'Kendall Tau', 'Value': kendall_tau},
+                {'Variable': col, 'Metric': 'Mutual Information', 'Value': mi}
+            ])
+    
+    return pd.DataFrame(results)
+
+# Compute dependency and explanatory power
+results_df = compute_dependency_and_explanatory_power(df, df_encoded, 'Target')
+
+# Pivot the results DataFrame for heatmap plotting
+heatmap_data = results_df.pivot(index='Metric', columns='Variable', values='Value')
+
+# Plot the heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", cbar_kws={'label': 'Explanatory Power'})
+plt.title('Explanatory Power of Variables on Target')
+plt.show()
+
+# Fit a regression model to get R-squared values
+X = df_encoded.drop(columns=['Target'])
+y = df_encoded['Target']
+reg = LinearRegression().fit(X, y)
+r_squared = reg.score(X, y)
+print(f"\nOverall R-squared of the model: {r_squared}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import shapiro, kstest, yeojohnson
 from scipy.stats.mstats import winsorize
 
