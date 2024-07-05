@@ -4,6 +4,108 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import shapiro, kstest, yeojohnson, boxcox
 
+# Sample DataFrame creation (simulating your scenario)
+np.random.seed(0)
+df = pd.DataFrame({
+    'Variable': np.concatenate((np.random.uniform(1, 10, size=950), np.random.uniform(-100, -10, size=50)))
+})
+
+# Function to apply various transformations
+def apply_transformations(series):
+    transformations = {}
+    
+    # Log transformation (shift data to positive values)
+    min_value = series.min()
+    if min_value <= 0:
+        shift = abs(min_value) + 1
+    else:
+        shift = 0
+    shifted_series = series + shift
+    transformations['Log'] = (np.log(shifted_series), shift)
+    
+    # Square Root transformation (shift data to positive values)
+    transformations['Square Root'] = (np.sqrt(shifted_series), shift)
+    
+    # Box-Cox transformation (shift data to positive values)
+    boxcox_trans, _ = boxcox(shifted_series)
+    transformations['Box-Cox'] = (boxcox_trans, shift)
+    
+    # Yeo-Johnson transformation (no shift needed)
+    yeojohnson_trans, _ = yeojohnson(series)
+    transformations['Yeo-Johnson'] = (yeojohnson_trans, 0)
+    
+    return transformations
+
+# Function to plot distributions and perform normality tests
+def plot_and_test_normality(df, transformations):
+    results = []
+    for col in df.columns:
+        for trans_name, (trans_series, shift) in transformations[col].items():
+            # Original data
+            shapiro_test_before = shapiro(df[col])
+            kstest_before = kstest(df[col], 'norm', args=(df[col].mean(), df[col].std()))
+            
+            # Transformed data
+            shapiro_test_after = shapiro(trans_series)
+            kstest_after = kstest(trans_series, 'norm', args=(trans_series.mean(), trans_series.std()))
+
+            # Plot distributions before and after transformation
+            fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+            sns.histplot(df[col], kde=True, ax=axes[0])
+            axes[0].set_title(f'Original Distribution of {col}')
+            sns.histplot(trans_series, kde=True, ax=axes[1])
+            axes[1].set_title(f'{trans_name} Transformed Distribution of {col} (Shift: {shift})')
+            plt.tight_layout()
+            plt.show()
+
+            results.append({
+                'Variable': col,
+                'Transformation': trans_name,
+                'Shapiro Before': shapiro_test_before.pvalue,
+                'K-S Before': kstest_before.pvalue,
+                'Shapiro After': shapiro_test_after.pvalue,
+                'K-S After': kstest_after.pvalue
+            })
+    
+    return pd.DataFrame(results)
+
+# Apply transformations to the DataFrame
+transformations = {}
+for col in df.columns:
+    transformations[col] = apply_transformations(df[col])
+
+# Perform normality tests and plot distributions
+results_df = plot_and_test_normality(df, transformations)
+
+# Display the results
+print("\nNormality test results before and after transformations:")
+print(results_df)
+purchase propensity score
+buying propensity score
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import shapiro, kstest, yeojohnson, boxcox
+
 # Sample DataFrame creation (including variables with only negative values)
 np.random.seed(0)
 df = pd.DataFrame({
