@@ -1,5 +1,105 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import spearmanr, kendalltau
+from sklearn.metrics import mutual_info_score
+from sklearn.feature_selection import mutual_info_regression
+from itertools import combinations
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Discrete1': np.random.choice([1, 2, 3], size=100),
+    'Discrete2': np.random.choice([1, 2, 3, 4], size=100),
+    'Target': np.random.uniform(0, 1, size=100)  # Continuous target variable
+})
+
+# Function to encode categorical variables
+def encode_categories(df):
+    df_encoded = df.copy()
+    for col in df_encoded.select_dtypes(include=['object', 'category']).columns:
+        df_encoded[col] = df_encoded[col].astype('category').cat.codes
+    return df_encoded
+
+# Encode the DataFrame
+df_encoded = encode_categories(df)
+
+# Function to calculate metrics
+def calculate_metrics(df, target):
+    cols = df.columns.difference([target])
+    mutual_info = pd.DataFrame(index=cols, columns=cols)
+    spearman_corr = pd.DataFrame(index=cols, columns=cols)
+    kendall_tau = pd.DataFrame(index=cols, columns=cols)
+    
+    for var1, var2 in combinations(cols, 2):
+        if df[var1].dtype.name == 'category' or df[var2].dtype.name == 'category':
+            # Categorical variables
+            mi1 = mutual_info_score(df[target], df[var1])
+            mi2 = mutual_info_score(df[target], df[var2])
+        else:
+            # Discrete numeric variables
+            mi1 = mutual_info_regression(df[[var1]], df[target]).item()
+            mi2 = mutual_info_regression(df[[var2]], df[target]).item()
+        
+        mutual_info.loc[var1, var2] = (mi1 + mi2) / 2
+        mutual_info.loc[var2, var1] = (mi1 + mi2) / 2
+        
+        # Calculate Spearman and Kendall correlation for numeric variables
+        if df[var1].dtype in [np.int64, np.float64] and df[var2].dtype in [np.int64, np.float64]:
+            spearman_corr.loc[var1, var2], _ = spearmanr(df[var1], df[target])
+            spearman_corr.loc[var2, var1] = spearman_corr.loc[var1, var2]
+            kendall_tau.loc[var1, var2], _ = kendalltau(df[var1], df[target])
+            kendall_tau.loc[var2, var1] = kendall_tau.loc[var1, var2]
+    
+    return mutual_info, spearman_corr, kendall_tau
+
+# Calculate metrics
+mutual_info, spearman_corr, kendall_tau = calculate_metrics(df_encoded, 'Target')
+
+# Fill diagonal with 1s for visualization purposes
+np.fill_diagonal(mutual_info.values, 1)
+np.fill_diagonal(spearman_corr.values, 1)
+np.fill_diagonal(kendall_tau.values, 1)
+
+# Plot the heatmaps
+plt.figure(figsize=(20, 6))
+
+plt.subplot(1, 3, 1)
+sns.heatmap(mutual_info.astype(float), annot=True, cmap='coolwarm')
+plt.title('Mutual Information')
+
+plt.subplot(1, 3, 2)
+sns.heatmap(spearman_corr.astype(float), annot=True, cmap='coolwarm')
+plt.title("Spearman's Rank Correlation")
+
+plt.subplot(1, 3, 3)
+sns.heatmap(kendall_tau.astype(float), annot=True, cmap='coolwarm')
+plt.title("Kendall's Tau")
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 
