@@ -4,6 +4,89 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import shapiro, kstest, norm
 
+# Sample DataFrame creation (simulating a large dataset)
+np.random.seed(0)
+df = pd.DataFrame({
+    'X1': np.random.uniform(-10, 10, size=10000),
+    'X2': np.random.uniform(-10, 10, size=10000),
+    'Y': np.random.uniform(-10, 10, size=10000)  # Continuous target variable
+})
+
+# Function to apply log transformation with handling negative values
+def log_transform_with_shift(series):
+    min_value = series.min()
+    if min_value <= 0:
+        shift = abs(min_value) + 1
+    else:
+        shift = 0
+    return np.log(series + shift), shift
+
+# Function to plot distributions and perform normality tests
+def plot_and_test_normality(df, transformed_df):
+    results = []
+    for col in df.columns:
+        # Original data
+        shapiro_test_before = shapiro(df[col])
+        kstest_before = kstest(df[col], 'norm', args=(df[col].mean(), df[col].std()))
+        
+        # Transformed data
+        shapiro_test_after = shapiro(transformed_df[col])
+        kstest_after = kstest(transformed_df[col], 'norm', args=(transformed_df[col].mean(), transformed_df[col].std()))
+
+        # Plot distributions before and after transformation
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+        sns.histplot(df[col], kde=True, ax=axes[0])
+        axes[0].set_title(f'Original Distribution of {col}')
+        sns.histplot(transformed_df[col], kde=True, ax=axes[1])
+        axes[1].set_title(f'Log-Transformed Distribution of {col}')
+        plt.tight_layout()
+        plt.show()
+
+        results.append({
+            'Variable': col,
+            'Shapiro Before': shapiro_test_before.pvalue,
+            'K-S Before': kstest_before.pvalue,
+            'Shapiro After': shapiro_test_after.pvalue,
+            'K-S After': kstest_after.pvalue
+        })
+    
+    return pd.DataFrame(results)
+
+# Randomly sample the DataFrame
+sample_size = 1000  # Adjust the sample size as needed
+df_sample = df.sample(n=sample_size, random_state=0)
+
+# Apply log transformation to the sampled DataFrame
+transformed_df = pd.DataFrame()
+shifts = {}
+for col in df_sample.columns:
+    transformed_df[col], shift = log_transform_with_shift(df_sample[col])
+    shifts[col] = shift
+
+# Perform normality tests and plot distributions
+results_df = plot_and_test_normality(df_sample, transformed_df)
+
+# Display the results
+print("Shifts applied to each variable to make all values positive:")
+print(shifts)
+print("\nNormality test results before and after transformation:")
+print(results_df)
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import shapiro, kstest, norm
+
 # Sample DataFrame creation
 np.random.seed(0)
 df = pd.DataFrame({
