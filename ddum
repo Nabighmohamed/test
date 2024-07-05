@@ -1,3 +1,68 @@
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import kendalltau
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Discrete1': np.random.choice([1, 2, 3, 4, 5], size=100),
+    'Discrete2': np.random.choice([1, 2, 3], size=100),
+    'Discrete3': np.random.choice([0, 1], size=100),
+    'Discrete4': np.random.choice([10, 20, 30], size=100)
+})
+
+# Function to compute Kendall's Tau correlation matrix
+def compute_kendall_tau_heatmap(df):
+    variables = df.columns
+    n = len(variables)
+    
+    # Initialize an empty DataFrame for Kendall's Tau correlation coefficients
+    tau_matrix = pd.DataFrame(np.zeros((n, n)), columns=variables, index=variables)
+    p_value_matrix = pd.DataFrame(np.zeros((n, n)), columns=variables, index=variables)
+    
+    # Compute Kendall's Tau correlation coefficients and p-values
+    for i in range(n):
+        for j in range(i, n):
+            if i == j:
+                tau_matrix.iloc[i, j] = 1.0
+                p_value_matrix.iloc[i, j] = 0.0
+            else:
+                tau, p_value = kendalltau(df.iloc[:, i], df.iloc[:, j])
+                tau_matrix.iloc[i, j] = tau
+                tau_matrix.iloc[j, i] = tau
+                p_value_matrix.iloc[i, j] = p_value
+                p_value_matrix.iloc[j, i] = p_value
+
+    return tau_matrix, p_value_matrix
+
+# Compute Kendall's Tau correlation matrix
+tau_matrix, p_value_matrix = compute_kendall_tau_heatmap(df)
+
+# Plot the heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(tau_matrix, annot=True, cmap="coolwarm", cbar_kws={'label': 'Kendall\'s Tau'})
+plt.title('Kendall\'s Tau Correlation Heatmap')
+plt.show()
+
+# Display the p-values for reference
+print("\nKendall's Tau p-values:")
+print(p_value_matrix)
+
+
+
+
+
+
+
+
+
+
+
+
+
 Rapport sur l'Analyse des Données
 Ce rapport fournit une vue d'ensemble complète de l'analyse des données effectuée, en se concentrant sur la distribution des variables, l'analyse de corrélation, la gestion des valeurs aberrantes, le regroupement des classes dans les variables catégorielles et la proportion de valeurs négatives dans le PNB. Les méthodologies détaillées et les résultats sont inclus pour fournir clarté et transparence dans notre processus analytique.
 
