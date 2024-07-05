@@ -1,3 +1,101 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Discrete1': np.random.choice([1, 2, 3], size=100),
+    'Discrete2': np.random.choice([1, 2, 3, 4], size=100),
+    'Target': np.random.uniform(0, 1, size=100)  # Continuous target variable
+})
+
+# Function to encode categorical variables
+def encode_categories(df):
+    df_encoded = df.copy()
+    for col in df_encoded.select_dtypes(include=['object', 'category']).columns:
+        df_encoded[col] = df_encoded[col].astype('category').cat.codes
+    return df_encoded
+
+# Encode the DataFrame
+df_encoded = encode_categories(df)
+
+# Function to train a decision tree regressor and group categories
+def group_categories_with_decision_tree(df, df_encoded, col, target):
+    X = df_encoded[[col]]
+    y = df_encoded[target]
+    tree = DecisionTreeRegressor(max_leaf_nodes=4, random_state=0)  # Limit leaf nodes for simplicity
+    tree.fit(X, y)
+    
+    # Plot the decision tree
+    plt.figure(figsize=(12, 8))
+    plot_tree(tree, feature_names=[col], filled=True)
+    plt.title(f'Decision Tree for {col}')
+    plt.show()
+    
+    # Get the decision path for each category
+    categories = df[col].unique()
+    grouped_categories = {}
+    for category in categories:
+        encoded_category = df_encoded[df[col] == category][col].iloc[0]
+        node_indicator = tree.decision_path([[encoded_category]])
+        leave_id = tree.apply([[encoded_category]])
+        group = leave_id[0]
+        if group not in grouped_categories:
+            grouped_categories[group] = []
+        grouped_categories[group].append(category)
+    
+    return grouped_categories
+
+# Apply the function for all nominal and discrete variables
+nominal_vars = df.select_dtypes(include=['object']).columns
+discrete_vars = df.select_dtypes(include=['int64']).columns.difference(['Target'])
+
+all_groupings = {}
+
+for col in nominal_vars:
+    groupings = group_categories_with_decision_tree(df, df_encoded, col, 'Target')
+    all_groupings[col] = groupings
+    print(f"Groupings for {col}: {groupings}")
+
+for col in discrete_vars:
+    groupings = group_categories_with_decision_tree(df, df_encoded, col, 'Target')
+    all_groupings[col] = groupings
+    print(f"Groupings for {col}: {groupings}")
+
+# Display the final groupings
+print("\nFinal Groupings:")
+for col, groupings in all_groupings.items():
+    print(f"\nColumn: {col}")
+    for group, categories in groupings.items():
+        print(f"  Group {group}: {categories}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
