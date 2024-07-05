@@ -2,6 +2,139 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import shapiro, kstest, yeojohnson
+from scipy.stats.mstats import winsorize
+
+# Sample DataFrame creation (simulating your scenario)
+np.random.seed(0)
+df = pd.DataFrame({
+    'X1': np.concatenate((np.random.uniform(1, 10, size=950), np.random.uniform(-100, -10, size=50))),
+    'X2': np.concatenate((np.random.uniform(1, 10, size=950), np.random.uniform(-100, -10, size=50))),
+    'Y': np.concatenate((np.random.uniform(1, 10, size=950), np.random.uniform(-100, -10, size=50)))
+})
+
+# Function to apply log transformation with handling negative values
+def apply_log_transformation(series):
+    min_value = series.min()
+    if min_value <= 0:
+        shift = abs(min_value) + 1
+    else:
+        shift = 0
+    shifted_series = series + shift
+    return np.log(shifted_series), shift
+
+# Function to apply winsorizing
+def apply_winsorizing(series, limits=(0.05, 0.05)):
+    return winsorize(series, limits=limits)
+
+# Function to plot distributions and box plots
+def plot_distributions_and_boxplots(df, transformed_df, winsorized_df):
+    for col in df.columns:
+        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+        
+        # Original distribution
+        sns.histplot(df[col], kde=True, ax=axes[0, 0])
+        axes[0, 0].set_title(f'Original Distribution of {col}')
+        
+        # Transformed distribution
+        sns.histplot(transformed_df[col], kde=True, ax=axes[0, 1])
+        axes[0, 1].set_title(f'Log-Transformed Distribution of {col}')
+        
+        # Winsorized distribution
+        sns.histplot(winsorized_df[col], kde=True, ax=axes[0, 2])
+        axes[0, 2].set_title(f'Winsorized Distribution of {col}')
+        
+        # Original box plot
+        sns.boxplot(x=df[col], ax=axes[1, 0])
+        axes[1, 0].set_title(f'Original Box plot of {col}')
+        
+        # Transformed box plot
+        sns.boxplot(x=transformed_df[col], ax=axes[1, 1])
+        axes[1, 1].set_title(f'Log-Transformed Box plot of {col}')
+        
+        # Winsorized box plot
+        sns.boxplot(x=winsorized_df[col], ax=axes[1, 2])
+        axes[1, 2].set_title(f'Winsorized Box plot of {col}')
+        
+        plt.tight_layout()
+        plt.show()
+
+# Apply log transformation and winsorizing to the DataFrame
+transformed_df = pd.DataFrame()
+winsorized_df = pd.DataFrame()
+shifts = {}
+
+for col in df.columns:
+    transformed_series, shift = apply_log_transformation(df[col])
+    transformed_df[col] = transformed_series
+    winsorized_df[col] = apply_winsorizing(transformed_series)
+    shifts[col] = shift
+
+# Plot distributions and box plots before and after transformations
+plot_distributions_and_boxplots(df, transformed_df, winsorized_df)
+
+# Normality tests
+def normality_tests(df, transformed_df, winsorized_df):
+    results = []
+    for col in df.columns:
+        # Original data
+        shapiro_test_before = shapiro(df[col])
+        kstest_before = kstest(df[col], 'norm', args=(df[col].mean(), df[col].std()))
+        
+        # Transformed data
+        shapiro_test_after = shapiro(transformed_df[col])
+        kstest_after = kstest(transformed_df[col], 'norm', args=(transformed_df[col].mean(), transformed_df[col].std()))
+        
+        # Winsorized data
+        shapiro_test_winsor = shapiro(winsorized_df[col])
+        kstest_winsor = kstest(winsorized_df[col], 'norm', args=(winsorized_df[col].mean(), winsorized_df[col].std()))
+
+        results.append({
+            'Variable': col,
+            'Shapiro Statistic Before': shapiro_test_before.statistic,
+            'Shapiro p-value Before': shapiro_test_before.pvalue,
+            'K-S Statistic Before': kstest_before.statistic,
+            'K-S p-value Before': kstest_before.pvalue,
+            'Shapiro Statistic After': shapiro_test_after.statistic,
+            'Shapiro p-value After': shapiro_test_after.pvalue,
+            'K-S Statistic After': kstest_after.statistic,
+            'K-S p-value After': kstest_after.pvalue,
+            'Shapiro Statistic Winsor': shapiro_test_winsor.statistic,
+            'Shapiro p-value Winsor': shapiro_test_winsor.pvalue,
+            'K-S Statistic Winsor': kstest_winsor.statistic,
+            'K-S p-value Winsor': kstest_winsor.pvalue
+        })
+    
+    return pd.DataFrame(results)
+
+# Perform normality tests and display results
+results_df = normality_tests(df, transformed_df, winsorized_df)
+print("\nNormality test results before and after transformations:")
+print(results_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import shapiro, kstest
 
 # Sample DataFrame creation (simulating your scenario)
