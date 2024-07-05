@@ -1,3 +1,73 @@
+Corrélation entre les Variables
+Variables Numériques Discrètes
+Pour les variables numériques discrètes, nous avons utilisé trois métriques pour évaluer la relation entre chaque variable discrète et la variable cible continue : la corrélation de Spearman, le tau de Kendall et l'information mutuelle.
+
+Corrélation de Spearman : Mesure la force et la direction de la relation monotone entre deux variables.
+Tau de Kendall : Mesure la force de l'association entre deux variables ordinales.
+Information Mutuelle : Mesure la quantité d'information obtenue sur une variable à travers une autre variable.
+Avant de procéder aux calculs, nous avons transformé la variable continue "AGE" en une variable catégorielle en utilisant un arbre de décision. Cette transformation nous a permis de mieux capturer les relations non linéaires entre "AGE" et la variable cible.
+
+Après avoir calculé ces métriques pour chaque variable discrète, nous avons observé que la plupart des variables avaient un pouvoir explicatif modéré à faible sur la variable cible. Parmi elles, la variable "CTYPCLI" s'est distinguée comme la plus explicative.
+
+Variables Catégorielles
+Pour les variables catégorielles, nous avons utilisé le V de Cramér pour évaluer la force de l'association entre chaque variable catégorielle et la variable cible continue.
+
+V de Cramér : Mesure la force de l'association entre deux variables catégorielles.
+Ensuite, pour mesurer le pouvoir explicatif des variables catégorielles, nous avons utilisé l'ANOVA pour calculer le coefficient d'eta carré (
+𝜂
+2
+η 
+2
+ ), qui représente la proportion de la variance de la variable cible expliquée par la variable catégorielle.
+
+ANOVA : Utilisée pour déterminer si les moyennes des groupes sont statistiquement différentes.
+Eta Carré (
+𝜂
+2
+η 
+2
+ ) : Mesure la proportion de la variance dans la variable cible qui est associée à la variable indépendante.
+Les trois variables catégorielles étudiées (Nominal1, Nominal2, et la variable catégorielle dérivée de "AGE") n'ont pas montré un pouvoir explicatif significatif, car leurs valeurs d'eta carré étaient de l'ordre de 0,0009, indiquant un effet très faible.
+
+Mesure du Pouvoir Explicatif des Variables Nominales et Discrètes sur la Cible
+Pour évaluer le pouvoir explicatif des variables nominales et discrètes sur la variable cible, nous avons suivi les étapes suivantes :
+
+Transformation des Variables :
+
+La variable continue "AGE" a été transformée en une variable catégorielle à l'aide d'un arbre de décision.
+Calcul des Métriques :
+
+Pour les variables numériques discrètes, nous avons calculé la corrélation de Spearman, le tau de Kendall et l'information mutuelle.
+Pour les variables catégorielles, nous avons utilisé le V de Cramér et l'ANOVA pour obtenir le coefficient d'eta carré.
+Analyse des Résultats :
+
+Les variables discrètes ont montré un pouvoir explicatif modéré à faible, avec "CTYPCLI" ayant le pouvoir explicatif le plus élevé.
+Les variables catégorielles ont montré un très faible pouvoir explicatif, avec des valeurs d'eta carré de l'ordre de 0,0009.
+En résumé, bien que certaines variables discrètes aient montré une certaine capacité à expliquer la variance de la variable cible, les variables catégorielles étudiées n'ont pas démontré un pouvoir explicatif significatif. Ces résultats nous guideront dans la sélection des variables à conserver pour des analyses plus approfondies et des modèles prédictifs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
