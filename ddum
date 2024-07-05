@@ -1,3 +1,86 @@
+Rapport sur l'Analyse des Données
+Ce rapport fournit une vue d'ensemble complète de l'analyse des données effectuée, en se concentrant sur la distribution des variables, l'analyse de corrélation, la gestion des valeurs aberrantes, le regroupement des classes dans les variables catégorielles et la proportion de valeurs négatives dans le PNB. Les méthodologies détaillées et les résultats sont inclus pour fournir clarté et transparence dans notre processus analytique.
+
+1. Distribution des Variables
+La plupart des variables continues dans l'ensemble de données présentaient une distribution asymétrique à droite. Pour y remédier, nous avons appliqué plusieurs transformations pour rendre ces distributions plus normales. Le choix de la transformation a été guidé par des tests statistiques, notamment les tests de Shapiro-Wilk et Kolmogorov-Smirnov. Ces transformations ont considérablement amélioré la normalité des distributions, facilitant des analyses ultérieures plus précises.
+
+Transformations Appliquées :
+
+Transformation Logarithmique: Appliquée aux variables avec des valeurs positives.
+Transformation Racine Carrée: Utilisée comme alternative lorsque la transformation logarithmique n'était pas efficace.
+Transformation Box-Cox: Appliquée aux valeurs positives pour une normalisation optimale.
+Transformation Yeo-Johnson: Utilisée pour les variables avec des valeurs positives et négatives.
+Ces transformations ont été choisies en fonction de leur efficacité à normaliser les distributions, comme le montrent les résultats des tests statistiques.
+
+2. Corrélation entre les Variables
+Dans cette section, nous avons étudié trois cas : les variables continues, les variables numériques discrètes et les variables catégorielles.
+
+Variables Continues
+Pour les variables continues, nous avons utilisé une matrice de corrélation pour étudier les relations après avoir assuré la normalisation de leurs distributions. De plus, nous avons calculé le Facteur d'Inflation de la Variance (VIF) pour vérifier la multicollinearité. Cette analyse a révélé que deux variables étaient fortement corrélées (coefficient de corrélation > 0,9) et fournissaient des informations similaires. En fonction de leur corrélation avec la variable cible, nous avons décidé de supprimer l'une de ces variables pour éviter la redondance.
+
+Variables Numériques Discrètes
+Pour les variables numériques discrètes, nous avons utilisé trois métriques : la corrélation de Spearman, le tau de Kendall et les tests du Chi-carré. Ces métriques nous ont aidés à identifier les paires de variables pouvant contenir des informations similaires. L'analyse a montré que certaines variables avaient un pouvoir explicatif similaire par rapport à la variable cible. Une consultation supplémentaire avec notre gestionnaire, qui a une compréhension plus approfondie de ces variables, est nécessaire avant de prendre des décisions finales concernant leur suppression.
+
+Métriques Utilisées :
+
+Corrélation de Spearman: Mesure la force et la direction de la relation monotone.
+Tau de Kendall: Mesure la force de l'association entre deux variables ordinales.
+Information Mutuelle: Mesure la quantité d'information obtenue sur une variable à travers une autre variable.
+Variables Catégorielles
+Pour les variables catégorielles, le V de Cramér a été utilisé pour évaluer la force de l'association entre les variables. Cette métrique a fourni des informations sur la dépendance entre les variables catégorielles et la variable cible.
+
+Résultats :
+
+V de Cramér: Utilisé pour évaluer l'association entre les variables catégorielles et la cible.
+3. Valeurs Aberrantes
+Les valeurs aberrantes ont été principalement traitées par des transformations logarithmiques, ce qui a considérablement réduit leur impact. Ensuite, nous avons appliqué une technique de winsorisation pour gérer efficacement les valeurs aberrantes restantes. Cette approche a permis de garantir que les valeurs extrêmes n'ont pas biaisé nos résultats d'analyse, conduisant à des conclusions plus robustes.
+
+Techniques de Gestion des Valeurs Aberrantes :
+
+Transformation Logarithmique: Réduction de l'asymétrie et de l'impact des valeurs extrêmes.
+Winsorisation: Appliquée pour atténuer l'effet des valeurs aberrantes en limitant les valeurs extrêmes.
+4. Regroupement des Classes dans les Variables Catégorielles
+Pour regrouper les classes dans les variables catégorielles, nous avons utilisé deux techniques : les tests statistiques et les arbres de décision.
+
+Tests Statistiques: Ces tests ont aidé à identifier les catégories au sein des variables qui ne différaient pas de manière significative en termes de leur relation avec la variable cible. Par exemple, les catégories au sein d'une variable avec des p-values supérieures à 0,05 ont été regroupées.
+Arbres de Décision: Les arbres de décision ont été utilisés pour diviser les variables continues en catégories significatives basées sur la variable cible, améliorant ainsi le pouvoir explicatif de ces variables.
+Techniques Utilisées :
+
+ANOVA pour les Tests Statistiques: A aidé à regrouper les catégories ayant des impacts similaires sur la cible.
+Arbres de Décision: Utilisés pour catégoriser efficacement les variables continues.
+5. Proportion des Valeurs Négatives dans le PNB
+Notre analyse a révélé que la proportion des valeurs négatives dans le PNB est extrêmement faible. Le graphique ci-joint (Figure 1) illustre cette constatation, montrant que les valeurs négatives du PNB sont négligeables. En conséquence, l'idée initiale de diviser le modèle en segments PNB positifs et négatifs n'est pas réalisable en raison du nombre insuffisant de valeurs négatives du PNB.
+
+Analyse du PNB :
+
+Proportion des Valeurs Négatives: Très faible.
+Idée Initiale de Modélisation: La division du modèle en segments PNB positifs et négatifs n'est pas viable.
+Figure 1: Proportion des Valeurs Négatives dans le PNB
+
+
+Ce graphique montre clairement la distribution des valeurs du PNB, mettant en évidence la présence minimale de valeurs négatives.
+
+Conclusion
+L'analyse des données a fourni des informations précieuses sur la distribution, la corrélation et les caractéristiques des variables. En appliquant des transformations appropriées, en gérant les valeurs aberrantes et en regroupant efficacement les catégories, nous avons amélioré la qualité de l'ensemble de données, garantissant des résultats plus précis et fiables. Les résultats relatifs à la proportion des valeurs négatives du PNB nécessitent une révision de l'approche, car le plan initial de modéliser séparément les PNB positifs et négatifs n'est pas soutenu par les données.
+
+Ce rapport complet sert de compte rendu détaillé du processus d'analyse des données et des méthodologies employées, fournissant une base solide pour des analyses et des prises de décision ultérieures.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
