@@ -2,6 +2,75 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import f_oneway
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Encode nominal variables
+df_encoded = df.copy()
+for col in df.select_dtypes(include=['object']).columns:
+    df_encoded[col] = df_encoded[col].astype('category').cat.codes
+
+# Function to compute ANOVA and Eta Squared
+def compute_anova_eta_squared(df, target):
+    results = []
+    for col in df.columns.difference([target]):
+        if df[col].dtype == 'object':  # Nominal variables
+            groups = [df[target][df[col] == category] for category in df[col].unique()]
+            f_stat, p_value = f_oneway(*groups)
+            eta_squared = f_stat / (f_stat + (len(df) - len(groups)))
+            results.append({
+                'Variable': col,
+                'F-statistic': f_stat,
+                'p-value': p_value,
+                'Eta Squared': eta_squared
+            })
+    return pd.DataFrame(results)
+
+# Compute ANOVA and Eta Squared
+results_df = compute_anova_eta_squared(df, 'Target')
+
+# Pivot the results DataFrame for heatmap plotting
+heatmap_data = results_df.pivot(index='Variable', columns='Variable', values='Eta Squared')
+
+# Plot the heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", cbar_kws={'label': 'Eta Squared'})
+plt.title('Explanatory Power of Nominal Variables on Target')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import spearmanr, kendalltau, f_oneway
 from sklearn.feature_selection import mutual_info_regression
 from sklearn.linear_model import LinearRegression
