@@ -10,6 +10,54 @@ data = {
 
 df = pd.DataFrame(data)
 
+# Plotting the grouped bar plot
+fig, ax = plt.subplots()
+bar_width = 0.35
+index = range(len(df['month']))
+
+bar1 = ax.bar(index, df['pos_prop'], bar_width, label='Positive Proportion')
+bar2 = ax.bar([i + bar_width for i in index], df['negative_proportion'], bar_width, label='Negative Proportion')
+
+ax.set_xlabel('Month')
+ax.set_ylabel('Proportion')
+ax.set_title('Positive and Negative Proportions by Month')
+ax.set_xticks([i + bar_width / 2 for i in index])
+ax.set_xticklabels(df['month'])
+ax.legend()
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Example DataFrame
+data = {
+    'month': ['January', 'February', 'March', 'April'],
+    'pos_prop': [0.2, 0.3, 0.4, 0.5],
+    'negative_proportion': [0.1, 0.2, 0.3, 0.4]
+}
+
+df = pd.DataFrame(data)
+
 # Plotting the stacked bar plot
 fig, ax = plt.subplots()
 
