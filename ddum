@@ -1,3 +1,34 @@
+
+Subject: Rapport sur l'Analyse des Données
+
+Email Body:
+
+Bonjour Solène,
+
+Voici le lien vers le rapport sur l'analyse des données : [Lien vers le rapport].
+
+Je vais commencer à préparer une présentation PowerPoint pour que nous puissions passer en revue le contenu de ce rapport et d'autres points lors de notre prochaine réunion ce mercredi.
+
+Cordialement,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
