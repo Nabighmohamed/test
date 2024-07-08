@@ -1,3 +1,44 @@
+3. Valeurs Aberrantes
+Les valeurs aberrantes représentent un problème important dans l'analyse des données, car elles peuvent fortement biaiser les résultats et conduire à des conclusions erronées. Les valeurs aberrantes peuvent influencer les estimations de paramètres, déformer les distributions des variables et affecter la performance des modèles prédictifs.
+
+Il existe deux approches générales pour gérer les valeurs aberrantes :
+
+Suppression des Valeurs Aberrantes: Cette méthode consiste à supprimer les valeurs extrêmes de l'ensemble de données. Bien que cela puisse être efficace, elle entraîne la perte d'informations potentiellement précieuses.
+Remplacement des Valeurs Aberrantes: Cette technique implique de remplacer les valeurs extrêmes par des valeurs plus raisonnables en utilisant des méthodes comme la winsorisation. Bien que cette approche conserve toutes les données, elle introduit des valeurs artificielles qui peuvent biaiser le modèle.
+Nous avons opté pour la seconde approche car elle permet de conserver l'ensemble des données tout en atténuant l'impact des valeurs extrêmes. Cependant, étant donné le nombre élevé de valeurs aberrantes dans notre ensemble de données, l'utilisation exclusive de cette méthode aurait introduit un grand nombre de valeurs artificielles, risquant de biaiser notre modèle.
+
+Pour surmonter ce problème, nous avons adopté une troisième approche :
+
+Transformation Logarithmique: Cette transformation réduit naturellement le nombre de valeurs aberrantes en atténuant l'asymétrie des distributions des variables. Elle diminue l'impact des valeurs extrêmes de manière organique, ce qui permet de traiter plus efficacement les valeurs aberrantes restantes.
+Winsorisation: Après avoir appliqué la transformation logarithmique, nous avons utilisé la winsorisation pour gérer les quelques valeurs aberrantes restantes. Cela a permis de limiter les valeurs extrêmes sans introduire un nombre excessif de valeurs artificielles.
+Cette approche combinée nous a permis de gérer les valeurs aberrantes de manière plus équilibrée, en réduisant leur nombre par des moyens naturels avant d'appliquer des techniques de remplacement pour les cas extrêmes restants.
+
+Pour illustrer cette approche, nous incluons ci-dessous un graphique montrant les boxplots des variables originales, après transformation logarithmique et après winsorisation.
+
+Graphique 1 : Boxplots des Variables Originales, Après Transformation Logarithmique et Après Winsorisation
+
+
+Techniques de Gestion des Valeurs Aberrantes :
+Transformation Logarithmique: Réduction de l'asymétrie et de l'impact des valeurs extrêmes de manière naturelle.
+Winsorisation: Appliquée pour atténuer l'effet des valeurs aberrantes en limitant les valeurs extrêmes restantes.
+Cette stratégie combinée nous a permis de garantir que les valeurs extrêmes n'ont pas biaisé nos résultats d'analyse, conduisant à des conclusions plus robustes et fiables.
+
+Conclusion
+En utilisant cette approche, nous avons pu gérer les valeurs aberrantes de manière efficace tout en minimisant l'introduction de valeurs artificielles. Cela a permis d'améliorer la qualité et la fiabilité de nos analyses, assurant ainsi des résultats plus précis et pertinents pour la prise de décision.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Corrélation entre les Variables
 Variables Numériques Discrètes
 Pour les variables numériques discrètes, nous avons utilisé trois métriques pour évaluer la relation entre chaque variable discrète et la variable cible continue : la corrélation de Spearman, le tau de Kendall et l'information mutuelle.
