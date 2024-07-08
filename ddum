@@ -10,6 +10,50 @@ data = {
 
 df = pd.DataFrame(data)
 
+# Plotting the stacked bar plot
+fig, ax = plt.subplots()
+
+# Stacked bar plot
+ax.bar(df['month'], df['pos_prop'], label='Positive Proportion', color='b')
+ax.bar(df['month'], df['negative_proportion'], bottom=df['pos_prop'], label='Negative Proportion', color='r')
+
+ax.set_xlabel('Month')
+ax.set_ylabel('Proportion')
+ax.set_title('Positive and Negative Proportions by Month')
+ax.legend()
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Example DataFrame
+data = {
+    'month': ['January', 'February', 'March', 'April'],
+    'pos_prop': [0.2, 0.3, 0.4, 0.5],
+    'negative_proportion': [0.1, 0.2, 0.3, 0.4]
+}
+
+df = pd.DataFrame(data)
+
 # Plotting the bar plot
 fig, ax = plt.subplots()
 bar_width = 0.35
