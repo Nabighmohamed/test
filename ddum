@@ -1,3 +1,83 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'AGE': np.random.uniform(18, 80, size=100),  # Continuous AGE variable
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Function to discretize AGE based on the target variable using a decision tree
+def discretize_continuous_var(df, cont_var, target, bins=4):
+    tree = DecisionTreeRegressor(max_leaf_nodes=bins)
+    tree.fit(df[[target]], df[cont_var])
+    df[cont_var + '_binned'] = tree.apply(df[[target]])
+    return df, tree
+
+# Apply the discretization
+df_discrete, tree = discretize_continuous_var(df, 'AGE', 'Target')
+
+# Plot the new categories
+plt.figure(figsize=(10, 6))
+plt.scatter(df['AGE'], df['Target'], c=df['AGE_binned'], cmap='viridis', marker='o')
+plt.title('Discretized AGE based on Target')
+plt.xlabel('AGE')
+plt.ylabel('Target')
+plt.colorbar(label='AGE Binned Category')
+plt.show()
+
+# Plot the decision tree
+plt.figure(figsize=(20, 10))
+plot_tree(tree, feature_names=['Target'], filled=True, rounded=True)
+plt.title('Decision Tree for Discretizing AGE based on Target')
+plt.show()
+# Function to discretize AGE based on the log of the target variable using a decision tree
+def discretize_continuous_var_log(df, cont_var, target, bins=4):
+    log_target = np.log(df[target] + 1)  # Adding 1 to avoid log(0)
+    tree = DecisionTreeRegressor(max_leaf_nodes=bins)
+    tree.fit(log_target.values.reshape(-1, 1), df[cont_var])
+    df[cont_var + '_binned_log'] = tree.apply(log_target.values.reshape(-1, 1))
+    return df, tree
+
+# Apply the discretization
+df_discrete_log, tree_log = discretize_continuous_var_log(df, 'AGE', 'Target')
+
+# Plot the new categories
+plt.figure(figsize=(10, 6))
+plt.scatter(df['AGE'], np.log(df['Target'] + 1), c=df['AGE_binned_log'], cmap='viridis', marker='o')
+plt.title('Discretized AGE based on Log of Target')
+plt.xlabel('AGE')
+plt.ylabel('Log(Target + 1)')
+plt.colorbar(label='AGE Binned Category (Log Target)')
+plt.show()
+
+# Plot the decision tree
+plt.figure(figsize=(20, 10))
+plot_tree(tree_log, feature_names=['Log(Target + 1)'], filled=True, rounded=True)
+plt.title('Decision Tree for Discretizing AGE based on Log of Target')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 4. Regroupement des Classes dans les Variables Catégorielles
 Pour regrouper les classes dans les variables catégorielles, j'ai utilisé deux techniques principales : les tests statistiques et les arbres de décision. Ces méthodes m'ont permis d'identifier et de regrouper les catégories de manière à améliorer la qualité des analyses et à augmenter le pouvoir explicatif des variables.
 
