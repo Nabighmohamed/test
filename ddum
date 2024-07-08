@@ -6,6 +6,64 @@ Les tests statistiques ont été utilisés pour déterminer si certaines catégo
 
 ANOVA (Analyse de la Variance) : Ce test m'a aidé à regrouper les catégories ayant des impacts similaires sur la variable cible. Par exemple, pour une variable catégorielle donnée, j'ai regroupé les catégories dont les p-values étaient supérieures à 0,05, ce qui indique que les différences entre ces groupes ne sont pas statistiquement significatives.
 Arbres de Décision
+Les arbres de décision ont été utilisés pour deux objectifs : diviser les variables continues en catégories significatives basées sur la variable cible et valider les regroupements proposés par l'ANOVA pour les variables catégorielles.
+
+Transformation des Variables Continues :
+
+Arbres de Décision : En utilisant les arbres de décision, j'ai pu identifier des points de coupure optimaux pour transformer des variables continues en catégories. Cette méthode est particulièrement utile lorsque les relations entre les variables et la cible ne sont pas linéaires.
+Validation des Résultats de l'ANOVA :
+
+Arbres de Décision : J'ai également utilisé les arbres de décision pour valider les regroupements de catégories proposés par l'ANOVA. Cela a permis de confirmer que les groupes regroupés avaient des impacts similaires sur la variable cible.
+Exemple Pratique
+Prenons un exemple concret avec une variable catégorielle et une variable continue transformée en catégories.
+
+Variable Catégorielle : CTYPCLI
+
+Pour la variable catégorielle CTYPCLI, j'ai appliqué l'ANOVA pour analyser les différences entre les catégories. Les résultats ont montré que certaines catégories n'avaient pas de différences significatives en termes de leur relation avec la variable cible. J'ai ensuite validé ces regroupements en utilisant un arbre de décision, confirmant ainsi que les catégories regroupées avaient des impacts similaires.
+
+Variable Continue : AGE
+
+Pour la variable continue AGE, j'ai utilisé un arbre de décision pour la transformer en une variable catégorielle. Voici comment cela a été fait :
+
+Arbre de Décision sur AGE : J'ai entraîné un arbre de décision en utilisant la variable cible pour identifier les points de coupure optimaux. Par exemple, l'arbre de décision a pu diviser l'âge en catégories comme 0-25, 26-40, 41-60, et 61+.
+Transformation en Catégories : Ces points de coupure ont ensuite été utilisés pour créer une nouvelle variable catégorielle basée sur AGE.
+Graphique 2 : Catégorisation de AGE à l'aide d'un Arbre de Décision
+
+
+Techniques Utilisées :
+ANOVA pour les Tests Statistiques : A aidé à regrouper les catégories ayant des impacts similaires sur la cible.
+Arbres de Décision : Utilisés pour catégoriser efficacement les variables continues et valider les résultats des tests statistiques pour les variables catégorielles.
+Conclusion
+En utilisant ces deux techniques, j'ai pu regrouper les classes des variables catégorielles de manière significative, ce qui a amélioré le pouvoir explicatif des variables et la qualité globale de l'analyse. Cette approche m'a permis de simplifier les variables sans perdre d'informations cruciales, rendant ainsi les modèles plus robustes et plus interprétables.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4. Regroupement des Classes dans les Variables Catégorielles
+Pour regrouper les classes dans les variables catégorielles, j'ai utilisé deux techniques principales : les tests statistiques et les arbres de décision. Ces méthodes m'ont permis d'identifier et de regrouper les catégories de manière à améliorer la qualité des analyses et à augmenter le pouvoir explicatif des variables.
+
+Tests Statistiques
+Les tests statistiques ont été utilisés pour déterminer si certaines catégories au sein des variables différaient significativement en termes de leur relation avec la variable cible. Plus précisément, j'ai utilisé l'ANOVA pour analyser les différences entre les groupes.
+
+ANOVA (Analyse de la Variance) : Ce test m'a aidé à regrouper les catégories ayant des impacts similaires sur la variable cible. Par exemple, pour une variable catégorielle donnée, j'ai regroupé les catégories dont les p-values étaient supérieures à 0,05, ce qui indique que les différences entre ces groupes ne sont pas statistiquement significatives.
+Arbres de Décision
 Les arbres de décision ont été utilisés pour diviser les variables continues en catégories significatives basées sur la variable cible. Cette technique permet de capturer les interactions complexes et non linéaires entre les variables, améliorant ainsi leur pouvoir explicatif.
 
 Arbres de Décision : En utilisant les arbres de décision, j'ai pu identifier des points de coupure optimaux pour transformer des variables continues en catégories. Cette méthode est particulièrement utile lorsque les relations entre les variables et la cible ne sont pas linéaires.
