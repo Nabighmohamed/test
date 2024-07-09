@@ -22,6 +22,73 @@ for col in df.select_dtypes(include=['object']).columns:
 def compute_anova_eta_squared(df, target, max_unique_as_category=10):
     results = []
     for col in df.columns.difference([target]):
+        if df[col].dtype == 'object' or (df[col].dtype in ['int64', 'int32'] and df[col].nunique() <= max_unique_as_category):
+            unique_values = df[col].unique()
+            if len(unique_values) > 1:  # Ensure there are at least two groups
+                groups = [df[target][df[col] == category] for category in unique_values]
+                f_stat, p_value = f_oneway(*groups)
+                eta_squared = f_stat / (f_stat + (len(df) - len(groups)))
+                results.append({
+                    'Variable': col,
+                    'Eta Squared': eta_squared
+                })
+    return pd.DataFrame(results)
+
+# Compute ANOVA and Eta Squared
+results_df = compute_anova_eta_squared(df_encoded, 'Target')
+
+# Ensure the results DataFrame has a unique index for the heatmap
+results_df.set_index('Variable', inplace=True)
+
+# Plot the heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(results_df.T, annot=True, cmap="coolwarm", cbar_kws={'label': 'Eta Squared'})
+plt.title('Explanatory Power of Nominal Variables on Target')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import f_oneway
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100),  # Integer categorical variable
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Encode nominal variables
+df_encoded = df.copy()
+for col in df.select_dtypes(include=['object']).columns:
+    df_encoded[col] = df_encoded[col].astype('category').cat.codes
+
+# Function to compute ANOVA and Eta Squared
+def compute_anova_eta_squared(df, target, max_unique_as_category=10):
+    results = []
+    for col in df.columns.difference([target]):
         if df[col].dtype == 'object' or (df[col].dtype == 'int' and df[col].nunique() <= max_unique_as_category):
             groups = [df[target][df[col] == category] for category in df[col].unique()]
             f_stat, p_value = f_oneway(*groups)
