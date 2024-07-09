@@ -29,6 +29,111 @@ def group_classes_with_decision_tree(df, cat_var, target_var):
     plot_tree(dt_reg, feature_names=df_encoded.columns, filled=True)
     plt.show()
     
+    # Print the new groups based on the decision tree
+    node_indicator = dt_reg.decision_path(X)
+    leaf_id = dt_reg.apply(X)
+    
+    grouped_classes = {}
+    for sample_id in range(len(df)):
+        node_index = node_indicator.indices[node_indicator.indptr[sample_id]:
+                                            node_indicator.indptr[sample_id + 1]]
+        group = tuple(sorted(df_encoded.columns[i] for i in node_index if i < len(df_encoded.columns)))
+        if group not in grouped_classes:
+            grouped_classes[group] = set()
+        grouped_classes[group].add(df[cat_var].iloc[sample_id])
+    
+    print(f"Decision Tree Groups for {cat_var}:")
+    for group, classes in grouped_classes.items():
+        print(f"Group {group}: {classes}")
+
+# Apply the decision tree approach
+group_classes_with_decision_tree(df, 'Nominal1', 'Target')
+
+from scipy.stats import f_oneway
+from itertools import combinations
+
+# Statistical test approach to group similar classes using ANOVA
+def group_classes_with_anova(df, cat_var, target_var):
+    unique_values = df[cat_var].unique()
+    groups = [df[target_var][df[cat_var] == val] for val in unique_values]
+    
+    # Perform one-way ANOVA
+    f_stat, p_value = f_oneway(*groups)
+    print(f"ANOVA F-statistic: {f_stat}, p-value: {p_value}")
+    
+    # Group similar classes based on pairwise comparisons
+    similar_groups = {}
+    for comb in combinations(unique_values, 2):
+        group1 = df[target_var][df[cat_var] == comb[0]]
+        group2 = df[target_var][df[cat_var] == comb[1]]
+        f_stat, p_value = f_oneway(group1, group2)
+        if p_value > 0.05:
+            if comb[0] not in similar_groups:
+                similar_groups[comb[0]] = set()
+            similar_groups[comb[0]].add(comb[1])
+    
+    print(f"ANOVA Groups for {cat_var}:")
+    for key, value in similar_groups.items():
+        print(f"Group including {key}: {value}")
+
+# Apply the statistical test approach
+group_classes_with_anova(df, 'Nominal1', 'Target')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100),  # Integer categorical variable
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Decision Tree approach to group similar classes
+def group_classes_with_decision_tree(df, cat_var, target_var):
+    # One-hot encode the categorical variable
+    df_encoded = pd.get_dummies(df[[cat_var]], drop_first=False)
+    X = df_encoded
+    y = df[target_var]
+    
+    # Train a decision tree regressor
+    dt_reg = DecisionTreeRegressor(max_leaf_nodes=3)
+    dt_reg.fit(X, y)
+    
+    # Visualize the decision tree
+    plt.figure(figsize=(12, 8))
+    plot_tree(dt_reg, feature_names=df_encoded.columns, filled=True)
+    plt.show()
+    
     # Print the rules
     print(f"Decision Tree Rules for {cat_var}:")
     n_nodes = dt_reg.tree_.node_count
