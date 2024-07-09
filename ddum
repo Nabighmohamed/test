@@ -1,3 +1,103 @@
+import numpy as np
+import pandas as pd
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+from scipy.stats import f_oneway
+from itertools import combinations
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100),  # Integer categorical variable
+    'Target': np.random.uniform(0, 10, size=100)  # Continuous target variable
+})
+
+# Function to group using ANOVA
+def group_classes_with_anova(df, cat_var, target_var):
+    unique_values = df[cat_var].unique()
+    group_mapping = {val: {val} for val in unique_values}
+    
+    for comb in combinations(unique_values, 2):
+        group1 = df[target_var][df[cat_var] == comb[0]]
+        group2 = df[target_var][df[cat_var] == comb[1]]
+        f_stat, p_value = f_oneway(group1, group2)
+        if p_value > 0.05:
+            group_mapping[comb[0]].update(group_mapping[comb[1]])
+            for merged_val in group_mapping[comb[1]]:
+                group_mapping[merged_val] = group_mapping[comb[0]]
+    
+    unique_groups = list({frozenset(group) for group in group_mapping.values()})
+    group_dict = {}
+    for i, group in enumerate(unique_groups, 1):
+        for val in group:
+            group_dict[val] = i
+    
+    return df[cat_var].map(group_dict)
+
+# Apply ANOVA grouping
+df['ANOVA_Group'] = group_classes_with_anova(df, 'Nominal1', 'Target')
+
+# Function to group using Decision Tree
+def group_classes_with_decision_tree(df, cat_var, target_var):
+    df_encoded = pd.get_dummies(df[[cat_var]], drop_first=False)
+    X = df_encoded
+    y = df[target_var]
+    
+    dt_reg = DecisionTreeRegressor(max_leaf_nodes=3)
+    dt_reg.fit(X, y)
+    
+    # Get leaf ids and ensure no NaN values are introduced
+    leaf_ids = dt_reg.apply(X)
+    unique_leaf_ids = np.unique(leaf_ids)
+    leaf_id_to_group = {leaf_id: idx for idx, leaf_id in enumerate(unique_leaf_ids)}
+    
+    return pd.Series(leaf_ids).map(leaf_id_to_group)
+
+# Apply Decision Tree grouping
+df['DT_Group'] = group_classes_with_decision_tree(df, 'Nominal1', 'Target')
+
+# Evaluate groupings using cross-validation
+def evaluate_grouping(df, group_col, target_col):
+    X = pd.get_dummies(df[[group_col]], drop_first=True)
+    y = df[target_col]
+    model = LinearRegression()
+    scores = cross_val_score(model, X, y, scoring='neg_mean_squared_error', cv=5)
+    return -scores.mean()
+
+anova_mse = evaluate_grouping(df, 'ANOVA_Group', 'Target')
+dt_mse = evaluate_grouping(df, 'DT_Group', 'Target')
+
+print(f"ANOVA Grouping MSE: {anova_mse}")
+print(f"Decision Tree Grouping MSE: {dt_mse}")
+
+# Print the final groups for clarity
+print("Final ANOVA Groups:")
+print(df[['Nominal1', 'ANOVA_Group']].drop_duplicates().sort_values(by='ANOVA_Group'))
+
+print("Final Decision Tree Groups:")
+print(df[['Nominal1', 'DT_Group']].drop_duplicates().sort_values(by='DT_Group'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import cross_val_score
