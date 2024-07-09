@@ -14,6 +14,71 @@ df = pd.DataFrame({
 # One-hot encode the nominal variables
 df_encoded = pd.get_dummies(df[['Preferred_Payment_Method', 'Membership_Type']], drop_first=True)
 
+# Function to calculate VIF
+def calculate_vif(df):
+    # Add a constant to the dataframe
+    df_with_const = add_constant(df)
+    
+    # Calculate VIF for each variable excluding the constant
+    vif_data = pd.DataFrame()
+    vif_data["Variable"] = df_with_const.columns
+    vif_data["VIF"] = [variance_inflation_factor(df_with_const.values, i) for i in range(df_with_const.shape[1])]
+    
+    return vif_data
+
+# Calculate VIF for the encoded variables
+vif_data = calculate_vif(df_encoded)
+
+# Remove the constant term from the VIF dataframe
+vif_data = vif_data[vif_data["Variable"] != "const"]
+
+# Display the VIF result
+print(vif_data)
+
+# Plotting the VIF values
+plt.figure(figsize=(10, 6))
+plt.bar(vif_data["Variable"], vif_data["VIF"], color='skyblue')
+plt.xlabel('Variables')
+plt.ylabel('VIF')
+plt.title('Variance Inflation Factor (VIF)')
+plt.axhline(y=5, color='r', linestyle='--')
+plt.axhline(y=10, color='r', linestyle='--')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.tools.tools import add_constant
+import matplotlib.pyplot as plt
+
+# Sample DataFrame with nominal variables
+df = pd.DataFrame({
+    'Preferred_Payment_Method': np.random.choice(['Credit Card', 'Cash', 'Digital Wallet'], 100),
+    'Membership_Type': np.random.choice(['Gold', 'Silver', 'Bronze'], 100),
+    'Target_Variable': np.random.rand(100)  # Some continuous target variable for context
+})
+
+# One-hot encode the nominal variables
+df_encoded = pd.get_dummies(df[['Preferred_Payment_Method', 'Membership_Type']], drop_first=True)
+
 # Combine with the target variable for regression context
 df_encoded = pd.concat([df_encoded, df[['Target_Variable']]], axis=1)
 
