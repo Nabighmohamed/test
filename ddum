@@ -1,3 +1,102 @@
+from kmodes.kmodes import KModes
+import pandas as pd
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100)  # Integer categorical variable
+})
+
+# Combining all categorical features into one DataFrame
+categorical_features = df[['Nominal1', 'Nominal2', 'CategoricalInt']]
+
+# Applying K-Modes clustering
+km = KModes(n_clusters=3, init='Huang', n_init=5, verbose=1)
+clusters = km.fit_predict(categorical_features)
+
+# Adding the cluster labels to the original DataFrame
+df['Cluster'] = clusters
+
+print(df.head())
+
+
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100)  # Integer categorical variable
+})
+
+# Combining all categorical features into one DataFrame
+categorical_features = df[['Nominal1', 'Nominal2', 'CategoricalInt']]
+
+# Encoding categorical features
+categorical_features_encoded = categorical_features.apply(lambda x: pd.factorize(x)[0])
+
+# Performing hierarchical clustering
+Z = linkage(categorical_features_encoded, method='ward')
+
+# Plotting the dendrogram
+plt.figure(figsize=(10, 7))
+dendrogram(Z, labels=categorical_features.index, leaf_rotation=90, leaf_font_size=8)
+plt.title('Hierarchical Clustering Dendrogram')
+plt.xlabel('Sample index')
+plt.ylabel('Distance')
+plt.show()
+
+# Extracting cluster labels
+clusters = fcluster(Z, t=3, criterion='maxclust')
+df['Cluster'] = clusters
+
+print(df.head())
+
+
+from mlxtend.frequent_patterns import apriori, association_rules
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100)  # Integer categorical variable
+})
+
+# One-hot encode the categorical features
+df_encoded = pd.get_dummies(df)
+
+# Applying the Apriori algorithm
+frequent_itemsets = apriori(df_encoded, min_support=0.1, use_colnames=True)
+
+# Extracting association rules
+rules = association_rules(frequent_itemsets, metric="lift", min_threshold=1)
+print(rules)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
