@@ -19,6 +19,58 @@ clusters = km.fit_predict(categorical_features)
 # Adding the cluster labels to the original DataFrame
 df['Cluster'] = clusters
 
+# Display the new groups with their original categories
+print("K-Modes Clustering Groups:")
+for cluster in sorted(df['Cluster'].unique()):
+    cluster_data = df[df['Cluster'] == cluster]
+    print(f"Cluster {cluster + 1}:")
+    for column in categorical_features.columns:
+        print(f"  {column}: {cluster_data[column].unique()}")
+    print()
+
+# Display the DataFrame with cluster assignments
+print(df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from kmodes.kmodes import KModes
+import pandas as pd
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100)  # Integer categorical variable
+})
+
+# Combining all categorical features into one DataFrame
+categorical_features = df[['Nominal1', 'Nominal2', 'CategoricalInt']]
+
+# Applying K-Modes clustering
+km = KModes(n_clusters=3, init='Huang', n_init=5, verbose=1)
+clusters = km.fit_predict(categorical_features)
+
+# Adding the cluster labels to the original DataFrame
+df['Cluster'] = clusters
+
 print(df.head())
 
 
