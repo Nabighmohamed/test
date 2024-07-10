@@ -1,3 +1,23 @@
+Variables Continues
+Pour les variables continues, nous avons utilisé une matrice de corrélation pour étudier les relations après avoir assuré la normalisation de leurs distributions. De plus, nous avons calculé le Facteur d'Inflation de la Variance (VIF) pour vérifier la multicollinearité. Cette analyse a révélé que plusieurs variables étaient fortement corrélées (coefficient de corrélation > 0,9) et fournissaient des informations similaires. En fonction de leur corrélation avec la variable cible, nous avons décidé de supprimer certaines de ces variables pour éviter la redondance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
