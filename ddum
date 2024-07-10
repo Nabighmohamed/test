@@ -40,6 +40,113 @@ high_corr_pairs = [(i, j) for i in corr_matrix.columns for j in corr_matrix.colu
                    if i != j and abs(corr_matrix.loc[i, j]) > 0.7]
 
 # Function to compute R² and RMSE for regression
+def compute_regression_metrics(df, vars, target):
+    X = df[vars].values
+    y = df[target].values
+    model = LinearRegression()
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    r2 = model.score(X, y)
+    rmse = np.sqrt(mean_squared_error(y, y_pred))
+    return r2, rmse
+
+# Determine which variable or pair of variables to keep based on R² and RMSE
+variables_to_keep = set(df_log_transformed.columns)
+results = []
+
+for var1, var2 in high_corr_pairs:
+    r2_var1, rmse_var1 = compute_regression_metrics(df_log_transformed, [var1], 'Target')
+    r2_var2, rmse_var2 = compute_regression_metrics(df_log_transformed, [var2], 'Target')
+    r2_pair, rmse_pair = compute_regression_metrics(df_log_transformed, [var1, var2], 'Target')
+    
+    results.append({
+        'Variable 1': var1,
+        'Variable 2': var2,
+        'R² Var1': r2_var1,
+        'RMSE Var1': rmse_var1,
+        'R² Var2': r2_var2,
+        'RMSE Var2': rmse_var2,
+        'R² Pair': r2_pair,
+        'RMSE Pair': rmse_pair
+    })
+    
+    if r2_pair >= max(r2_var1, r2_var2) and rmse_pair <= min(rmse_var1, rmse_var2):
+        variables_to_keep.discard(var1)
+        variables_to_keep.discard(var2)
+    elif r2_var1 > r2_var2 or (r2_var1 == r2_var2 and rmse_var1 < rmse_var2):
+        variables_to_keep.discard(var2)
+    else:
+        variables_to_keep.discard(var1)
+
+print(f"Variables to keep: {variables_to_keep}")
+
+# Output the regression metrics for each pair
+results_df = pd.DataFrame(results)
+print(results_df)
+
+# Print the final groups for clarity
+print("Final Decision Tree Groups for Nominal1:")
+print(df[['Nominal1', 'Target']].drop_duplicates().sort_values(by='Nominal1'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100),  # Integer categorical variable
+    'Var1': np.random.uniform(1, 100, size=100),  # Continuous variable
+    'Var2': np.random.uniform(1, 100, size=100),  # Continuous variable
+    'Var3': np.random.uniform(1, 100, size=100),  # Continuous variable
+    'Target': np.random.uniform(1, 100, size=100)  # Continuous target variable
+})
+
+# Log transform all numeric variables
+df_log_transformed = df.copy()
+for col in df.select_dtypes(include=[np.number]).columns:
+    df_log_transformed[col] = np.log(df[col])
+
+# Check for any infinite values due to log(0) and handle them
+df_log_transformed.replace([np.inf, -np.inf], np.nan, inplace=True)
+df_log_transformed.dropna(inplace=True)
+
+# Compute the correlation matrix
+corr_matrix = df_log_transformed.corr()
+
+# Plot the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', cbar_kws={'label': 'Correlation Coefficient'})
+plt.title('Correlation Matrix of Log-Transformed Variables')
+plt.show()
+
+# Identify pairs of variables with correlation higher than 0.7
+high_corr_pairs = [(i, j) for i in corr_matrix.columns for j in corr_matrix.columns 
+                   if i != j and abs(corr_matrix.loc[i, j]) > 0.7]
+
+# Function to compute R² and RMSE for regression
 def compute_regression_metrics(df, var, target):
     X = df[[var]].values
     y = df[target].values
