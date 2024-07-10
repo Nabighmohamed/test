@@ -1,5 +1,75 @@
-Variables Continues
-Pour les variables continues, nous avons utilisé une matrice de corrélation pour étudier les relations après avoir assuré la normalisation de leurs distributions. De plus, nous avons calculé le Facteur d'Inflation de la Variance (VIF) pour vérifier la multicollinearité. Cette analyse a révélé que plusieurs variables étaient fortement corrélées (coefficient de corrélation > 0,9) et fournissaient des informations similaires. En fonction de leur corrélation avec la variable cible, nous avons décidé de supprimer certaines de ces variables pour éviter la redondance.
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Var1': np.random.uniform(1, 100, size=100),
+    'Var2': np.random.uniform(1, 100, size=100),
+    'Var3': np.random.uniform(1, 100, size=100),
+    'Var4': np.random.uniform(1, 100, size=100),
+    'Target': np.random.uniform(1, 100, size=100)  # Continuous target variable
+})
+
+# Log transform all numeric variables
+df_log_transformed = df.copy()
+for col in df.select_dtypes(include=[np.number]).columns:
+    df_log_transformed[col] = np.log(df[col])
+
+# Compute the correlation matrix
+corr_matrix = df_log_transformed.corr()
+
+# Identify pairs with correlation higher than 0.7
+high_corr_pairs = [(var1, var2) for var1 in corr_matrix.columns for var2 in corr_matrix.columns 
+                   if var1 != var2 and corr_matrix.loc[var1, var2] > 0.7]
+
+# Function to perform regression and compute R^2 and RMSE
+def regression_analysis(df, var1, var2):
+    X = df[[var1]].values
+    y = df[var2].values
+    model = LinearRegression()
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    r2 = model.score(X, y)
+    rmse = np.sqrt(mean_squared_error(y, y_pred))
+    return r2, rmse
+
+# Analyze each pair and determine which variable to keep
+results = []
+for var1, var2 in high_corr_pairs:
+    r2_var1, rmse_var1 = regression_analysis(df_log_transformed, var1, var2)
+    r2_var2, rmse_var2 = regression_analysis(df_log_transformed, var2, var1)
+    
+    if r2_var1 > r2_var2:
+        var_to_keep = var1
+    else:
+        var_to_keep = var2
+    
+    results.append({
+        'Variable1': var1,
+        'Variable2': var2,
+        'R2_Var1_as_Ind': r2_var1,
+        'RMSE_Var1_as_Ind': rmse_var1,
+        'R2_Var2_as_Ind': r2_var2,
+        'RMSE_Var2_as_Ind': rmse_var2,
+        'Variable_to_Keep': var_to_keep
+    })
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results)
+
+# Print the results
+print(results_df)
+
+# Plot the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', cbar_kws={'label': 'Correlation Coefficient'})
+plt.title('Correlation Matrix of Log-Transformed Variables')
+plt.show()
 
 
 
