@@ -1,5 +1,55 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Nominal1': np.random.choice(['A', 'B', 'C'], size=100),
+    'Nominal2': np.random.choice(['X', 'Y', 'Z'], size=100),
+    'CategoricalInt': np.random.choice([1, 2, 3], size=100),  # Integer categorical variable
+    'Target': np.random.uniform(1, 10, size=100)  # Continuous target variable
+})
+
+# Log transform all numeric variables
+df_log_transformed = df.copy()
+for col in df.select_dtypes(include=[np.number]).columns:
+    df_log_transformed[col] = np.log(df[col])
+
+# Check for any infinite values due to log(0) and handle them
+df_log_transformed.replace([np.inf, -np.inf], np.nan, inplace=True)
+df_log_transformed.dropna(inplace=True)
+
+# Compute the correlation matrix
+corr_matrix = df_log_transformed.corr()
+
+# Plot the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', cbar_kws={'label': 'Correlation Coefficient'})
+plt.title('Correlation Matrix of Log-Transformed Variables')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score, train_test_split
