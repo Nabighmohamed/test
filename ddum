@@ -1,5 +1,57 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation with two continuous variables
+np.random.seed(0)
+df = pd.DataFrame({
+    'Variable1': np.random.normal(loc=0, scale=1, size=1000),
+    'Variable2': np.random.normal(loc=0, scale=1, size=1000)
+})
+
+# Introduce some difference in the distributions
+df['Variable2'] = df['Variable2'] * 1.5 + 2
+
+# Plot the distributions using KDE plots
+plt.figure(figsize=(12, 8))
+sns.kdeplot(df['Variable1'], label='Variable1', fill=True)
+sns.kdeplot(df['Variable2'], label='Variable2', fill=True)
+plt.title('Overlayed KDE Plots of Variable1 and Variable2')
+plt.xlabel('Value')
+plt.ylabel('Density')
+plt.legend()
+plt.show()
+
+# Alternatively, plot using histograms
+plt.figure(figsize=(12, 8))
+sns.histplot(df['Variable1'], label='Variable1', kde=True, color='blue', bins=30)
+sns.histplot(df['Variable2'], label='Variable2', kde=True, color='orange', bins=30)
+plt.title('Overlayed Histograms of Variable1 and Variable2')
+plt.xlabel('Value')
+plt.ylabel('Frequency')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 from sklearn.ensemble import IsolationForest
 import seaborn as sns
 import matplotlib.pyplot as plt
