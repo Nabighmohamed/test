@@ -1,5 +1,83 @@
 import numpy as np
 import pandas as pd
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation
+np.random.seed(0)
+df = pd.DataFrame({
+    'Cat1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Cat2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Step 1: Replace missing values with a new category "missing"
+df.fillna('missing', inplace=True)
+
+# Step 2: Function to group using Decision Tree
+def group_classes_with_decision_tree(df, cat_var, target_var):
+    # One-hot encode the categorical variable
+    df_encoded = pd.get_dummies(df[[cat_var]], drop_first=False)
+    X = df_encoded
+    y = df[target_var]
+    
+    # Train a decision tree regressor
+    dt_reg = DecisionTreeRegressor(max_leaf_nodes=5)
+    dt_reg.fit(X, y)
+    
+    # Visualize the decision tree
+    plt.figure(figsize=(12, 8))
+    plot_tree(dt_reg, feature_names=df_encoded.columns, filled=True)
+    plt.title(f'Decision Tree for {cat_var}')
+    plt.show()
+    
+    # Get leaf nodes and create new groups
+    df['Group'] = dt_reg.apply(X)
+    return df
+
+# Step 3: Apply Decision Tree grouping to each categorical variable
+df = group_classes_with_decision_tree(df, 'Cat1', 'Target')
+df = group_classes_with_decision_tree(df, 'Cat2', 'Target')
+
+# Show the transformed DataFrame with new groups
+print(df.head())
+
+# Plot original and new groups for each categorical variable
+for cat_var in ['Cat1', 'Cat2']:
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(x=cat_var, y='Target', data=df)
+    plt.title(f'{cat_var} vs Target')
+    plt.show()
+
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(x='Group', y='Target', data=df)
+    plt.title(f'New Groups for {cat_var} vs Target')
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 from scipy.stats import ks_2samp, anderson_ksamp, mannwhitneyu, probplot
 import seaborn as sns
 import matplotlib.pyplot as plt
