@@ -1,3 +1,50 @@
+4. Regroupement des Classes des Variables Catégorielles Utilisant XGBoost
+Objectif : Regrouper les catégories similaires au sein des variables catégorielles en fonction de leur relation avec la variable cible continue, en utilisant XGBoost.
+
+Méthodologie :
+
+Prétraitement des Données : Les valeurs manquantes dans les variables catégorielles ont été remplacées par une nouvelle catégorie "missing". Ensuite, les variables catégorielles ont été encodées en utilisant LabelEncoder pour les convertir en un format numérique adapté à XGBoost.
+Modèle Initial avec Arbre de Décision (DT) : Initialement, nous avons utilisé un modèle d'Arbre de Décision pour regrouper les catégories. Cependant, l'Arbre de Décision présente des faiblesses notables, notamment une instabilité due à sa nature déterministe et une sensibilité aux petites variations dans les données. Cela peut mener à des modèles sur-ajustés (overfitting) et à des résultats peu fiables.
+Passage à XGBoost : Pour surmonter ces limitations, nous avons adopté XGBoost, un algorithme de boosting de gradient, qui est plus stable et performant que les Arbres de Décision simples. XGBoost construit une série d'arbres de décision, où chaque arbre corrige les erreurs du précédent, ce qui en fait une méthode robuste pour capturer des relations complexes et réduire le sur-ajustement.
+Étapes Suivies :
+
+Encodage des Variables Catégorielles : Chaque modalité des variables catégorielles a été encodée en utilisant LabelEncoder pour les transformer en valeurs numériques.
+Entraînement du Modèle XGBoost : Un régresseur XGBoost a été entraîné sur les données encodées pour prédire la variable cible continue. Les indices des feuilles du modèle ont été utilisés pour regrouper les catégories, chaque feuille représentant un groupe distinct.
+Cartographie des Catégories Originales aux Nouveaux Groupes : Une fois les catégories regroupées, une cartographie des catégories originales vers les nouveaux groupes a été créée pour une interprétation facile et précise.
+Résultats :
+
+Stabilité et Performance Améliorées : L'utilisation de XGBoost a permis de surmonter les faiblesses des Arbres de Décision, en offrant une meilleure stabilité et en réduisant le sur-ajustement.
+Regroupements Significatifs : Les catégories similaires ont été regroupées de manière significative, capturant des relations complexes avec la variable cible.
+Cartographie des Groupes :
+
+Pour chaque variable catégorielle, les catégories originales ont été mappées aux nouveaux groupes créés par XGBoost. Par exemple :
+Pour CatVar1 :
+Groupe 1 : ['A', 'B']
+Groupe 2 : ['C', 'missing']
+Pour CatVar2 :
+Groupe 1 : ['X', 'Y']
+Groupe 2 : ['Z', 'missing']
+Conclusion :
+
+Le passage d'un modèle d'Arbre de Décision à XGBoost a permis d'améliorer la robustesse et la fiabilité de nos regroupements de catégories. Grâce à XGBoost, nous avons pu capturer des relations complexes entre les variables catégorielles et la variable cible, tout en minimisant les risques de sur-ajustement et en assurant des regroupements stables et interprétables.
+Cette approche basée sur XGBoost constitue une avancée significative dans notre processus de modélisation, offrant des résultats plus précis et exploitables pour nos analyses futures.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 3. Analyse de la Distribution des Modalités d'une Variable Catégorielle
 Objectif : Analyser la distribution des modalités au sein d'une variable catégorielle.
 
