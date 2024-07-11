@@ -1,3 +1,65 @@
+3. Analyse de la Distribution des Modalités d'une Variable Catégorielle
+Objectif : Analyser la distribution des modalités au sein d'une variable catégorielle.
+
+Méthodologie :
+
+Visualisation des Distributions : Pour chaque variable catégorielle de notre jeu de données, nous avons tracé deux types de graphiques :
+Histogramme des Fréquences : Utilisation de sns.displot(df, x=cat_var) pour visualiser la fréquence de chaque modalité.
+Fonction de Répartition Empirique (ECDF) : Utilisation de sns.displot(df, x=cat_var, kind="ecdf") pour visualiser la répartition cumulative des modalités.
+Visualisation :
+
+Les histogrammes des fréquences montrent combien de fois chaque modalité apparaît dans les données.
+Les graphiques ECDF fournissent une vue cumulative des fréquences, aidant à comprendre comment les modalités se répartissent.
+Résultats :
+
+Nous avons observé un déséquilibre dans de nombreuses catégories, certaines modalités étant surreprésentées tandis que d'autres étaient sous-représentées.
+Ce déséquilibre peut avoir des implications importantes pour la modélisation et l'interprétation des résultats, en particulier si certaines catégories dominent les distributions.
+Exemple de Code :
+
+python
+Copy code
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Liste des variables catégorielles
+cat_vars = ['CatVar1', 'CatVar2']  # Remplacer par les noms réels des variables catégorielles
+
+for cat_var in cat_vars:
+    plt.figure(figsize=(12, 6))
+    sns.displot(df, x=cat_var)
+    plt.title(f'Distribution des Fréquences pour {cat_var}')
+    plt.show()
+    
+    plt.figure(figsize=(12, 6))
+    sns.displot(df, x=cat_var, kind="ecdf")
+    plt.title(f'Distribution Cumulative (ECDF) pour {cat_var}')
+    plt.show()
+Conclusion :
+
+L'analyse des distributions des modalités des variables catégorielles a révélé des déséquilibres importants.
+Ces déséquilibres doivent être pris en compte lors de la modélisation pour éviter des biais potentiels et garantir une interprétation précise des résultats.
+En utilisant des visualisations claires et des techniques statistiques appropriées, nous avons pu identifier des problèmes de distribution qui pourraient influencer nos analyses futures et la robustesse de nos modèles.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Conclusion :
 
 Bien que les distributions visuelles des flux annuels et trimestriels semblent presque identiques, les tests statistiques révèlent des différences significatives entre elles. Ces résultats suggèrent que, malgré des apparences similaires, les deux variables ne sont pas identiques et présentent des variations notables.
