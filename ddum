@@ -1,3 +1,9 @@
+
+Rapport sur les Tâches d'Analyse de Données
+Introduction
+Ce rapport résume les tâches d'analyse de données assignées par le manager. Les objectifs principaux étaient d'évaluer l'impact de la winsorisation et de la transformation logarithmique sur les variables cibles, de comparer les flux annuels et trimestriels, d'analyser la distribution des modalités des variables catégorielles, et de regrouper les classes des variables catégorielles en utilisant XGBoost. Les sections suivantes détaillent les résultats et les méthodologies employées.
+
+
 1. Impact de la Winsorisation sur les Variables Cibles
 Objectif : Minimiser l'effet des valeurs aberrantes pour éviter d'appliquer une transformation logarithmique, qui peut amplifier les erreurs lors de la réapplication de l'exponentielle à un modèle linéaire.
 
