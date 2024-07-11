@@ -1,0 +1,44 @@
+import numpy as np
+import pandas as pd
+from scipy.stats import mstats
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation with extreme outliers
+np.random.seed(0)
+df = pd.DataFrame({
+    'Value': np.random.randn(100) * 20  # Generating a dataset with potential outliers
+})
+
+# Introduce extreme outliers
+df.loc[::10, 'Value'] = df['Value'] * 100
+
+# Define the levels of Winsorization to apply
+winsor_levels = [0.01, 0.05, 0.1, 0.2]
+
+# Apply Winsorization at different levels and store in a new DataFrame
+winsorized_df = pd.DataFrame({'Original': df['Value']})
+for level in winsor_levels:
+    winsorized_df[f'Winsorized_{level}'] = mstats.winsorize(df['Value'], limits=[level, level])
+
+# Melt the DataFrame for plotting
+melted_df = winsorized_df.melt(var_name='Winsorization', value_name='Value')
+
+# Create a figure with subplots for KDE and Boxplots side by side
+fig, axes = plt.subplots(len(winsor_levels) + 1, 2, figsize=(15, 20))
+
+# Plot the original data KDE and boxplot
+sns.kdeplot(data=winsorized_df, x='Original', fill=True, ax=axes[0, 0])
+axes[0, 0].set_title('KDE of Original')
+sns.boxplot(data=winsorized_df, x='Original', ax=axes[0, 1])
+axes[0, 1].set_title('Boxplot of Original')
+
+# Plot KDE and Boxplot for each Winsorization level
+for i, level in enumerate(winsor_levels):
+    sns.kdeplot(data=winsorized_df, x=f'Winsorized_{level}', fill=True, ax=axes[i + 1, 0])
+    axes[i + 1, 0].set_title(f'KDE of Winsorized {level}')
+    sns.boxplot(data=winsorized_df, x=f'Winsorized_{level}', ax=axes[i + 1, 1])
+    axes[i + 1, 1].set_title(f'Boxplot of Winsorized {level}')
+
+plt.tight_layout()
+plt.show()
