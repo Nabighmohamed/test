@@ -1,5 +1,71 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import zscore
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation with extreme outliers
+np.random.seed(0)
+df = pd.DataFrame({
+    'Value': np.random.randn(100) * 20  # Generating a dataset with potential outliers
+})
+
+# Introduce extreme outliers
+df.loc[::10, 'Value'] = df['Value'] * 100
+
+# Detect outliers using z-score
+df['zscore'] = zscore(df['Value'])
+df['Outlier'] = df['zscore'].apply(lambda x: 'Outlier' if abs(x) > 3 else 'Inlier')
+
+# Calculate 95th percentile of inliers
+inlier_values = df[df['Outlier'] == 'Inlier']['Value']
+percentile_95 = np.percentile(inlier_values, 95)
+
+# Replace outliers with the 95th percentile value of inliers
+df['Adjusted'] = df.apply(lambda row: percentile_95 if row['Outlier'] == 'Outlier' else row['Value'], axis=1)
+
+# Plot original data with outliers highlighted
+plt.figure(figsize=(12, 8))
+sns.scatterplot(data=df, x=range(len(df)), y='Value', hue='Outlier', palette='tab10', legend='full')
+plt.title('Outlier Detection using Z-Score')
+plt.xlabel('Index')
+plt.ylabel('Value')
+plt.show()
+
+# Plot original and adjusted data distributions
+plt.figure(figsize=(12, 8))
+sns.displot(df, x='Value', hue='Outlier', kind='kde', fill=True, height=5, aspect=2)
+plt.title('Original Data with Outliers Highlighted')
+
+sns.displot(df, x='Adjusted', kind='kde', fill=True, height=5, aspect=2)
+plt.title('Data after Outlier Adjustment')
+
+plt.show()
+
+# Show the impact of adjusting outliers
+print("Original Data:")
+print(df['Value'].describe())
+print("\nAdjusted Data:")
+print(df['Adjusted'].describe())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 from sklearn.cluster import DBSCAN
 import seaborn as sns
 import matplotlib.pyplot as plt
