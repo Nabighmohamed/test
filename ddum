@@ -1,3 +1,43 @@
+Comparaison des Flux Annuels et Trimestriels (MFTCREP)
+Objectif : Déterminer si les deux variables sont identiques.
+
+Méthodologie :
+
+Visualisation des Distributions : Nous avons tracé les distributions des flux annuels et trimestriels pour évaluer visuellement leur similitude.
+Tests Statistiques : Nous avons effectué plusieurs tests statistiques pour quantifier les différences entre les distributions des deux variables.
+Visualisation :
+
+Les distributions des flux annuels et trimestriels ont été tracées et semblaient identiques avec de petites différences.
+Résultats des Tests Statistiques :
+
+Test de Kolmogorov-Smirnov :
+
+Statistique : 0.032
+Valeur p : 2.55e-16
+Ce test compare les distributions cumulatives des deux échantillons. La petite statistique et la valeur p très faible indiquent une différence significative entre les distributions des flux annuels et trimestriels.
+Test d'Anderson-Darling :
+
+Statistique : 57
+Niveau de signifiance : 0.001
+Ce test donne plus de poids aux extrêmes de la distribution. La statistique élevée et le niveau de signifiance très faible montrent également une différence significative entre les deux distributions.
+Test de Mann-Whitney U :
+
+Statistique : 6.3e8
+Valeur p : 4.0e-5
+Ce test non paramétrique compare les rangs des deux échantillons. Les résultats indiquent une différence significative entre les flux annuels et trimestriels.
+Conclusion :
+
+Bien que les distributions visuelles des flux annuels et trimestriels semblent presque identiques, les tests statistiques révèlent des différences significatives entre elles. Ces résultats suggèrent que, malgré des apparences similaires, les deux variables ne sont pas identiques et présentent des variations notables.
+
+
+
+
+
+
+
+
+
+
 
 Rapport sur les Tâches d'Analyse de Données
 Introduction
