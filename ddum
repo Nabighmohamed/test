@@ -1,3 +1,24 @@
+Subject: Rapport d'Analyse de Données - Principaux Axes
+
+Bonjour Solène,
+
+Je vous prie de bien vouloir trouver ci-joint le rapport d'analyse de données. Ce rapport couvre les principaux axes des tâches que vous m'avez assignées :
+
+Impact de la Winsorisation sur les Variables Cibles
+Comparaison des Flux Annuels et Trimestriels (MFTCREP)
+Analyse de la Distribution des Modalités d'une Variable Catégorielle
+Regroupement des Classes des Variables Catégorielles Utilisant XGBoost
+N'hésitez pas à me faire savoir si vous avez des questions ou si vous souhaitez des précisions supplémentaires sur certains points.
+
+Bien cordialement,
+
+
+
+
+
+
+
+
 4. Regroupement des Classes des Variables Catégorielles Utilisant XGBoost
 Objectif : Regrouper les catégories similaires au sein des variables catégorielles en fonction de leur relation avec la variable cible continue, en utilisant XGBoost.
 
