@@ -1,5 +1,68 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import ks_2samp, anderson_ksamp, mannwhitneyu, probplot
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation with two continuous variables
+np.random.seed(0)
+df = pd.DataFrame({
+    'Variable1': np.random.normal(loc=0, scale=1, size=1000),
+    'Variable2': np.random.normal(loc=0, scale=1, size=1000)
+})
+
+# Introduce some difference in the distributions
+df['Variable2'] = df['Variable2'] * 1.5 + 2
+
+# Kolmogorov-Smirnov Test
+ks_stat, ks_p_value = ks_2samp(df['Variable1'], df['Variable2'])
+print(f"Kolmogorov-Smirnov test: statistic={ks_stat}, p-value={ks_p_value}")
+
+# Anderson-Darling Test
+ad_stat, ad_critical_values, ad_significance_level = anderson_ksamp([df['Variable1'], df['Variable2']])
+print(f"Anderson-Darling test: statistic={ad_stat}, critical values={ad_critical_values}, significance level={ad_significance_level}")
+
+# Mann-Whitney U Test
+mw_stat, mw_p_value = mannwhitneyu(df['Variable1'], df['Variable2'])
+print(f"Mann-Whitney U test: statistic={mw_stat}, p-value={mw_p_value}")
+
+# Q-Q Plot
+plt.figure(figsize=(12, 8))
+probplot(df['Variable1'], dist="norm", plot=plt)
+probplot(df['Variable2'], dist="norm", plot=plt)
+plt.title('Q-Q Plot of Variable1 and Variable2')
+plt.show()
+
+# Overlayed KDE Plots
+plt.figure(figsize=(12, 8))
+sns.kdeplot(df['Variable1'], label='Variable1', fill=True)
+sns.kdeplot(df['Variable2'], label='Variable2', fill=True)
+plt.title('Overlayed KDE Plots of Variable1 and Variable2')
+plt.xlabel('Value')
+plt.ylabel('Density')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
