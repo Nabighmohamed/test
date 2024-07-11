@@ -1,3 +1,51 @@
+1. Impact de la Winsorisation sur les Variables Cibles
+Objectif : Minimiser l'effet des valeurs aberrantes pour éviter d'appliquer une transformation logarithmique, qui peut amplifier les erreurs lors de la réapplication de l'exponentielle à un modèle linéaire.
+
+Méthodologie :
+
+Winsorisation à Différents Niveaux : Nous avons appliqué six niveaux différents de winsorisation. La borne inférieure a été fixée à 0,01 et la borne supérieure a été itérée sur les valeurs suivantes : 0,01, 0,05, 0,1, 0,2, 0,5, et 0,8.
+Visualisation de l'Impact : L'impact de chaque niveau de winsorisation sur la variable cible a été visualisé afin de déterminer le meilleur compromis pour minimiser l'effet des valeurs aberrantes.
+Données de la Variable Cible :
+
+Moyenne : 8.5e+03
+Écart Type : 3.9e+04
+Troisième Quartile (Q3) : 9.1e+03
+Valeur Maximale : 4.9e+06
+Approche Alternative :
+
+Clustering des Valeurs Cibles : Une autre approche a été testée, consistant à segmenter la variable cible en deux groupes : les valeurs aberrantes et les valeurs normales.
+Remplacement des Valeurs Aberrantes : Les valeurs aberrantes identifiées ont été remplacées par le 95ème percentile du groupe des valeurs normales. Cette méthode visait à réduire l'impact des valeurs aberrantes sans recourir à une transformation logarithmique.
+Résultats :
+
+La winsorisation à différents niveaux a montré une réduction significative de l'impact des valeurs aberrantes, rendant les distributions des variables cibles plus symétriques et réduisant les écarts extrêmes.
+L'approche de clustering et de remplacement des valeurs aberrantes a également montré une réduction efficace des effets des valeurs aberrantes, sans les inconvénients d'une transformation logarithmique.
+Visualisations :
+
+Des courbes de densité (KDE) superposées ont été utilisées pour visualiser l'effet de chaque niveau de winsorisation sur la distribution de la variable cible.
+Les distributions des variables cibles avant et après remplacement des valeurs aberrantes par le 95ème percentile ont également été visualisées pour comparer les deux approches.
+Ces méthodes d'atténuation des valeurs aberrantes ont permis de stabiliser la distribution de la variable cible, facilitant ainsi une modélisation plus précise sans recourir à des transformations logarithmiques potentiellement problématiques.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 import xgboost as xgb
