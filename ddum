@@ -24,6 +24,57 @@ for level in winsor_levels:
 # Melt the DataFrame for plotting
 melted_df = winsorized_df.melt(var_name='Winsorization', value_name='Value')
 
+# Create a FacetGrid for plotting
+g = sns.FacetGrid(melted_df, row='Winsorization', hue='Winsorization', aspect=4, height=2.5)
+g.map(sns.kdeplot, 'Value', fill=True)
+g.add_legend()
+g.set_titles("{row_name}")
+g.set_axis_labels("Value", "Density")
+
+plt.subplots_adjust(top=0.9)
+g.fig.suptitle('Impact of Winsorization at Different Levels', fontsize=16)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from scipy.stats import mstats
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation with extreme outliers
+np.random.seed(0)
+df = pd.DataFrame({
+    'Value': np.random.randn(100) * 20  # Generating a dataset with potential outliers
+})
+
+# Introduce extreme outliers
+df.loc[::10, 'Value'] = df['Value'] * 100
+
+# Define the levels of Winsorization to apply
+winsor_levels = [0.01, 0.05, 0.1, 0.2]
+
+# Apply Winsorization at different levels and store in a new DataFrame
+winsorized_df = pd.DataFrame({'Original': df['Value']})
+for level in winsor_levels:
+    winsorized_df[f'Winsorized_{level}'] = mstats.winsorize(df['Value'], limits=[level, level])
+
+# Melt the DataFrame for plotting
+melted_df = winsorized_df.melt(var_name='Winsorization', value_name='Value')
+
 # Plot the distributions
 plt.figure(figsize=(12, 8))
 sns.displot(melted_df, x='Value', hue='Winsorization', kind='kde', fill=True)
