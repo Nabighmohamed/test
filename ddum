@@ -1,3 +1,45 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate right-skewed data using log-normal distribution
+mu = 0  # mean of the logarithm of the variable
+sigma = 1  # standard deviation of the logarithm of the variable
+data = np.random.lognormal(mean=mu, sigma=sigma, size=1000)
+
+# Apply the inverse transformation
+transformed_data = 1 / data
+
+# Plot the original right-skewed data
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+plt.hist(data, bins=50, density=True, alpha=0.6, color='g')
+plt.title('Original Right-Skewed Data')
+
+# Plot the transformed data
+plt.subplot(1, 2, 2)
+plt.hist(transformed_data, bins=50, density=True, alpha=0.6, color='b')
+plt.title('Transformed Data (Inverse Transformation)')
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Subject: Rapport d'Analyse de Données - Principaux Axes
 
 Bonjour Solène,
