@@ -1,3 +1,69 @@
+import pandas as pd
+
+def group_categorical_variables(df, group_mapping):
+    """
+    Groups categories of categorical variables in the DataFrame based on the given input mapping.
+    
+    Parameters:
+    - df (pd.DataFrame): The input DataFrame containing categorical variables.
+    - group_mapping (dict): A dictionary specifying the new groupings for each categorical variable.
+                            Format: {var1: [[group_number, ['cat1', 'cat2']]], var2: [[group_number, ['cat1', 'cat2']], ...]}
+    
+    Returns:
+    - pd.DataFrame: The DataFrame with grouped categorical variables.
+    """
+    
+    for var, groups in group_mapping.items():
+        # Create a mapping from original categories to new group numbers
+        category_to_group = {}
+        for group in groups:
+            group_number = group[0]
+            categories = group[1]
+            for category in categories:
+                category_to_group[category] = group_number
+        
+        # Map the original categories to new group numbers
+        df[f'Grouped_{var}'] = df[var].map(category_to_group)
+    
+    return df
+
+# Example usage
+if __name__ == "__main__":
+    # Sample DataFrame creation for demonstration
+    df = pd.DataFrame({
+        'Var1': ['cat1', 'cat2', 'cat3', 'cat1', 'cat2', 'cat3'],
+        'Var2': ['cat1', 'cat2', 'cat3', 'cat1', 'cat2', 'cat3']
+    })
+
+    # Group mapping input
+    group_mapping = {
+        'Var1': [[1, ['cat1', 'cat2']]],
+        'Var2': [[2, ['cat1', 'cat2']], [3, ['cat3']]]
+    }
+
+    # Group the categorical variables
+    grouped_df = group_categorical_variables(df, group_mapping)
+    
+    # Display the result
+    print(grouped_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def parse_group_mapping(input_str):
     mappings = {}
     lines = input_str.strip().split("\n")
