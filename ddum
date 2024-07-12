@@ -1,5 +1,120 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBRegressor
+import lightgbm as lgb
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=1000),
+    'Income': np.random.uniform(30000, 100000, size=1000),
+    'Category1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Target': np.random.uniform(0, 100, size=1000)  # Replace this with your CLV or target variable
+})
+
+# Step 1: Data Preparation
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+for col in df.select_dtypes(include=['object']).columns:
+    df[col] = df[col].astype(str)
+
+# Encode categorical variables
+df = pd.get_dummies(df)
+
+# Step 2: Segmentation
+# Train a decision tree regressor for segmentation
+X_seg = df.drop(columns='Target')
+y_seg = df['Target']
+seg_model = DecisionTreeRegressor(max_depth=5)
+seg_model.fit(X_seg, y_seg)
+df['Segment'] = seg_model.predict(X_seg)
+
+# Step 3: Transition Modeling
+# Assuming we have a binary classification target for transition (e.g., Churn)
+df['Transition'] = np.random.choice([0, 1], size=len(df))  # Replace with your actual transition variable
+
+X_trans = df.drop(columns=['Target', 'Transition'])
+y_trans = df['Transition']
+trans_model = RandomForestClassifier(n_estimators=100, random_state=0)
+trans_model.fit(X_trans, y_trans)
+
+# Step 4: Value Assignment
+# Train XGBoost and LightGBM models to predict CLV
+X_val = df.drop(columns=['Target', 'Transition', 'Segment'])
+y_val = df['Target']
+
+# XGBoost Regressor
+xgb_model = XGBRegressor(objective='reg:squarederror', max_depth=5, n_estimators=100, random_state=0)
+xgb_model.fit(X_val, y_val)
+y_val_pred_xgb = xgb_model.predict(X_val)
+
+# LightGBM Regressor
+lgb_model = lgb.LGBMRegressor(n_estimators=100, num_leaves=31, random_state=0)
+lgb_model.fit(X_val, y_val)
+y_val_pred_lgb = lgb_model.predict(X_val)
+
+# Step 5: Simulation
+# Simulate future CLV predictions
+def simulate_clv(model, data, n_periods=12):
+    predictions = []
+    current_data = data.copy()
+    for _ in range(n_periods):
+        pred = model.predict(current_data)
+        predictions.append(pred)
+        current_data['Target'] = pred  # Update current data with predictions
+    return np.array(predictions)
+
+simulated_clv_xgb = simulate_clv(xgb_model, X_val)
+simulated_clv_lgb = simulate_clv(lgb_model, X_val)
+
+# Evaluate models
+mse_xgb = mean_squared_error(y_val, y_val_pred_xgb)
+r2_xgb = r2_score(y_val, y_val_pred_xgb)
+mse_lgb = mean_squared_error(y_val, y_val_pred_lgb)
+r2_lgb = r2_score(y_val, y_val_pred_lgb)
+
+print(f'XGBoost - MSE: {mse_xgb}, R^2: {r2_xgb}')
+print(f'LightGBM - MSE: {mse_lgb}, R^2: {r2_lgb}')
+
+# Plotting actual vs predicted values for the best model (based on R^2 score)
+import matplotlib.pyplot as plt
+
+best_model_name = 'XGBoost' if r2_xgb > r2_lgb else 'LightGBM'
+best_model_pred = y_val_pred_xgb if r2_xgb > r2_lgb else y_val_pred_lgb
+
+plt.figure(figsize=(10, 6))
+plt.scatter(y_val, best_model_pred)
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+plt.title(f'Actual vs Predicted Values ({best_model_name})')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 import xgboost as xgb
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split, GridSearchCV
