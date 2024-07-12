@@ -1,6 +1,84 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import LabelEncoder
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing"
+df.fillna('missing', inplace=True)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Split the data into features and target
+X = df.drop(columns='Target')
+y = df['Target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Initialize XGBoost regressor
+xgb_reg = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, n_estimators=100, random_state=0)
+
+# Train the model
+xgb_reg.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = xgb_reg.predict(X_test)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f'Mean Squared Error: {mse}')
+print(f'R^2 Score: {r2}')
+
+# Plotting actual vs predicted values
+import matplotlib.pyplot as plt
+
+plt.scatter(y_test, y_pred)
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+plt.title('Actual vs Predicted Values')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import xgboost as xgb
 import matplotlib.pyplot as plt
 import seaborn as sns
 
