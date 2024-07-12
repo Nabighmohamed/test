@@ -1,4 +1,74 @@
 import pandas as pd
+import numpy as np
+import xgboost as xgb
+from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Function to segment the 'Age' variable into bins based on the target variable using XGBoost
+def segment_age_using_xgboost(df, age_var, target_var):
+    # Initialize XGBoost regressor
+    xgb_reg = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, n_estimators=100, random_state=0)
+    
+    # Fit the model
+    xgb_reg.fit(df[[age_var]], df[target_var])
+    
+    # Predict the leaf indices for each sample
+    leaf_indices = xgb_reg.apply(df[[age_var]]).reshape(-1)
+    
+    # Create a mapping from age to leaf index (bin)
+    age_to_bin = {age: leaf for age, leaf in zip(df[age_var], leaf_indices)}
+    
+    # Create a new column for age bins
+    df[f'{age_var}_bin'] = df[age_var].map(age_to_bin)
+    
+    # Plotting the original age distribution and the binned age distribution
+    plt.figure(figsize=(14, 6))
+
+    plt.subplot(1, 2, 1)
+    sns.histplot(df[age_var], kde=True)
+    plt.title('Original Age Distribution')
+
+    plt.subplot(1, 2, 2)
+    sns.histplot(df[f'{age_var}_bin'], kde=True)
+    plt.title('Binned Age Distribution')
+
+    plt.show()
+    
+    return df
+
+# Apply the function to segment the age variable
+segmented_df = segment_age_using_xgboost(df, 'Age', 'Target')
+
+# Display the result
+print(segmented_df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 
 def group_categorical_variables(df, group_mapping):
     """
