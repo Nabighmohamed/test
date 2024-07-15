@@ -1,6 +1,102 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Split the data into features and target
+X = df.drop(columns='Target')
+y = df['Target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Define the parameter grid for XGBoost
+param_grid = {
+    'n_estimators': [50, 100, 150],
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.01, 0.1, 0.2]
+}
+
+# Train and evaluate the XGBoost model for each parameter combination
+results = []
+for n_estimators in param_grid['n_estimators']:
+    for max_depth in param_grid['max_depth']:
+        for learning_rate in param_grid['learning_rate']:
+            model = xgb.XGBRegressor(
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                learning_rate=learning_rate,
+                objective='reg:squarederror',
+                random_state=0
+            )
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            r2 = r2_score(y_test, y_pred)
+            results.append({
+                'n_estimators': n_estimators,
+                'max_depth': max_depth,
+                'learning_rate': learning_rate,
+                'R²': r2
+            })
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results)
+
+# Plot the R² scores
+fig, ax = plt.subplots(figsize=(12, 6))
+for key, grp in results_df.groupby(['n_estimators', 'max_depth']):
+    ax.plot(grp['learning_rate'], grp['R²'], marker='o', linestyle='-', label=f'n_estimators={key[0]}, max_depth={key[1]}')
+ax.set_xlabel('Learning Rate')
+ax.set_ylabel('R² Score')
+ax.set_title('R² Scores for Different XGBoost Parameter Combinations')
+ax.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import xgboost as xgb
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
