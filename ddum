@@ -1,5 +1,129 @@
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=1000),
+    'Income': np.random.uniform(30000, 100000, size=1000),
+    'Category1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Target': np.random.uniform(0, 100, size=1000)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+for col in df.select_dtypes(include=['object']).columns:
+    df[col] = df[col].astype(str)
+
+# Encode categorical variables
+df = pd.get_dummies(df)
+
+# Apply k-means clustering to segment the target variable
+kmeans = KMeans(n_clusters=2, random_state=0)
+df['Cluster'] = kmeans.fit_predict(df[['Target']])
+
+# Separate data into outliers and regular observations based on clustering
+outliers = df[df['Cluster'] == kmeans.cluster_centers_.argmax()]
+regular = df[df['Cluster'] != kmeans.cluster_centers_.argmax()]
+
+# Split data into features and target for both subsets
+X_outliers = outliers.drop(columns=['Target', 'Cluster'])
+y_outliers = outliers['Target']
+X_regular = regular.drop(columns=['Target', 'Cluster'])
+y_regular = regular['Target']
+
+# Split the data into training and testing sets for both subsets
+X_train_outliers, X_test_outliers, y_train_outliers, y_test_outliers = train_test_split(X_outliers, y_outliers, test_size=0.2, random_state=0)
+X_train_regular, X_test_regular, y_train_regular, y_test_regular = train_test_split(X_regular, y_regular, test_size=0.2, random_state=0)
+
+# Define the parameter grid for RandomForestRegressor
+param_grid = {
+    'n_estimators': [50, 100, 150],
+    'max_depth': [3, 5, 7],
+    'min_samples_split': [2, 5, 10]
+}
+
+# Function to train and evaluate models
+def train_evaluate_models(X_train, X_test, y_train, y_test):
+    results = []
+    for n_estimators in param_grid['n_estimators']:
+        for max_depth in param_grid['max_depth']:
+            for min_samples_split in param_grid['min_samples_split']:
+                model = RandomForestRegressor(
+                    n_estimators=n_estimators,
+                    max_depth=max_depth,
+                    min_samples_split=min_samples_split,
+                    random_state=0
+                )
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                r2 = r2_score(y_test, y_pred)
+                results.append({
+                    'n_estimators': n_estimators,
+                    'max_depth': max_depth,
+                    'min_samples_split': min_samples_split,
+                    'R²': r2
+                })
+    return pd.DataFrame(results)
+
+# Train and evaluate models on regular observations
+results_regular = train_evaluate_models(X_train_regular, X_test_regular, y_train_regular, y_test_regular)
+print("Results for Regular Observations")
+print(results_regular)
+
+# Train and evaluate models on outliers
+results_outliers = train_evaluate_models(X_train_outliers, X_test_outliers, y_train_outliers, y_test_outliers)
+print("Results for Outliers")
+print(results_outliers)
+
+# Plot the R² scores for regular observations
+fig, ax = plt.subplots(figsize=(12, 6))
+for key, grp in results_regular.groupby(['n_estimators', 'max_depth']):
+    ax.plot(grp['min_samples_split'], grp['R²'], marker='o', linestyle='-', label=f'n_estimators={key[0]}, max_depth={key[1]}')
+ax.set_xlabel('Min Samples Split')
+ax.set_ylabel('R² Score')
+ax.set_title('R² Scores for Different RandomForest Regressor Parameter Combinations (Regular Observations)')
+ax.legend()
+plt.show()
+
+# Plot the R² scores for outliers
+fig, ax = plt.subplots(figsize=(12, 6))
+for key, grp in results_outliers.groupby(['n_estimators', 'max_depth']):
+    ax.plot(grp['min_samples_split'], grp['R²'], marker='o', linestyle='-', label=f'n_estimators={key[0]}, max_depth={key[1]}')
+ax.set_xlabel('Min Samples Split')
+ax.set_ylabel('R² Score')
+ax.set_title('R² Scores for Different RandomForest Regressor Parameter Combinations (Outliers)')
+ax.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
