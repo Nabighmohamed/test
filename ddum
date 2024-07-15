@@ -1,5 +1,131 @@
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from xgboost import XGBRegressor
+import lightgbm as lgb
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=1000),
+    'Income': np.random.uniform(30000, 100000, size=1000),
+    'Category1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Target': np.random.uniform(0, 100, size=1000)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+for col in df.select_dtypes(include=['object']).columns:
+    df[col] = df[col].astype(str)
+
+# Encode categorical variables
+df = pd.get_dummies(df)
+
+# Step 1: Apply Isolation Forest to Detect Outliers
+isf = IsolationForest(contamination=0.05, random_state=0)  # Adjust contamination as needed
+df['Outlier'] = isf.fit_predict(df.drop(columns='Target'))
+
+# Separate data into outliers and regular observations
+outliers = df[df['Outlier'] == -1]
+regular = df[df['Outlier'] == 1]
+
+# Split data into features and target for both subsets
+X_outliers = outliers.drop(columns=['Target', 'Outlier'])
+y_outliers = outliers['Target']
+X_regular = regular.drop(columns=['Target', 'Outlier'])
+y_regular = regular['Target']
+
+# Split the data into training and testing sets for both subsets
+X_train_outliers, X_test_outliers, y_train_outliers, y_test_outliers = train_test_split(X_outliers, y_outliers, test_size=0.2, random_state=0)
+X_train_regular, X_test_regular, y_train_regular, y_test_regular = train_test_split(X_regular, y_regular, test_size=0.2, random_state=0)
+
+# Initialize models
+models = {
+    'RandomForest': RandomForestRegressor(random_state=0),
+    'XGBoost': XGBRegressor(objective='reg:squarederror', random_state=0),
+    'LightGBM': lgb.LGBMRegressor(random_state=0),
+    'GradientBoosting': GradientBoostingRegressor(random_state=0)
+}
+
+# Hyperparameter grids for GridSearchCV
+param_grids = {
+    'RandomForest': {'n_estimators': [100, 200], 'max_depth': [3, 5, 7]},
+    'XGBoost': {'n_estimators': [100, 200], 'max_depth': [3, 5, 7]},
+    'LightGBM': {'n_estimators': [100, 200], 'num_leaves': [31, 50]},
+    'GradientBoosting': {'n_estimators': [100, 200], 'max_depth': [3, 5, 7]}
+}
+
+# Function to train and evaluate models
+def train_evaluate_models(X_train, X_test, y_train, y_test):
+    results = {}
+    n_runs = 5
+    for name, model in models.items():
+        mse_train_list, mse_test_list, r2_train_list, r2_test_list = [], [], [], []
+        for _ in range(n_runs):
+            grid_search = GridSearchCV(model, param_grids[name], cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+            grid_search.fit(X_train, y_train)
+            best_model = grid_search.best_estimator_
+
+            y_train_pred = best_model.predict(X_train)
+            y_test_pred = best_model.predict(X_test)
+
+            mse_train = mean_squared_error(y_train, y_train_pred)
+            mse_test = mean_squared_error(y_test, y_test_pred)
+            r2_train = r2_score(y_train, y_train_pred)
+            r2_test = r2_score(y_test, y_test_pred)
+
+            mse_train_list.append(mse_train)
+            mse_test_list.append(mse_test)
+            r2_train_list.append(r2_train)
+            r2_test_list.append(r2_test)
+
+        results[name] = {
+            'MSE Train Mean': np.mean(mse_train_list),
+            'MSE Train Variance': np.var(mse_train_list),
+            'MSE Test Mean': np.mean(mse_test_list),
+            'MSE Test Variance': np.var(mse_test_list),
+            'R² Train Mean': np.mean(r2_train_list),
+            'R² Train Variance': np.var(r2_train_list),
+            'R² Test Mean': np.mean(r2_test_list),
+            'R² Test Variance': np.var(r2_test_list)
+        }
+
+    return results
+
+# Train and evaluate models on regular observations
+results_regular = train_evaluate_models(X_train_regular, X_test_regular, y_train_regular, y_test_regular)
+print("Results for Regular Observations")
+print(pd.DataFrame(results_regular).T)
+
+# Train and evaluate models on outliers
+results_outliers = train_evaluate_models(X_train_outliers, X_test_outliers, y_train_outliers, y_test_outliers)
+print("Results for Outliers")
+print(pd.DataFrame(results_outliers).T)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
