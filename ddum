@@ -1,5 +1,180 @@
 import pandas as pd
 import numpy as np
+import xgboost as xgb
+import lightgbm as lgb
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, HuberRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+
+# Sample DataFrame creation for demonstration
+# Replace this with your actual dataset loading method
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Split the data into features and target
+X = df.drop(columns='Target')
+y = df['Target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Normalize the data for LSTM
+scaler_X = StandardScaler()
+X_train_scaled = scaler_X.fit_transform(X_train)
+X_test_scaled = scaler_X.transform(X_test)
+
+scaler_y = StandardScaler()
+y_train_scaled = scaler_y.fit_transform(y_train.values.reshape(-1, 1)).flatten()
+y_test_scaled = scaler_y.transform(y_test.values.reshape(-1, 1)).flatten()
+
+# Reshape input to be 3D [samples, timesteps, features] for LSTM
+X_train_lstm = X_train_scaled.reshape((X_train_scaled.shape[0], 1, X_train_scaled.shape[1]))
+X_test_lstm = X_test_scaled.reshape((X_test_scaled.shape[0], 1, X_test_scaled.shape[1]))
+
+# Define LSTM model
+def build_lstm_model():
+    model = Sequential()
+    model.add(LSTM(50, activation='relu', input_shape=(X_train_lstm.shape[1], X_train_lstm.shape[2])))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
+# Initialize models
+models = {
+    'Linear Regression': LinearRegression(),
+    'Ridge Regression': Ridge(),
+    'Lasso Regression': Lasso(),
+    'Huber Regression': HuberRegressor(),
+    'Random Forest Regressor': RandomForestRegressor(random_state=0),
+    'XGBoost Regressor': xgb.XGBRegressor(objective='reg:squarederror', random_state=0),
+    'LightGBM Regressor': lgb.LGBMRegressor(random_state=0),
+    'LSTM': KerasRegressor(build_fn=build_lstm_model, epochs=50, batch_size=32, verbose=0)
+}
+
+# Hyperparameter grids for GridSearchCV
+param_grids = {
+    'Ridge Regression': {'alpha': [0.01, 0.1, 1, 10, 100]},
+    'Lasso Regression': {'alpha': [0.01, 0.1, 1, 10, 100]},
+    'Huber Regression': {'epsilon': [1.35, 1.5, 1.75, 2.0]},
+    'Random Forest Regressor': {'n_estimators': [100, 200, 300], 'max_depth': [3, 5, 7]},
+    'XGBoost Regressor': {'n_estimators': [100, 200, 300], 'max_depth': [3, 5, 7]},
+    'LightGBM Regressor': {'n_estimators': [100, 200, 300], 'num_leaves': [31, 50, 100]}
+}
+
+# Train and evaluate models
+results = {}
+for name, model in models.items():
+    if name in param_grids:
+        grid_search = GridSearchCV(model, param_grids[name], cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+        grid_search.fit(X_train, y_train)
+        best_model = grid_search.best_estimator_
+
+        y_train_pred = best_model.predict(X_train)
+        y_test_pred = best_model.predict(X_test)
+
+        mse_train = mean_squared_error(y_train, y_train_pred)
+        mse_test = mean_squared_error(y_test, y_test_pred)
+        r2_train = r2_score(y_train, y_train_pred)
+        r2_test = r2_score(y_test, y_test_pred)
+    else:
+        if name == 'LSTM':
+            model.fit(X_train_lstm, y_train_scaled)
+            y_train_pred_scaled = model.predict(X_train_lstm)
+            y_test_pred_scaled = model.predict(X_test_lstm)
+
+            y_train_pred = scaler_y.inverse_transform(y_train_pred_scaled)
+            y_test_pred = scaler_y.inverse_transform(y_test_pred_scaled)
+
+            mse_train = mean_squared_error(y_train, y_train_pred)
+            mse_test = mean_squared_error(y_test, y_test_pred)
+            r2_train = r2_score(y_train, y_train_pred)
+            r2_test = r2_score(y_test, y_test_pred)
+        else:
+            model.fit(X_train, y_train)
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
+
+            mse_train = mean_squared_error(y_train, y_train_pred)
+            mse_test = mean_squared_error(y_test, y_test_pred)
+            r2_train = r2_score(y_train, y_train_pred)
+            r2_test = r2_score(y_test, y_test_pred)
+
+    results[name] = {
+        'MSE Train': mse_train,
+        'MSE Test': mse_test,
+        'R^2 Train': r2_train,
+        'R^2 Test': r2_test
+    }
+    print(f'{name} - MSE Train: {mse_train}, MSE Test: {mse_test}, R^2 Train: {r2_train}, R^2 Test: {r2_test}')
+    
+    # Plotting train vs test results
+    plt.figure(figsize=(14, 6))
+    
+    plt.subplot(1, 2, 1)
+    plt.scatter(y_train, y_train_pred, alpha=0.5)
+    plt.plot([y_train.min(), y_train.max()], [y_train.min(), y_train.max()], '--r')
+    plt.xlabel('Actual Values (Train)')
+    plt.ylabel('Predicted Values (Train)')
+    plt.title(f'{name} - Train')
+
+    plt.subplot(1, 2, 2)
+    plt.scatter(y_test, y_test_pred, alpha=0.5)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r')
+    plt.xlabel('Actual Values (Test)')
+    plt.ylabel('Predicted Values (Test)')
+    plt.title(f'{name} - Test')
+    
+    plt.suptitle(f'Actual vs Predicted Values ({name})')
+    plt.show()
+
+# Display results
+results_df = pd.DataFrame(results).T
+print(results_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error, r2_score
