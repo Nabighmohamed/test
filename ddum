@@ -1,3 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import logit
+
+# Apply logit transformation
+logit_transform = logit(data)
+
+# Standardize the transformed data
+standardized_logit = (logit_transform - np.mean(logit_transform)) / np.std(logit_transform)
+
+# Plot the standardized logit-transformed data
+fig, axs = plt.subplots(1, 1, figsize=(10, 5))
+
+# Standardized logit-transformed data histogram
+axs.hist(standardized_logit, bins=50, color='purple', alpha=0.7)
+axs.set_title('Standardized Logit Transformed Data')
+axs.set_xlabel('Value')
+axs.set_ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 import xgboost as xgb
