@@ -75,6 +75,133 @@ for column in combined_df.columns:
                 train, test = ts[:train_size], ts[train_size:]
 
                 model = ARIMA(train, order=(5,1,0))  # Example ARIMA order
+                model_fit = model.fit()
+                predictions = model_fit.forecast(steps=len(test))
+
+                mse = mean_squared_error(test, predictions)
+                r2 = r2_score(test, predictions)
+                
+                mse_list.append(mse)
+                r2_list.append(r2)
+        
+        if mse_list and r2_list:  # Ensure there are scores collected
+            predictability_results[column] = {
+                'MSE Mean': np.mean(mse_list),
+                'MSE Variance': np.var(mse_list),
+                'R² Mean': np.mean(r2_list),
+                'R² Variance': np.var(r2_list)
+            }
+
+# Convert results to DataFrame
+predictability_df = pd.DataFrame(predictability_results).T
+print(predictability_df)
+
+# Plot predictability results
+predictability_df[['R² Mean']].plot(kind='bar', figsize=(12, 6))
+plt.xlabel('Variables')
+plt.ylabel('R² Mean Score')
+plt.title('Predictability of Variables (R² Mean Scores)')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error, r2_score
+from statsmodels.tsa.arima.model import ARIMA
+
+# Generate synthetic data for each month from 2019 to 2023
+dates = pd.date_range(start='2019-01-01', end='2023-12-01', freq='MS')
+dataframes = []
+
+for date in dates:
+    df = pd.DataFrame({
+        'Date': [date] * 100,
+        'cclikpi': np.random.choice(range(1, 21), size=100),  # 20 unique cclikpi values
+        'Age': np.random.randint(18, 70, size=100),
+        'Income': np.random.uniform(30000, 100000, size=100),
+        'Category1': np.random.choice(['A', 'B', 'C'], size=100),
+        'Category2': np.random.choice(['X', 'Y', 'Z'], size=100),
+        'Target': np.random.uniform(0, 100, size=100)
+    })
+    dataframes.append(df)
+
+# Combine datasets
+combined_df = pd.concat(dataframes)
+
+# Replace missing values with a new category "missing" and convert all to strings
+combined_df.fillna('missing', inplace=True)
+combined_df['Category1'] = combined_df['Category1'].astype(str)
+combined_df['Category2'] = combined_df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in combined_df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    combined_df[col] = le.fit_transform(combined_df[col])
+    label_encoders[col] = le
+
+# Ensure 'Date' column is in datetime format
+combined_df['Date'] = pd.to_datetime(combined_df['Date'])
+
+# Sort by 'cclikpi' and 'Date'
+combined_df.sort_values(by=['cclikpi', 'Date'], inplace=True)
+
+# Plot the evolution of each variable over time for a sample 'cclikpi'
+sample_cclikpi = combined_df[combined_df['cclikpi'] == combined_df['cclikpi'].unique()[0]]
+
+plt.figure(figsize=(15, 10))
+for column in combined_df.columns:
+    if column not in ['cclikpi', 'Date']:
+        plt.plot(sample_cclikpi['Date'], sample_cclikpi[column], label=column)
+plt.xlabel('Date')
+plt.ylabel('Value')
+plt.title('Evolution of Variables Over Time for a Sample cclikpi')
+plt.legend()
+plt.show()
+
+# Train and evaluate ARIMA models for each variable
+predictability_results = {}
+
+for column in combined_df.columns:
+    if column not in ['cclikpi', 'Date']:
+        mse_list = []
+        r2_list = []
+        
+        unique_ids = combined_df['cclikpi'].unique()
+        
+        for cclikpi_id in unique_ids:
+            df_subset = combined_df[combined_df['cclikpi'] == cclikpi_id]
+            df_subset = df_subset.set_index('Date')
+            ts = df_subset[column].dropna()
+            
+            if len(ts) > 10:  # Ensure there is enough data
+                train_size = int(len(ts) * 0.8)
+                train, test = ts[:train_size], ts[train_size:]
+
+                model = ARIMA(train, order=(5,1,0))  # Example ARIMA order
                 model_fit = model.fit(disp=0)
                 predictions = model_fit.forecast(steps=len(test))[0]
 
