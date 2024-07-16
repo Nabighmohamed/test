@@ -1,6 +1,101 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=1000),
+    'Income': np.random.uniform(30000, 100000, size=1000),
+    'Category1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Target': np.random.uniform(0, 100, size=1000)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Split the data into features and target
+X = df.drop(columns='Target')
+y = df['Target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Define a range of thresholds
+thresholds = np.linspace(y.min(), y.max(), 50)
+
+# Store the R² scores for each threshold
+threshold_r2_scores = []
+
+# Train and evaluate XGBoost for each threshold
+for threshold in thresholds:
+    y_train_segmented = (y_train > threshold).astype(int)
+    y_test_segmented = (y_test > threshold).astype(int)
+    
+    model = xgb.XGBClassifier(objective='binary:logistic', random_state=0)
+    model.fit(X_train, y_train_segmented)
+    
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    r2_train = r2_score(y_train_segmented, y_train_pred)
+    r2_test = r2_score(y_test_segmented, y_test_pred)
+    
+    threshold_r2_scores.append((threshold, r2_train, r2_test))
+
+# Convert results to DataFrame
+threshold_r2_df = pd.DataFrame(threshold_r2_scores, columns=['Threshold', 'R² Train', 'R² Test'])
+
+# Find the optimal threshold based on the highest R² Test score
+optimal_threshold = threshold_r2_df.loc[threshold_r2_df['R² Test'].idxmax()]['Threshold']
+print(f'Optimal Threshold: {optimal_threshold}')
+
+# Plot the R² scores for different thresholds
+plt.figure(figsize=(12, 6))
+plt.plot(threshold_r2_df['Threshold'], threshold_r2_df['R² Train'], label='R² Train')
+plt.plot(threshold_r2_df['Threshold'], threshold_r2_df['R² Test'], label='R² Test')
+plt.xlabel('Threshold')
+plt.ylabel('R² Score')
+plt.title('R² Scores for Different Thresholds')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import xgboost as xgb
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder, StandardScaler
