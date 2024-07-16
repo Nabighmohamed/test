@@ -1,5 +1,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Generate a variable that varies between 1 and 0 with high density around 1 and 0
+np.random.seed(42)
+data = np.concatenate([np.random.beta(0.5, 0.5, 1000) for _ in range(2)])
+
+# Define transformations
+inverse_transform = 1 / data
+sigmoid_transform = 1 / (1 + np.exp(-data))
+
+# Plot the original data and transformations
+fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+
+# Original data histogram
+axs[0].hist(data, bins=50, color='blue', alpha=0.7)
+axs[0].set_title('Original Data')
+axs[0].set_xlabel('Value')
+axs[0].set_ylabel('Frequency')
+
+# Inverse transformed data histogram
+axs[1].hist(inverse_transform, bins=50, color='green', alpha=0.7)
+axs[1].set_title('Inverse Transformed Data')
+axs[1].set_xlabel('Value')
+axs[1].set_ylabel('Frequency')
+
+# Sigmoid transformed data histogram
+axs[2].hist(sigmoid_transform, bins=50, color='red', alpha=0.7)
+axs[2].set_title('Sigmoid Transformed Data')
+axs[2].set_xlabel('Value')
+axs[2].set_ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
 from scipy.special import logit
 
 # Apply logit transformation
