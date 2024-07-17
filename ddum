@@ -1,3 +1,134 @@
+
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Value': np.random.randn(100) * 20  # Generating a dataset with potential outliers
+})
+
+# Introduce extreme outliers
+df.loc[::10, 'Value'] = df['Value'] * 100
+
+# Function to apply Isolation Forest with different parameters
+def apply_isolation_forest(df, contamination, n_estimators):
+    iso_forest = IsolationForest(contamination=contamination, n_estimators=n_estimators, random_state=0)
+    df['Outlier'] = iso_forest.fit_predict(df[['Value']])
+    df['Outlier'] = df['Outlier'].apply(lambda x: 'Outlier' if x == -1 else 'Inlier')
+    return df
+
+# Apply Isolation Forest with different parameters
+params = [
+    {'contamination': 0.1, 'n_estimators': 100},
+    {'contamination': 0.05, 'n_estimators': 200},
+    {'contamination': 0.15, 'n_estimators': 150},
+]
+
+results = {}
+for param in params:
+    df = apply_isolation_forest(df, **param)
+    # Calculate 95th percentile of inliers
+    inlier_values = df[df['Outlier'] == 'Inlier']['Value']
+    percentile_95 = np.percentile(inlier_values, 95)
+
+    # Replace outliers with the 95th percentile value of inliers
+    df['Adjusted'] = df.apply(lambda row: percentile_95 if row['Outlier'] == 'Outlier' else row['Value'], axis=1)
+
+    # Plot original data with outliers highlighted
+    plt.figure(figsize=(12, 8))
+    sns.scatterplot(data=df, x=range(len(df)), y='Value', hue='Outlier', palette='tab10', legend='full')
+    plt.title(f'Isolation Forest Outlier Detection (contamination={param["contamination"]}, n_estimators={param["n_estimators"]})')
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    plt.show()
+
+    # Plot original and adjusted data distributions
+    plt.figure(figsize=(12, 8))
+    sns.displot(df, x='Value', hue='Outlier', kind='kde', fill=True, height=5, aspect=2)
+    plt.title('Original Data with Outliers Highlighted')
+
+    sns.displot(df, x='Adjusted', kind='kde', fill=True, height=5, aspect=2)
+    plt.title('Data after Outlier Adjustment')
+    plt.show()
+
+    results[f'contamination_{param["contamination"]}_n_estimators_{param["n_estimators"]}'] = df.copy()
+
+# Prepare data for XGBoost
+def train_xgboost(X_train, y_train, X_test, y_test):
+    model = xgb.XGBRegressor(objective='reg:squarederror', random_state=0)
+    model.fit(X_train, y_train)
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    mse_train = mean_squared_error(y_train, y_train_pred)
+    mse_test = mean_squared_error(y_test, y_test_pred)
+    r2_train = r2_score(y_train, y_train_pred)
+    r2_test = r2_score(y_test, y_test_pred)
+    
+    return mse_train, mse_test, r2_train, r2_test
+
+# Train and evaluate XGBoost for each set of parameters
+for key, df in results.items():
+    # Split the data into training and testing sets
+    X = df[['Adjusted']]
+    y = df['Value']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+    # Train XGBoost models
+    mse_train, mse_test, r2_train, r2_test = train_xgboost(X_train, y_train, X_test, y_test)
+
+    print(f'Results for {key}:')
+    print(f'MSE Train: {mse_train}, MSE Test: {mse_test}, R^2 Train: {r2_train}, R^2 Test: {r2_test}')
+    
+    # Plotting train vs test results
+    plt.figure(figsize=(14, 6))
+    
+    plt.subplot(1, 2, 1)
+    plt.scatter(y_train, model.predict(X_train), alpha=0.5)
+    plt.plot([y_train.min(), y_train.max()], [y_train.min(), y_train.max()], '--r')
+    plt.xlabel('Actual Values (Train)')
+    plt.ylabel('Predicted Values (Train)')
+    plt.title(f'XGBoost - Train ({key})')
+    
+    plt.subplot(1, 2, 2)
+    plt.scatter(y_test, model.predict(X_test), alpha=0.5)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r')
+    plt.xlabel('Actual Values (Test)')
+    plt.ylabel('Predicted Values (Test)')
+    plt.title(f'XGBoost - Test ({key})')
+    
+    plt.suptitle(f'Actual vs Predicted Values (XGBoost) - {key}')
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
