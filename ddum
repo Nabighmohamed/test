@@ -1,5 +1,111 @@
 import pandas as pd
 import numpy as np
+from fbprophet import Prophet
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+date_rng = pd.date_range(start='1/1/2020', end='1/10/2020', freq='H')
+df = pd.DataFrame(date_rng, columns=['ds'])
+df['Age'] = np.random.randint(18, 70, size=(len(date_rng)))
+df['Income'] = np.random.uniform(30000, 100000, size=(len(date_rng)))
+df['Category1'] = np.random.choice(['A', 'B', 'C'], size=(len(date_rng)))
+df['Category2'] = np.random.choice(['X', 'Y', 'Z'], size=(len(date_rng)))
+df['y'] = np.random.uniform(0, 100, size=(len(date_rng)))
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    if col != 'ds':  # Do not encode the date column
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        label_encoders[col] = le
+
+# Prepare data for Prophet
+prophet_df = df[['ds', 'y']].copy()
+
+# Split the data into training and testing sets
+train_size = int(len(prophet_df) * 0.8)
+prophet_train = prophet_df[:train_size]
+prophet_test = prophet_df[train_size:]
+
+# Initialize and fit Prophet model
+model = Prophet()
+model.fit(prophet_train)
+
+# Make predictions
+future = model.make_future_dataframe(periods=len(prophet_test), freq='H')
+forecast = model.predict(future)
+
+# Extract the relevant predictions
+forecast_train = forecast.iloc[:train_size]
+forecast_test = forecast.iloc[train_size:]
+
+# Calculate performance metrics
+mse_train = mean_squared_error(prophet_train['y'], forecast_train['yhat'])
+mse_test = mean_squared_error(prophet_test['y'], forecast_test['yhat'])
+r2_train = r2_score(prophet_train['y'], forecast_train['yhat'])
+r2_test = r2_score(prophet_test['y'], forecast_test['yhat'])
+
+results = {
+    'MSE Train': mse_train,
+    'MSE Test': mse_test,
+    'R^2 Train': r2_train,
+    'R^2 Test': r2_test
+}
+
+print(f'Prophet Model - MSE Train: {mse_train}, MSE Test: {mse_test}, R^2 Train: {r2_train}, R^2 Test: {r2_test}')
+
+# Plotting train vs test results
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+plt.plot(prophet_train['ds'], prophet_train['y'], label='Actual')
+plt.plot(forecast_train['ds'], forecast_train['yhat'], label='Predicted')
+plt.xlabel('Date')
+plt.ylabel('Values (Train)')
+plt.title('Prophet - Train')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(prophet_test['ds'], prophet_test['y'], label='Actual')
+plt.plot(forecast_test['ds'], forecast_test['yhat'], label='Predicted')
+plt.xlabel('Date')
+plt.ylabel('Values (Test)')
+plt.title('Prophet - Test')
+plt.legend()
+
+plt.suptitle('Actual vs Predicted Values (Prophet)')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
