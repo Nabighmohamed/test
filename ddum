@@ -1,5 +1,101 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=1000),
+    'Income': np.random.uniform(30000, 100000, size=1000),
+    'Category1': np.random.choice(['A', 'B', 'C'], size=1000),
+    'Category2': np.random.choice(['X', 'Y', 'Z'], size=1000),
+    'Target': np.random.poisson(2, size=1000)
+})
+
+# Add excess zeros to the target variable
+df.loc[np.random.choice(df.index, size=500, replace=False), 'Target'] = 0
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Split the data into features and target
+X = df.drop(columns='Target')
+y = df['Target']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Hyperparameter tuning for CART model
+cart_param_grid = {
+    'max_depth': [3, 5, 7, 10],
+    'min_samples_split': [2, 10, 20],
+    'min_samples_leaf': [1, 5, 10]
+}
+cart_model = DecisionTreeRegressor(random_state=0)
+cart_grid_search = GridSearchCV(cart_model, cart_param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+cart_grid_search.fit(X_train, y_train)
+best_cart_model = cart_grid_search.best_estimator_
+
+# Predict on training and testing data
+y_train_pred_cart = best_cart_model.predict(X_train)
+y_test_pred_cart = best_cart_model.predict(X_test)
+
+# Calculate performance metrics for CART
+mse_train_cart = mean_squared_error(y_train, y_train_pred_cart)
+mse_test_cart = mean_squared_error(y_test, y_test_pred_cart)
+r2_train_cart = r2_score(y_train, y_train_pred_cart)
+r2_test_cart = r2_score(y_test, y_test_pred_cart)
+
+print(f'CART Model - MSE Train: {mse_train_cart}, MSE Test: {mse_test_cart}, R^2 Train: {r2_train_cart}, R^2 Test: {r2_test_cart}')
+
+# Plotting CART model results
+plt.figure(figsize=(14, 6))
+plt.subplot(1, 2, 1)
+plt.scatter(y_train, y_train_pred_cart, alpha=0.5)
+plt.plot([y_train.min(), y_train.max()], [y_train.min(), y_train.max()], '--r')
+plt.xlabel('Actual Values (Train)')
+plt.ylabel('Predicted Values (Train)')
+plt.title('CART - Train')
+
+plt.subplot(1, 2, 2)
+plt.scatter(y_test, y_test_pred_cart, alpha=0.5)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r')
+plt.xlabel('Actual Values (Test)')
+plt.ylabel('Predicted Values (Test)')
+plt.title('CART - Test')
+
+plt.suptitle('Actual vs Predicted Values (CART)')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score
