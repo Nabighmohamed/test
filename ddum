@@ -1,3 +1,35 @@
+Objet : Demande de renseignements sur les futures opportunités d'emploi
+
+Bonjour Sabrina,
+
+J'espère que vous allez bien.
+
+Je suis actuellement stagiaire au sein de l'équipe BNP EAD, sous la direction de Solène. J'apprécie énormément le travail ici et les opportunités d'apprentissage que cela m'a offertes.
+
+Je vous écris pour exprimer mon intérêt pour toute future opportunité d'emploi au sein de l'entreprise. Vous trouverez ci-joint mon CV mis à jour pour référence.
+
+Je suis impatient de continuer à contribuer à l'entreprise et de développer davantage mes compétences dans un poste à temps plein. Si des opportunités correspondant à mon profil et à mon expérience se présentent, je vous serais reconnaissant de bien vouloir me considérer.
+
+Merci pour votre temps et votre attention. J'attends avec impatience de vos nouvelles.
+
+Cordialement,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
