@@ -1,36 +1,41 @@
-Objet : Demande d'approbation pour un email à Sabrina concernant les opportunités d'emploi
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
-Bonjour Solène,
+# Generate non-linear data
+np.random.seed(0)
+X = np.sort(5 * np.random.rand(80, 1), axis=0)
+y = np.sin(X).ravel() + np.random.randn(80) * 0.5
 
-J'espère que vous allez bien.
+# Fit linear model
+model = LinearRegression()
+model.fit(X, y)
+y_pred = model.predict(X)
 
-Je souhaite envoyer un email à Sabrina pour exprimer mon intérêt pour les futures opportunités d'emploi au sein de l'entreprise. Pourriez-vous, s'il vous plaît, revoir et approuver le brouillon ci-dessous avant que je ne l'envoie ?
+# Calculate R^2
+r2 = r2_score(y, y_pred)
+print(f"R^2: {r2}")
+
+# Plot
+plt.scatter(X, y, color='black')
+plt.plot(X, y_pred, color='blue', linewidth=3)
+plt.title(f'Linear Regression on Non-linear Data\nR^2 = {r2:.2f}')
+plt.show()
 
 
+from sklearn.model_selection import train_test_split
 
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
+# Fit model on training data
+model.fit(X_train, y_train)
+y_test_pred = model.predict(X_test)
 
-
-
-
-
-
-Objet : Demande de renseignements sur les futures opportunités d'emploi
-
-Bonjour Sabrina,
-
-J'espère que vous allez bien.
-
-Je suis actuellement stagiaire au sein de l'équipe BNP EAD, sous la direction de Solène. J'apprécie énormément le travail ici et les opportunités d'apprentissage que cela m'a offertes.
-
-Je vous écris pour exprimer mon intérêt pour toute future opportunité d'emploi au sein de l'entreprise. Vous trouverez ci-joint mon CV mis à jour pour référence.
-
-Je suis impatient de continuer à contribuer à l'entreprise et de développer davantage mes compétences dans un poste à temps plein. Si des opportunités correspondant à mon profil et à mon expérience se présentent, je vous serais reconnaissant de bien vouloir me considérer.
-
-Merci pour votre temps et votre attention. J'attends avec impatience de vos nouvelles.
-
-Cordialement,
-
+# Calculate R^2 on test data
+r2_test = r2_score(y_test, y_test_pred)
+print(f"R^2 on test data: {r2_test}")
 
 
 
