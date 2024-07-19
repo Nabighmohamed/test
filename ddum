@@ -1,14 +1,35 @@
-Objet: Lien vers le rapport sur la valeur de R² et son interprétation statistique
+import xgboost as xgb
+from sklearn.model_selection import GridSearchCV
+import pandas as pd
 
-Bonjour Solène,
+# Define the parameter grid
+param_grid = {
+    'eta': [0.01, 0.02, 0.1],
+    'booster': ['gbtree', 'gblinear'],
+    'max_depth': [6, 10, 15]
+}
 
-Je vous envoie le lien vers le rapport sur la valeur de R² et son interprétation statistique que nous avons récemment discuté.
+# Convert your training data to DMatrix format
+dtrain = xgb.DMatrix(data=train_data, label=train_labels)
 
-[Insérez le lien ici]
+# Define the model
+xgb_model = xgb.XGBRegressor()
 
-N'hésitez pas à me faire savoir si vous avez des questions ou si vous avez besoin de plus d'informations.
+# Perform the grid search
+grid_search = GridSearchCV(estimator=xgb_model, param_grid=param_grid, cv=3, scoring='neg_mean_squared_error', verbose=1)
 
-Cordialement,
+# Fit the grid search
+grid_search.fit(train_data, train_labels)
+
+# Get the results
+cv_results = pd.DataFrame(grid_search.cv_results_)
+
+# Print the best parameters
+print("Best parameters:", grid_search.best_params_)
+
+# Plot the results
+cv_results[['mean_test_score', 'std_test_score']].plot()
+
 
 
 
