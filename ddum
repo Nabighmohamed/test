@@ -1,4 +1,51 @@
 import xgboost as xgb
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.metrics import r2_score, make_scorer
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample data preparation (assuming you have your dataset as X and y)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define XGBoost regressor
+xgb_reg = xgb.XGBRegressor()
+
+# Define parameter grid
+param_grid = {
+    'eta': [0.01, 0.02, 0.03],
+    'max_depth': [3, 5, 7],
+    'n_estimators': [100, 200, 300]
+}
+
+# Define R^2 scorer
+r2_scorer = make_scorer(r2_score)
+
+# Perform GridSearchCV
+grid_search = GridSearchCV(estimator=xgb_reg, param_grid=param_grid, scoring=r2_scorer, cv=5, return_train_score=True)
+grid_search.fit(X_train, y_train)
+
+# Extract results
+results = pd.DataFrame(grid_search.cv_results_)
+
+# Plotting the evolution of R^2
+plt.figure(figsize=(14, 7))
+
+plt.plot(results['param_eta'], results['mean_train_score'], label='Train R^2')
+plt.plot(results['param_eta'], results['mean_test_score'], label='Test R^2')
+
+plt.xlabel('Learning Rate (eta)')
+plt.ylabel('R^2 Score')
+plt.title('Evolution of R^2 for different Learning Rates')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+import xgboost as xgb
 import pandas as pd
 from sklearn.metrics import r2_score
 
