@@ -1,4 +1,52 @@
 import xgboost as xgb
+import pandas as pd
+from sklearn.metrics import r2_score
+
+# Define XGBoost parameters
+xgb_para = {
+    'eta': 0.02,
+    'booster': 'gbtree',
+    'max_depth': 10
+}
+
+# Perform cross-validation
+xgb_cv = xgb.cv(
+    params=xgb_para,
+    dtrain=train_xgb,
+    num_boost_round=500,
+    nfold=5,
+    metrics={'rmse'},  # RMSE is used for early stopping
+    as_pandas=True,
+    seed=42
+)
+
+# Extract the train and test predictions from the cross-validation
+train_predictions = xgb_cv['train-rmse-mean']
+test_predictions = xgb_cv['test-rmse-mean']
+
+# Calculate R^2 for train and test
+train_r2 = [r2_score(train_xgb.get_label(), train_predictions)]
+test_r2 = [r2_score(test_xgb.get_label(), test_predictions)]
+
+# Convert R^2 scores to a DataFrame for plotting
+r2_df = pd.DataFrame({
+    'train-r2': train_r2,
+    'test-r2': test_r2
+})
+
+# Plot R^2 scores
+r2_df.plot()
+
+
+
+
+
+
+
+
+
+
+import xgboost as xgb
 from sklearn.model_selection import GridSearchCV
 import pandas as pd
 
