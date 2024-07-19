@@ -1,13 +1,469 @@
-Bonjour Sabrina,
+Rapport sur la Valeur de R² et son Interprétation Statistique
+Introduction
+La valeur de R², ou coefficient de détermination, est souvent mal comprise. En particulier, beaucoup de gens pensent que R² ne peut être qu'entre 0 et 1. Cependant, il peut être négatif dans certains cas. Ce rapport explique pourquoi et comment cela peut se produire, avec une explication détaillée des calculs de R² et une illustration pratique.
 
-Merci pour votre réponse.
+Calcul de R²
+Pour comprendre pourquoi R² peut être négatif, nous devons examiner comment il est calculé. Nous utilisons trois variables clés dans ce calcul : RSS (Residual Sum of Squares), TSS (Total Sum of Squares), et ESS (Explained Sum of Squares).
 
-Je suis disponible pour en parler lors de la réunion d'équipe.
+Calcul de RSS :
+Pour chaque variable indépendante 
+𝑥
+x, nous avons une variable dépendante 
+𝑦
+y. Nous traçons une ligne de régression linéaire qui prédit les valeurs de 
+𝑦
+y pour chaque valeur de 
+𝑥
+x. Appelons les valeurs prédites 
+𝑦
+^
+y
+^
+​
+ . L'erreur entre ce que la ligne prédit et les valeurs réelles de 
+𝑦
+y est calculée par soustraction. Toutes ces différences sont mises au carré et additionnées, ce qui donne la somme des carrés des résidus, RSS.
 
-Cordialement,
+𝑅
+𝑆
+𝑆
+=
+∑
+(
+𝑦
+−
+𝑦
+^
+)
+2
+RSS=∑(y− 
+y
+^
+​
+ ) 
+2
+ 
+Calcul de TSS :
+Nous pouvons calculer la valeur moyenne de 
+𝑦
+y, appelée 
+𝑦
+ˉ
+y
+ˉ
+​
+ . Si nous traçons 
+𝑦
+ˉ
+y
+ˉ
+​
+ , c'est simplement une ligne horizontale à travers les données. En soustrayant 
+𝑦
+ˉ
+y
+ˉ
+​
+  de chaque valeur réelle de 
+𝑦
+y, nous obtenons la somme totale des carrés, TSS.
 
-Mohamed
+𝑇
+𝑆
+𝑆
+=
+∑
+(
+𝑦
+−
+𝑦
+ˉ
+)
+2
+TSS=∑(y− 
+y
+ˉ
+​
+ ) 
+2
+ 
+Calcul de ESS :
+Les différences entre les valeurs prédites 
+𝑦
+^
+y
+^
+​
+  et la valeur moyenne 
+𝑦
+ˉ
+y
+ˉ
+​
+  sont mises au carré et additionnées. Ceci est la somme expliquée des carrés, ESS.
 
+𝐸
+𝑆
+𝑆
+=
+∑
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+2
+ESS=∑( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ ) 
+2
+ 
+Relation entre TSS, RSS et ESS
+Lorsque nous avons une ligne de régression avec une interception, la relation suivante est toujours vraie :
+
+𝑇
+𝑆
+𝑆
+=
+𝑅
+𝑆
+𝑆
++
+𝐸
+𝑆
+𝑆
+TSS=RSS+ESS
+En divisant tous les termes par TSS et en réarrangeant, nous obtenons :
+
+𝑅
+2
+=
+1
+−
+𝑅
+𝑆
+𝑆
+𝑇
+𝑆
+𝑆
+R 
+2
+ =1− 
+TSS
+RSS
+​
+ 
+Dans ce cas, R² est toujours positif.
+
+Cas où R² peut être négatif
+Cependant, sans interception, la relation ci-dessus change. La formule devient :
+
+𝑇
+𝑆
+𝑆
+=
+𝑅
+𝑆
+𝑆
++
+𝐸
+𝑆
+𝑆
++
+2
+∑
+(
+𝑦
+−
+𝑦
+^
+)
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+TSS=RSS+ESS+2∑(y− 
+y
+^
+​
+ )( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ )
+En divisant tous les termes par TSS, nous obtenons :
+
+𝑅
+2
+=
+𝐸
+𝑆
+𝑆
++
+2
+∑
+(
+𝑦
+−
+𝑦
+^
+)
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+𝑇
+𝑆
+𝑆
+R 
+2
+ = 
+TSS
+ESS+2∑(y− 
+y
+^
+​
+ )( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ )
+​
+ 
+Le terme supplémentaire peut rendre le numérateur négatif, ce qui fait que R² peut être négatif. Cela se produit lorsque la ligne horizontale 
+𝑦
+ˉ
+y
+ˉ
+​
+  explique mieux les données que la ligne de régression.
+
+Quand le terme 
+2
+∑
+(
+𝑦
+−
+𝑦
+^
+)
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+2∑(y− 
+y
+^
+​
+ )( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ ) est nul ou non nul
+Nul : Ce terme est nul lorsque la ligne de régression passe par le point moyen des données 
+(
+𝑥
+ˉ
+,
+𝑦
+ˉ
+)
+( 
+x
+ˉ
+ , 
+y
+ˉ
+​
+ ), ce qui se produit lorsque le modèle inclut une interception. Dans ce cas, les erreurs 
+(
+𝑦
+−
+𝑦
+^
+)
+(y− 
+y
+^
+​
+ ) et les différences 
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ ) sont orthogonales, ce qui signifie que leur produit est en moyenne nul.
+Non nul : Ce terme n'est pas nécessairement nul lorsque la régression ne comprend pas d'interception. Dans ce cas, la ligne de régression peut ne pas passer par le point moyen des données, et les erreurs et les différences peuvent avoir une covariance non nulle, conduisant ainsi à un terme supplémentaire qui peut être positif ou négatif.
+Exemple Simple
+Considérons un exemple simple pour illustrer ce concept. Supposons que nous ayons les données suivantes :
+
+x	y
+1	1
+2	2
+3	1.3
+4	3.75
+5	2.25
+Calculons la régression linéaire avec et sans interception :
+
+Régression avec interception :
+La ligne de régression a une interception et la formule obtenue est :
+
+𝑦
+^
+=
+0.425
++
+0.475
+𝑥
+y
+^
+​
+ =0.425+0.475x
+Régression sans interception :
+La ligne de régression passe par l'origine (sans interception) et la formule obtenue est :
+
+𝑦
+^
+=
+0.63
+𝑥
+y
+^
+​
+ =0.63x
+La moyenne des 
+𝑦
+y est 
+𝑦
+ˉ
+=
+2.06
+y
+ˉ
+​
+ =2.06.
+
+En traçant les lignes de régression et la moyenne de 
+𝑦
+y sur un graphique, nous observons que la ligne de régression sans interception ne passe pas par la moyenne des données, ce qui peut rendre le terme 
+2
+∑
+(
+𝑦
+−
+𝑦
+^
+)
+(
+𝑦
+^
+−
+𝑦
+ˉ
+)
+2∑(y− 
+y
+^
+​
+ )( 
+y
+^
+​
+ − 
+y
+ˉ
+​
+ ) non nul et potentiellement négatif, rendant ainsi 
+𝑅
+2
+R 
+2
+  négatif.
+
+Conclusion
+La valeur de R² peut être négative si le modèle de régression n'a pas d'interception et s'adapte très mal aux données. Dans ce cas, une ligne horizontale pourrait fournir une meilleure explication des variations dans les données que le modèle lui-même. Comprendre cette nuance est crucial pour une interprétation correcte des résultats de régression linéaire.
+
+Visualisation avec Matplotlib
+Voici un code Python qui illustre cet exemple :
+
+python
+Copy code
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Données simples
+x = np.array([1, 2, 3, 4, 5])
+y = np.array([1, 2, 1.3, 3.75, 2.25])
+
+# Calcul de la régression linéaire avec interception
+coeffs_with_intercept = np.polyfit(x, y, 1)
+y_hat_with_intercept = np.polyval(coeffs_with_intercept, x)
+
+# Calcul de la régression linéaire sans interception
+coeffs_without_intercept = np.polyfit(x, y, 1, full=True)[0]
+y_hat_without_intercept = np.polyval([coeffs_without_intercept[0]], x)
+
+# Calcul de la moyenne de y
+y_bar = np.mean(y)
+
+# Visualisation des données et des lignes de régression
+plt.scatter(x, y, label='Données')
+plt.plot(x, y_hat_with_intercept, label='Régression avec interception', color='green')
+plt.plot(x, y_hat_without_intercept, label='Régression sans interception', color='red')
+plt.axhline(y=y_bar, color='blue', linestyle='--', label='Moyenne de y')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.title('Régression Linéaire avec et sans Interception')
+plt.show()
+Ce graphique montre les données avec deux lignes de régression : une avec interception (en vert) et une sans interception (en rouge), ainsi qu'une ligne horizontale représentant la moyenne de 
+𝑦
+y (en bleu). La ligne rouge ne passe pas par le point moyen des données, ce qui explique pourquoi 
+𝑅
+2
+R 
+2
+  peut être négatif dans ce cas.
 
 
 
