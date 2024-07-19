@@ -1,3 +1,83 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import mean_squared_error, r2_score
+import xgboost as xgb
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Feature': np.random.randn(100) * 20,
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Split the data into features and target
+X = df[['Feature']]
+y = df['Target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Define parameter grid for XGBoost
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.01, 0.1, 0.3],
+    'min_child_weight': [1, 5, 10]
+}
+
+# Initialize and train XGBoost model with GridSearchCV
+xgb_reg = xgb.XGBRegressor(objective='reg:squarederror', random_state=0)
+grid_search = GridSearchCV(estimator=xgb_reg, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1, return_train_score=True)
+grid_search.fit(X_train, y_train)
+
+# Get the results in a DataFrame
+results = pd.DataFrame(grid_search.cv_results_)
+
+# Calculate RMSE for train and test sets
+results['mean_train_rmse'] = np.sqrt(-results['mean_train_score'])
+results['mean_test_rmse'] = np.sqrt(-results['mean_test_score'])
+
+# Plot R² scores
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+for learning_rate in param_grid['learning_rate']:
+    subset = results[results.param_learning_rate == learning_rate]
+    plt.plot(subset['param_n_estimators'], subset['mean_train_score'], label=f'Train - lr={learning_rate}')
+    plt.plot(subset['param_n_estimators'], subset['mean_test_score'], linestyle='--', label=f'Test - lr={learning_rate}')
+plt.xlabel('Number of Estimators')
+plt.ylabel('Neg MSE')
+plt.title('Neg MSE vs Number of Estimators')
+plt.legend()
+
+# Plot RMSE scores
+plt.subplot(1, 2, 2)
+for learning_rate in param_grid['learning_rate']:
+    subset = results[results.param_learning_rate == learning_rate]
+    plt.plot(subset['param_n_estimators'], subset['mean_train_rmse'], label=f'Train - lr={learning_rate}')
+    plt.plot(subset['param_n_estimators'], subset['mean_test_rmse'], linestyle='--', label=f'Test - lr={learning_rate}')
+plt.xlabel('Number of Estimators')
+plt.ylabel('RMSE')
+plt.title('RMSE vs Number of Estimators')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Print the best parameters
+print("Best Parameters:", grid_search.best_params_)
+print("Best R² Score:", grid_search.best_score_)
+
+
+
+
+
+
+
+
 import xgboost as xgb
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import r2_score, make_scorer
