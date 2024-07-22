@@ -1,4 +1,38 @@
-https://ocd.lcwu.edu.pk/cfiles/Statistics/Stat-503/IntroductiontoLinearRegressionAnalysisbyDouglasC.MontgomeryElizabethA.PeckG.GeoffreyViningz-lib.org.pdf
+import pandas as pd
+import numpy as np
+
+# Load your dataset
+# Replace 'your_dataset.csv' with the path to your dataset and 'target' with the target variable name
+df = pd.read_csv('your_dataset.csv')
+
+# Define the target variable
+target = 'your_target_variable'
+
+# Calculate the IQR (Interquartile Range) to identify outliers
+Q1 = df[target].quantile(0.25)
+Q3 = df[target].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define the bounds for identifying outliers
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# Create the first dataset with outliers and negative target values
+outliers_negative = df[(df[target] < lower_bound) | (df[target] > upper_bound) | (df[target] < 0)]
+
+# Create the second dataset with the rest
+non_outliers = df[~((df[target] < lower_bound) | (df[target] > upper_bound) | (df[target] < 0))]
+
+# Save the datasets to CSV files (optional)
+outliers_negative.to_csv('outliers_negative.csv', index=False)
+non_outliers.to_csv('non_outliers.csv', index=False)
+
+# Display the datasets
+print("Outliers and Negative Target Values Dataset")
+print(outliers_negative.head())
+
+print("\nNon-Outliers Dataset")
+print(non_outliers.head())
 
 
 
