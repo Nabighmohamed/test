@@ -1,3 +1,161 @@
+import pandas as pd
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, HuberRegressor
+import matplotlib.pyplot as plt
+from sklearn.mixture import GaussianMixture
+from sklearn.metrics import silhouette_score
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Plot AIC and BIC for different number of clusters
+n_clusters = range(1, 11)
+aic_values = []
+bic_values = []
+silhouette_scores = []
+
+for n in n_clusters:
+    gmm = GaussianMixture(n_components=n, random_state=0)
+    gmm.fit(df[['Target']])
+    aic_values.append(gmm.aic(df[['Target']]))
+    bic_values.append(gmm.bic(df[['Target']]))
+    if n > 1:
+        silhouette_scores.append(silhouette_score(df[['Target']], gmm.predict(df[['Target']])))
+
+plt.figure(figsize=(12, 6))
+plt.plot(n_clusters, aic_values, label='AIC')
+plt.plot(n_clusters, bic_values, label='BIC')
+plt.xlabel('Number of clusters')
+plt.ylabel('Score')
+plt.title('AIC and BIC for different number of clusters')
+plt.legend()
+plt.show()
+
+plt.figure(figsize=(12, 6))
+plt.plot(n_clusters[1:], silhouette_scores, label='Silhouette Score')
+plt.xlabel('Number of clusters')
+plt.ylabel('Score')
+plt.title('Silhouette Score for different number of clusters')
+plt.legend()
+plt.show()
+
+# Choose the optimal number of clusters based on BIC (you can also choose based on AIC or silhouette score)
+optimal_clusters = np.argmin(bic_values) + 1
+print(f'Optimal number of clusters: {optimal_clusters}')
+
+# Apply k-means clustering to segment the target variable
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=0)
+df['Cluster'] = kmeans.fit_predict(df[['Target']])
+
+# Separate data into clusters based on k-means clustering
+clusters = [df[df['Cluster'] == i] for i in range(optimal_clusters)]
+
+# Calculate and display intervals for each cluster
+intervals = []
+for cluster_id, cluster in enumerate(clusters):
+    min_value = cluster['Target'].min()
+    max_value = cluster['Target'].max()
+    intervals.append((min_value, max_value))
+
+# Sort intervals to ensure they are in order
+intervals.sort()
+
+# Adjust intervals to ensure no gaps
+adjusted_intervals = []
+for i, (min_value, max_value) in enumerate(intervals):
+    if i == 0:
+        adjusted_intervals.append((min_value, max_value))
+    else:
+        previous_max = adjusted_intervals[-1][1]
+        adjusted_intervals.append((previous_max, max_value))
+
+# Print adjusted intervals
+for i, (min_value, max_value) in enumerate(adjusted_intervals):
+    print(f'Cluster {i}: {min_value:.2f} to {max_value:.2f}')
+
+# Define models to train
+models = {
+    'RandomForest': RandomForestRegressor(random_state=0),
+    'LinearRegression': LinearRegression(),
+    'Ridge': Ridge(),
+    'Lasso': Lasso(),
+    'Huber': HuberRegressor()
+}
+
+param_grid = {
+    'RandomForest': {'n_estimators': [50, 100], 'max_depth': [3, 5]},
+    'Ridge': {'alpha': [0.01, 0.1, 1]},
+    'Lasso': {'alpha': [0.01, 0.1, 1]},
+    'Huber': {'epsilon': [1.35, 1.5]}
+}
+
+# Function to train and evaluate models
+def train_evaluate_models(X_train, X_test, y_train, y_test, model, param_grid):
+    grid_search = GridSearchCV(model, param_grid, cv=5, scoring='r2', n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    r2 = r2_score(y_test, y_pred)
+    return r2
+
+# Train and evaluate models for each cluster
+results = {}
+for cluster_id, cluster in enumerate(clusters):
+    X = cluster.drop(columns=['Target', 'Cluster'])
+    y = cluster['Target']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    cluster_results = {}
+    for model_name, model in models.items():
+        r2 = train_evaluate_models(X_train, X_test, y_train, y_test, model, param_grid.get(model_name, {}))
+        cluster_results[model_name] = r2
+    results[f'Cluster {cluster_id}'] = cluster_results
+
+# Display results
+results_df = pd.DataFrame(results).T
+print(results_df)
+
+# Plot R² scores for each model across different clusters
+results_df.plot(kind='bar', figsize=(12, 6))
+plt.xlabel('Cluster')
+plt.ylabel('R² Score')
+plt.title('R² Scores for Different Models across Clusters')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
 import xgboost as xgb
 from sklearn.metrics import r2_score
 import itertools
