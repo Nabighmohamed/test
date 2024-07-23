@@ -1,4 +1,42 @@
 import xgboost as xgb
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Generate a sample regression dataset
+X, y = make_regression(n_samples=1000, n_features=10, random_state=42)
+
+# Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train an XGBoost regression model
+regressor = xgb.XGBRegressor()
+regressor.fit(X_train, y_train)
+
+# Get feature importance
+importance = regressor.get_booster().get_score(importance_type='weight')
+importance = {k: v / sum(importance.values()) for k, v in importance.items()}  # Calculate percentages
+
+# Sort importance by feature
+sorted_importance = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+features = [x[0] for x in sorted_importance]
+importance_values = [x[1] * 100 for x in sorted_importance]  # Convert to percentages
+
+# Plot feature importance
+fig, ax = plt.subplots()
+ax.barh(features, importance_values)
+ax.set_title("Feature Importance for XGBoost Regression (Percentage)")
+ax.set_xlabel("Percentage")
+ax.set_ylabel("Features")
+plt.show()
+
+
+
+
+
+
+import xgboost as xgb
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from xgboost import plot_importance
