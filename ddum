@@ -1,5 +1,115 @@
 import pandas as pd
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import confusion_matrix, f1_score, ConfusionMatrixDisplay
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
+import matplotlib.pyplot as plt
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Apply k-means clustering to segment the target variable
+optimal_clusters = 3  # Example: Adjust based on your previous result
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=0)
+df['Cluster'] = kmeans.fit_predict(df[['Target']])
+
+# Combine the columns for stratification
+df['Stratify'] = df['Age'].astype(str) + '_' + df['Income'].round(0).astype(str) + '_' + df['Category1'].astype(str) + '_' + df['Category2'].astype(str)
+
+# Perform the train-test split with stratification
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=0, stratify=df['Stratify'])
+
+# Drop the stratification column from the train and test sets
+train_df = train_df.drop(columns=['Stratify']).reset_index(drop=True)
+test_df = test_df.drop(columns=['Stratify']).reset_index(drop=True)
+
+# Prepare training and testing sets
+X_train = train_df.drop(columns=['Target', 'Cluster'])
+y_train = train_df['Cluster']
+X_test = test_df.drop(columns=['Target', 'Cluster'])
+y_test = test_df['Cluster']
+
+# Define classifiers and their hyperparameters
+classifiers = {
+    'XGBoost': XGBClassifier(random_state=0, use_label_encoder=False, eval_metric='mlogloss'),
+    'LightGBM': LGBMClassifier(random_state=0),
+    'CatBoost': CatBoostClassifier(random_state=0, verbose=0)
+}
+
+param_grids = {
+    'XGBoost': {'n_estimators': [50, 100], 'learning_rate': [0.01, 0.1], 'max_depth': [3, 5]},
+    'LightGBM': {'n_estimators': [50, 100], 'learning_rate': [0.01, 0.1], 'num_leaves': [31, 50]},
+    'CatBoost': {'iterations': [50, 100], 'learning_rate': [0.01, 0.1], 'depth': [3, 5]}
+}
+
+# Train, evaluate and plot results for each classifier
+results = {}
+
+for clf_name, clf in classifiers.items():
+    print(f"Training {clf_name}...")
+    grid_search = GridSearchCV(clf, param_grids[clf_name], cv=5, scoring='f1_macro', n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+    best_clf = grid_search.best_estimator_
+    y_pred = best_clf.predict(X_test)
+    
+    # Compute confusion matrix and F1 score
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='macro')
+    
+    # Store results
+    results[clf_name] = {
+        'conf_matrix': conf_matrix,
+        'f1_score': f1
+    }
+    
+    # Plot confusion matrix
+    disp = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=best_clf.classes_)
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title(f'{clf_name} Confusion Matrix')
+    plt.show()
+    
+    # Print F1 score
+    print(f'{clf_name} F1 Score: {f1:.2f}')
+
+# Plot F1 scores for all classifiers
+f1_scores = {clf_name: res['f1_score'] for clf_name, res in results.items()}
+plt.figure(figsize=(10, 6))
+plt.bar(f1_scores.keys(), f1_scores.values())
+plt.xlabel('Classifier')
+plt.ylabel('F1 Score')
+plt.title('F1 Scores for Different Classifiers')
+plt.show()
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 # Sample DataFrame creation for demonstration
