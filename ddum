@@ -1,4 +1,68 @@
 import xgboost as xgb
+from sklearn.datasets import make_regression, make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+def plot_top_k_features(model, feature_names, k=5, title="Feature Importance"):
+    # Get feature importances
+    feature_importances = model.feature_importances_
+    feature_importances_percentage = 100 * (feature_importances / feature_importances.sum())
+
+    # Create a DataFrame for visualization
+    importance_df = pd.DataFrame({
+        'Feature': feature_names,
+        'Importance': feature_importances_percentage
+    }).sort_values(by='Importance', ascending=False).head(k)
+
+    # Plot feature importances
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Importance', y='Feature', data=importance_df)
+    plt.xlabel('Importance (%)')
+    plt.ylabel('Feature')
+    plt.title(title)
+    plt.show()
+
+# Generate a sample regression dataset
+X_reg, y_reg = make_regression(n_samples=1000, n_features=10, random_state=42)
+X_train_reg, X_test_reg, y_train_reg, y_test_reg = train_test_split(X_reg, y_reg, test_size=0.2, random_state=42)
+
+# Train an XGBoost regression model
+regressor = xgb.XGBRegressor()
+regressor.fit(X_train_reg, y_train_reg)
+
+# Plot top k feature importances for regression
+plot_top_k_features(regressor, [f'feature_{i}' for i in range(X_reg.shape[1])], k=5, title="Top 5 Features for XGBoost Regression")
+
+# Generate a sample classification dataset
+X_clf, y_clf = make_classification(n_samples=1000, n_features=10, random_state=42)
+X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(X_clf, y_clf, test_size=0.2, random_state=42)
+
+# Train an XGBoost classification model
+classifier = xgb.XGBClassifier()
+classifier.fit(X_train_clf, y_train_clf)
+
+# Plot top k feature importances for classification
+plot_top_k_features(classifier, [f'feature_{i}' for i in range(X_clf.shape[1])], k=5, title="Top 5 Features for XGBoost Classification")
+
+# Generate a sample dataset for RandomForestRegressor
+X_rf, y_rf = make_regression(n_samples=100, n_features=5, noise=0.1, random_state=42)
+feature_names_rf = [f'feature_{i}' for i in range(X_rf.shape[1])]
+
+# Train a RandomForestRegressor
+model_rf = RandomForestRegressor(random_state=42)
+model_rf.fit(X_rf, y_rf)
+
+# Plot top k feature importances for RandomForestRegressor
+plot_top_k_features(model_rf, feature_names_rf, k=5, title="Top 5 Features for RandomForestRegressor")
+
+
+
+
+
+import xgboost as xgb
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
