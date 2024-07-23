@@ -1,5 +1,51 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+
+# Sample DataFrame creation for demonstration
+np.random.seed(0)
+df = pd.DataFrame({
+    'Age': np.random.randint(18, 70, size=100),
+    'Income': np.random.uniform(30000, 100000, size=100),
+    'Category1': np.random.choice(['A', 'B', 'C', np.nan], size=100),
+    'Category2': np.random.choice(['X', 'Y', 'Z', np.nan], size=100),
+    'Target': np.random.uniform(0, 100, size=100)
+})
+
+# Replace missing values with a new category "missing" and convert all to strings
+df.fillna('missing', inplace=True)
+df['Category1'] = df['Category1'].astype(str)
+df['Category2'] = df['Category2'].astype(str)
+
+# Encode categorical variables
+label_encoders = {}
+for col in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+# Combine the columns for stratification
+df['Stratify'] = df['Age'].astype(str) + '_' + df['Income'].round(0).astype(str) + '_' + df['Category1'].astype(str) + '_' + df['Category2'].astype(str)
+
+# Perform the train-test split with stratification
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=0, stratify=df['Stratify'])
+
+# Drop the stratification column from the train and test sets
+train_df = train_df.drop(columns=['Stratify']).reset_index(drop=True)
+test_df = test_df.drop(columns=['Stratify']).reset_index(drop=True)
+
+# Check the distribution
+print("Training set distribution:\n", train_df['Stratify'].value_counts(normalize=True))
+print("\nTesting set distribution:\n", test_df['Stratify'].value_counts(normalize=True))
+
+# Proceed with your further code (clustering, modeling, etc.)
+
+
+
+
+
+import pandas as pd
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
