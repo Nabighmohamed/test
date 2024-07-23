@@ -1,3 +1,28 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Sample data
+data = pd.DataFrame({
+    'x': range(10),
+    'y1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'y2': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    'y3': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+})
+
+# Convert data to long format
+data_melted = pd.melt(data, ['x'])
+
+# Plot with seaborn
+sns.lineplot(data=data_melted, x='x', y='value', hue='variable')
+
+# Show plot
+plt.show()
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
