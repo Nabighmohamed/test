@@ -1,3 +1,10 @@
+Salut [Nom],
+
+Je veux organiser une réunion ce jeudi. Est-ce que ça te va ? Si oui, est-ce que 14h30 te convient ?
+
+Merci,
+
+
 import xgboost as xgb
 from sklearn.datasets import make_regression, make_classification
 from sklearn.model_selection import train_test_split
