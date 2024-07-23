@@ -1,3 +1,79 @@
+import xgboost as xgb
+from sklearn.metrics import r2_score
+import itertools
+
+# Define the parameter grid
+etas = [0.01, 0.1, 0.3]
+max_depths = [2, 4, 6]
+subsamples = [0.8, 1.0]
+colsample_bytree = [1.0, 0.8]
+
+# List to store results
+results = []
+
+# Iterate over all parameter combinations
+for eta, max_depth, subsample, colsample in itertools.product(etas, max_depths, subsamples, colsample_bytree):
+    xgb_params = {
+        'eta': eta,
+        'max_depth': max_depth,
+        'subsample': subsample,
+        'colsample_bytree': colsample,
+        'objective': 'reg:squarederror',
+        'seed': 1989
+    }
+    
+    xgb_cv = xgb.cv(
+        params=xgb_params,
+        dtrain=train_xgb,
+        num_boost_round=10000,
+        nfold=5,
+        early_stopping_rounds=10,
+        verbose_eval=0
+    )
+    
+    # Extract the best number of boosting rounds
+    best_num_boost_rounds = len(xgb_cv['train-rmse-mean'])
+    
+    # Train the model with the best number of boosting rounds
+    model = xgb.train(
+        params=xgb_params,
+        dtrain=train_xgb,
+        num_boost_round=best_num_boost_rounds
+    )
+    
+    # Make predictions
+    y_pred = model.predict(test_xgb)
+    
+    # Evaluate using R2 score
+    r2 = r2_score(y_test, y_pred)
+    
+    # Store the results
+    results.append({
+        'eta': eta,
+        'max_depth': max_depth,
+        'subsample': subsample,
+        'colsample_bytree': colsample,
+        'best_num_boost_rounds': best_num_boost_rounds,
+        'r2': r2
+    })
+
+# Find the best result
+best_result = max(results, key=lambda x: x['r2'])
+
+# Print the best parameters and corresponding R2 score
+print("Best parameters found: ", best_result)
+print("Best R2 score: ", best_result['r2'])
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
