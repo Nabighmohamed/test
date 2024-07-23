@@ -3,6 +3,95 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from xgboost import XGBClassifier
+from sklearn.metrics import classification_report, precision_recall_curve
+
+# Generate a synthetic dataset with class imbalance
+X, y = make_classification(n_samples=1000, n_features=20, n_informative=2,
+                           n_redundant=10, n_clusters_per_class=1, n_classes=10,
+                           weights=[0.1]*9 + [0.1], flip_y=0, random_state=42)
+
+# Split into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize results dictionary
+results = {}
+
+# Approach 1: SMOTE (Oversampling)
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+classifier_smote = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+classifier_smote.fit(X_train_smote, y_train_smote)
+y_pred_smote = classifier_smote.predict(X_test)
+results['SMOTE'] = classification_report(y_test, y_pred_smote, output_dict=True)
+
+# Approach 2: Random Undersampling
+rus = RandomUnderSampler(random_state=42)
+X_train_rus, y_train_rus = rus.fit_resample(X_train, y_train)
+classifier_rus = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+classifier_rus.fit(X_train_rus, y_train_rus)
+y_pred_rus = classifier_rus.predict(X_test)
+results['Random Undersampling'] = classification_report(y_test, y_pred_rus, output_dict=True)
+
+# Approach 3: Class Weight Adjustment
+class_weights = {i: len(y_train) / (10 * sum(y_train == i)) for i in np.unique(y_train)}
+classifier_weighted = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', scale_pos_weight=class_weights)
+classifier_weighted.fit(X_train, y_train)
+y_pred_weighted = classifier_weighted.predict(X_test)
+results['Class Weight Adjustment'] = classification_report(y_test, y_pred_weighted, output_dict=True)
+
+# Approach 4: Threshold Moving
+classifier_threshold = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+classifier_threshold.fit(X_train, y_train)
+y_probs = classifier_threshold.predict_proba(X_test)
+thresholds = {}
+best_thresholds = {}
+
+for i in range(10):
+    precision, recall, thr = precision_recall_curve(y_test == i, y_probs[:, i])
+    f1_scores = 2 * (precision * recall) / (precision + recall)
+    best_threshold = thr[np.argmax(f1_scores)]
+    thresholds[i] = best_threshold
+    best_thresholds[i] = best_threshold
+
+y_pred_adjusted = np.zeros_like(y_test)
+for i in range(len(y_test)):
+    class_probs = y_probs[i]
+    class_probs_thresholded = (class_probs >= [thresholds[j] for j in range(10)]).astype(int)
+    y_pred_adjusted[i] = np.argmax(class_probs_thresholded)
+
+results['Threshold Moving'] = classification_report(y_test, y_pred_adjusted, output_dict=True)
+
+# Print results
+for approach, metrics in results.items():
+    print(f"Approach: {approach}")
+    print(pd.DataFrame(metrics).transpose())
+    print("\n")
+
+# Evaluate the models
+import matplotlib.pyplot as plt
+
+approaches = ['SMOTE', 'Random Undersampling', 'Class Weight Adjustment', 'Threshold Moving']
+f1_scores = [results[approach]['weighted avg']['f1-score'] for approach in approaches]
+
+plt.figure(figsize=(10, 6))
+plt.bar(approaches, f1_scores, color=['blue', 'green', 'red', 'purple'])
+plt.xlabel('Approaches')
+plt.ylabel('F1-Score')
+plt.title('Comparison of Approaches for Handling Imbalanced Data')
+plt.show()
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 from sklearn.utils.class_weight import compute_class_weight
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, precision_recall_curve
