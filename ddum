@@ -1,3 +1,55 @@
+import numpy as np
+import pandas as pd
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
+from sklearn.utils.class_weight import compute_class_weight
+from xgboost import XGBClassifier
+from sklearn.metrics import classification_report, precision_recall_curve
+
+# Generate a synthetic dataset with class imbalance
+X, y = make_classification(n_samples=1000, n_features=20, n_informative=2,
+                           n_redundant=10, n_clusters_per_class=1, n_classes=10,
+                           weights=[0.05]*9 + [0.55], flip_y=0, random_state=42)
+
+# Split into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Apply SMOTE to oversample the minority classes
+smote = SMOTE(random_state=42)
+X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+
+# Calculate class weights
+class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train_res), y=y_train_res)
+class_weights_dict = dict(enumerate(class_weights))
+
+# Train an XGBoost classifier with class weights
+classifier = XGBClassifier(scale_pos_weight=class_weights_dict)
+classifier.fit(X_train_res, y_train_res)
+
+# Predict probabilities
+y_probs = classifier.predict_proba(X_test)
+
+# Example of adjusting the threshold for one class (class 1)
+precision, recall, thresholds = precision_recall_curve(y_test == 1, y_probs[:, 1])
+f1_scores = 2 * (precision * recall) / (precision + recall)
+best_threshold = thresholds[np.argmax(f1_scores)]
+
+# Apply the best threshold
+y_pred_adjusted = (y_probs[:, 1] >= best_threshold).astype(int)
+
+# Evaluate the model
+print("Classification Report with Adjusted Threshold:")
+print(classification_report(y_test, y_pred_adjusted))
+
+# Standard classification report for comparison
+y_pred = classifier.predict(X_test)
+print("Standard Classification Report:")
+print(classification_report(y_test, y_pred))
+
+
+
+
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
