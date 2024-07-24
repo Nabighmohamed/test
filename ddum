@@ -1,6 +1,59 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+from xgboost import XGBClassifier
+
+# Load your dataset
+# For demonstration, we'll generate a synthetic dataset with multiple features and a binary target
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(1000, 10), columns=[f'feature_{i}' for i in range(10)])
+data['target'] = np.random.randint(0, 2, 1000)  # Binary target variable
+
+# Split the data into features and target
+X = data.drop(columns='target')
+y = data['target']
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Initialize and train the XGBClassifier
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+xgb.fit(X_train, y_train)
+
+# Predict the target values for the test set
+y_pred = xgb.predict(X_test)
+
+# Compute the confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
+
+# Generate and print the classification report
+report = classification_report(y_test, y_pred)
+print("Classification Report:")
+print(report)
+
+# Plot feature importance
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(xgb.feature_importances_)), xgb.feature_importances_)
+plt.yticks(range(len(X.columns)), X.columns)
+plt.xlabel("Feature Importance")
+plt.ylabel("Feature")
+plt.title("Feature Importance in XGBClassifier")
+plt.show()
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import f1_score
