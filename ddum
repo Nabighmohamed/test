@@ -22,6 +22,106 @@ metrics = []
 # Iterate over different values of min_samples_split
 for min_samples in min_samples_split_values:
     # Store F1 scores for each min_samples_split value
+    current_metrics = {'min_samples_split': min_samples, 'weighted_f1': [], 'cluster_f1': {}}
+
+    # Iterate over each feature to segment it using the target variable
+    for feature_index in range(data.shape[1] - 1):  # Exclude the target column
+        feature_name = data.columns[feature_index]
+        X_feature = data[[feature_name]].values.reshape(-1, 1)
+        y = data['target'].values.reshape(-1, 1)
+        
+        # Segment the feature using the target variable
+        dt = DecisionTreeRegressor(min_samples_split=min_samples, max_leaf_nodes=num_clusters, random_state=0)
+        dt.fit(y, X_feature)
+        predicted_X = dt.predict(y)
+        
+        # Convert the continuous segment predictions into discrete labels
+        label_encoder = LabelEncoder()
+        segment_labels = label_encoder.fit_transform(predicted_X)
+        
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(
+            data.drop(columns='target'), segment_labels, test_size=0.3, random_state=0
+        )
+        
+        # Use all features (excluding the target variable) to predict these segments
+        xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+        xgb.fit(X_train, y_train)
+        
+        # Predict the segments on the test set
+        predicted_segments = xgb.predict(X_test)
+        
+        # Generate a classification report
+        report = classification_report(y_test, predicted_segments, output_dict=True)
+        
+        # Store the weighted average F1 score and individual cluster F1 scores
+        current_metrics['weighted_f1'].append(report['weighted avg']['f1-score'])
+        for label, metrics in report.items():
+            if isinstance(metrics, dict):  # Only store scores for each cluster
+                if label not in current_metrics['cluster_f1']:
+                    current_metrics['cluster_f1'][label] = []
+                current_metrics['cluster_f1'][label].append(metrics['f1-score'])
+    
+    # Store metrics for the current min_samples_split value
+    metrics.append(current_metrics)
+
+# Process and plot the results
+min_samples_split_vals = [m['min_samples_split'] for m in metrics]
+weighted_f1_scores = [np.mean(m['weighted_f1']) for m in metrics]
+
+plt.figure(figsize=(12, 6))
+plt.plot(min_samples_split_vals, weighted_f1_scores, marker='o', label='Weighted F1 Score')
+plt.xlabel('min_samples_split')
+plt.ylabel('F1 Score')
+plt.title('Weighted F1 Score Evolution')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Plot the F1 scores for each cluster across different min_samples_split values
+plt.figure(figsize=(12, 6))
+for cluster_label in metrics[0]['cluster_f1'].keys():
+    cluster_scores = [m['cluster_f1'][cluster_label] for m in metrics]
+    mean_cluster_scores = [np.mean(scores) for scores in cluster_scores]
+    plt.plot(min_samples_split_vals, mean_cluster_scores, marker='o', label=f'Cluster {cluster_label}')
+
+plt.xlabel('min_samples_split')
+plt.ylabel('F1 Score')
+plt.title('Cluster F1 Scores Evolution')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters and range for min_samples_split
+num_clusters = 10
+min_samples_split_values = range(2, 21)  # Testing values from 2 to 20
+
+# Initialize variables to store metrics
+metrics = []
+
+# Iterate over different values of min_samples_split
+for min_samples in min_samples_split_values:
+    # Store F1 scores for each min_samples_split value
     current_metrics = {'min_samples_split': min_samples, 'weighted_f1': [], 'cluster_f1': []}
 
     # Iterate over each feature to segment it using the target variable
