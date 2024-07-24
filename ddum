@@ -2,6 +2,64 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import f1_score
+from xgboost import XGBClassifier
+from sklearn.preprocessing import LabelEncoder
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters
+num_clusters = 10
+
+# Input features and target variable
+X = data.drop(columns='target')
+y = data['target']
+
+# Segment the target variable using a Decision Tree Regressor
+dt = DecisionTreeRegressor(min_samples_split=5, max_leaf_nodes=num_clusters, random_state=0)
+dt.fit(X, y)
+
+# Assign each sample to a segment (leaf node)
+segments = dt.apply(X)
+
+# Convert the segments (leaf nodes) into categorical labels
+label_encoder = LabelEncoder()
+segment_labels = label_encoder.fit_transform(segments)
+
+# Use these segments as labels and predict using all features with XGBoost
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+xgb.fit(X, segment_labels)
+
+# Predict the segments and calculate the F1 score
+predicted_segments = xgb.predict(X)
+f1 = f1_score(segment_labels, predicted_segments, average='weighted')
+
+# Add the segments to the DataFrame as a new column
+data['best_segments'] = segment_labels
+
+# Output the F1 score
+print(f"F1 Score: {f1}")
+
+# Plot the target variable colored by the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(data)), data['target'], c=data['best_segments'], cmap='viridis', marker='o')
+plt.title('Target Variable Segmentation into Disjoint Clusters')
+plt.xlabel('Sample Index')
+plt.ylabel('Target Variable Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.show()
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import LabelEncoder
 
 # Generate a synthetic dataset for the example
