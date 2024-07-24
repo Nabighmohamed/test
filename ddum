@@ -12,6 +12,51 @@ data['target'] = np.random.randn(100)
 # Desired number of clusters
 num_clusters = 10
 
+# Input features and target variable
+X = data.drop(columns='target')
+y = data['target']
+
+# Segment the target variable using a Decision Tree Regressor
+dt = DecisionTreeRegressor(min_samples_split=5, max_leaf_nodes=num_clusters, random_state=0)
+dt.fit(X, y)
+
+# Assign each sample to a segment (leaf node)
+segments = dt.apply(X)
+
+# Convert the segments (leaf nodes) into categorical labels
+label_encoder = LabelEncoder()
+data['best_segments'] = label_encoder.fit_transform(segments)
+
+# Output the unique segments
+unique_segments = data['best_segments'].unique()
+print(f"Unique Segments: {len(unique_segments)}, Segments: {unique_segments}")
+
+# Plot the target variable colored by the segments
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(data)), data['target'], c=data['best_segments'], cmap='viridis', marker='o')
+plt.title('Target Variable Segmentation into Disjoint Clusters')
+plt.xlabel('Sample Index')
+plt.ylabel('Target Variable Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.show()
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters
+num_clusters = 10
+
 # Store the best F1 score and corresponding feature index
 best_f1 = 0
 best_feature_index = -1
