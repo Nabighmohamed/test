@@ -3,6 +3,83 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import f1_score
+from xgboost import XGBClassifier
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters
+num_clusters = 10
+
+# Initialize variables to store the best feature and F1 score
+best_f1 = 0
+best_feature_index = -1
+best_segment_labels = None
+
+# Iterate over each feature to segment it using the target variable
+for feature_index in range(data.shape[1] - 1):  # Exclude the target column
+    feature_name = data.columns[feature_index]
+    X_feature = data[[feature_name]].values.reshape(-1, 1)
+    y = data['target'].values.reshape(-1, 1)
+    
+    # Segment the feature using the target variable
+    dt = DecisionTreeRegressor(min_samples_split=5, max_leaf_nodes=num_clusters, random_state=0)
+    dt.fit(y, X_feature)
+    predicted_X = dt.predict(y)
+    
+    # Convert the continuous segment predictions into discrete labels
+    label_encoder = LabelEncoder()
+    segment_labels = label_encoder.fit_transform(predicted_X)
+    
+    # Add the segment labels to the DataFrame temporarily for classification
+    data['temp_segments'] = segment_labels
+    
+    # Use all features (excluding the target variable) to predict these segments
+    X_all_features = data.drop(columns=['target', 'temp_segments']).values
+    xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+    xgb.fit(X_all_features, segment_labels)
+    
+    # Predict the segments and calculate the F1 score
+    predicted_segments = xgb.predict(X_all_features)
+    f1 = f1_score(segment_labels, predicted_segments, average='weighted')
+    
+    # Check if this is the best F1 score
+    if f1 > best_f1:
+        best_f1 = f1
+        best_feature_index = feature_index
+        best_segment_labels = segment_labels
+    
+    # Remove the temporary column
+    data.drop(columns=['temp_segments'], inplace=True)
+
+# Add the best segments to the DataFrame as a new column
+best_feature_name = data.columns[best_feature_index]
+data['best_segments'] = best_segment_labels
+
+# Output the best feature index and F1 score
+print(f"Best Feature Index: {best_feature_index} ({best_feature_name}), Best F1 Score: {best_f1}")
+
+# Plot the feature colored by the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(data)), data[best_feature_name], c=data['best_segments'], cmap='viridis', marker='o')
+plt.title(f'Feature {best_feature_name} Segmentation with Highest F1 Score')
+plt.xlabel('Sample Index')
+plt.ylabel(f'{best_feature_name} Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.show()
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
 from sklearn.metrics import f1_score
 
