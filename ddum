@@ -1,4 +1,47 @@
-import matplotlib.pyplot as plt
+def general_segmentations(df, var_name, num_segs, min_number):
+    y = df[var_name].values
+    max_y = y[-1]
+    initial_segments = list(np.linspace(min(y), max_y, num_segs, endpoint=False, dtype=int)[1:])
+    
+    segmentations = pd.DataFrame({var_name: y})
+    
+    def plot_segmentation(y, segmentation, boundaries, step):
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y, segmentation, c=segmentation, cmap='viridis', alpha=0.7, edgecolors='w')
+        plt.title(f'Segmentation at Step {step}: Boundaries {boundaries}')
+        plt.xlabel(var_name)
+        plt.ylabel('Segment')
+        plt.grid(True)
+        plt.show()
+    
+    step = 1
+    
+    for idx in reversed(range(num_segs - 1)):
+        for i in range(initial_segments[idx] + 1, max_y + 1):
+            boundaries = initial_segments[:]
+            boundaries[idx] = i
+            segmentation = create_segmentation(y, boundaries)
+            if all(np.sum(segmentation == j) >= min_number for j in range(len(boundaries) + 1)):
+                column_name = f'{var_name}_seg_{"_".join(map(str, boundaries))}'
+                segmentations[column_name] = segmentation
+                plot_segmentation(y, segmentation, boundaries, step)
+                step += 1
+    
+    return segmentations
+
+# Example usage with a dataframe and 10 segments
+df = pd.DataFrame({'y': np.arange(1, 101)})
+num_segs = 10
+min_number = 5
+
+# Generate general segmentations
+general_segmentations_result = general_segmentations(df, 'y', num_segs, min_number)
+tools.display_dataframe_to_user(name="General Segmentations with 10 Segments", dataframe=general_segmentations_result)
+i
+
+
+
+mport matplotlib.pyplot as plt
 
 def create_segmentations_with_corrected_steps(y, initial_segments, min_number):
     segmentations = pd.DataFrame({'y': y})
