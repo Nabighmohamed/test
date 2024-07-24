@@ -2,6 +2,65 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
+from sklearn.metrics import f1_score
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame({
+    'feature': np.random.randn(100),
+    'target': np.random.randn(100)
+})
+
+# Desired number of clusters
+num_clusters = 10
+
+# Input feature and target variable
+X = data[['feature']]  # Single feature
+y = data['target']
+
+# Segment the target variable (y) directly using a Decision Tree Regressor
+dt = DecisionTreeRegressor(min_samples_split=5, max_leaf_nodes=num_clusters, random_state=0)
+dt.fit(X, y)
+
+# Obtain the predicted values of y as segments
+predicted_y = dt.predict(X)
+
+# Convert these continuous values into discrete segment labels
+label_encoder = LabelEncoder()
+segment_labels = label_encoder.fit_transform(predicted_y)
+
+# Use these segments as labels and predict using the single feature with XGBoost
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+xgb.fit(X, segment_labels)
+
+# Predict the segments and calculate the F1 score
+predicted_segments = xgb.predict(X)
+f1 = f1_score(segment_labels, predicted_segments, average='weighted')
+
+# Add the segments to the DataFrame as a new column
+data['best_segments'] = segment_labels
+
+# Output the F1 score
+print(f"F1 Score: {f1}")
+
+# Plot the target variable colored by the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(data)), data['target'], c=data['best_segments'], cmap='viridis', marker='o')
+plt.title('Target Variable Segmentation into Disjoint Clusters')
+plt.xlabel('Sample Index')
+plt.ylabel('Target Variable Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.show()
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
