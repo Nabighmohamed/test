@@ -18,6 +18,40 @@ def generate_segments(data, min_obs_per_seg):
 
 segments = generate_segments(data, min_obs_per_seg)
 
+# Plot the entire data with each segment highlighted
+for i, (start, end) in enumerate(segments):
+    plt.figure()
+    plt.plot(data, 'k-', alpha=0.3)  # Plot the full data in a lighter color
+    plt.plot(range(start, end), data[start:end], 'b-', linewidth=2)  # Highlight the current segment
+    plt.title(f'Segment {i + 1}: {start} to {end}')
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    plt.grid(True)
+    plt.show()
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate the data
+np.random.seed(0)  # For reproducibility
+data = np.random.randn(100)  # Generate 100 random points
+
+# Set the minimum number of observations per segment
+min_obs_per_seg = 5
+
+def generate_segments(data, min_obs_per_seg):
+    n = len(data)
+    segments = []
+    for start in range(n):
+        for end in range(start + min_obs_per_seg, n + 1):
+            segments.append((start, end))
+    return segments
+
+segments = generate_segments(data, min_obs_per_seg)
+
 # Plotting the segments step-by-step
 for i in range(len(segments)):
     plt.figure(figsize=(10, 5))
