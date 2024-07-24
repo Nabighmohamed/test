@@ -1,6 +1,77 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters
+num_clusters = 10
+
+# Store the best F1 score and corresponding feature index
+best_f1 = 0
+best_feature_index = -1
+best_segments = None
+
+# Iterate over each feature to segment the target variable
+for feature_index in range(data.shape[1] - 1):  # Exclude target column
+    feature_name = data.columns[feature_index]
+    X = data.drop(columns='target')
+    y = data['target']
+    
+    # Segment the target variable using the current feature
+    dt = DecisionTreeRegressor(min_samples_split=5, max_leaf_nodes=num_clusters, random_state=0)
+    dt.fit(X[[feature_name]], y)
+    segments = dt.apply(X[[feature_name]])
+
+    # Check for disjoint segments by ensuring non-overlapping intervals
+    # This is a simplified example; more sophisticated checks and adjustments may be needed
+    unique_segments = np.unique(segments)
+    is_disjoint = len(unique_segments) <= num_clusters
+
+    # Convert segments to categorical labels if disjoint
+    if is_disjoint:
+        label_encoder = LabelEncoder()
+        segment_labels = label_encoder.fit_transform(segments)
+    else:
+        continue  # Skip if the segments are not disjoint
+
+    # Check if this configuration is the best
+    if len(unique_segments) > len(set(best_segments)) if best_segments is not None else 0:
+        best_segments = segment_labels
+        best_feature_index = feature_index
+
+# Add the best segments to the DataFrame as a new column if disjoint segments were found
+if best_segments is not None:
+    data['best_segments'] = best_segments
+    best_feature_name = data.columns[best_feature_index]
+    print(f"Best Feature Index: {best_feature_index} ({best_feature_name}), Unique Segments: {len(set(best_segments))}")
+else:
+    print("No disjoint segments found with the given configuration.")
+
+# Plot the target variable colored by the best segmentation if available
+if best_segments is not None:
+    plt.figure(figsize=(10, 6))
+    plt.scatter(range(len(data)), data['target'], c=data['best_segments'], cmap='viridis', marker='o', label='Target variable')
+    plt.title(f'Target Variable Segmentation by Feature {best_feature_name} with {num_clusters} Clusters')
+    plt.xlabel('Sample Index')
+    plt.ylabel('Target Variable Value')
+    plt.colorbar(label='Segment Label')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
