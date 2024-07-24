@@ -1,6 +1,79 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import f1_score, classification_report, ConfusionMatrixDisplay
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+X = np.random.randn(100, 5)  # 100 samples, 5 features
+y = np.random.randn(100)     # Target variable
+
+# Store the best F1 score and corresponding feature index
+best_f1 = 0
+best_feature_index = -1
+best_segments = None
+
+# Iterate over each feature to segment the target variable
+for feature_index in range(X.shape[1]):
+    # Segment the target variable using the current feature
+    dt = DecisionTreeRegressor(min_samples_split=5, random_state=0)
+    dt.fit(X[:, feature_index].reshape(-1, 1), y)
+    segments = dt.predict(X[:, feature_index].reshape(-1, 1))
+
+    # Split the data into training and testing sets
+    X_train, X_test, segments_train, segments_test = train_test_split(X, segments, test_size=0.2, random_state=0)
+
+    # Use these segments as labels and predict using all features with XGBoost
+    xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+    xgb.fit(X_train, segments_train)
+
+    # Predict the segments on the test set and calculate the F1 score
+    predicted_segments = xgb.predict(X_test)
+    f1 = f1_score(segments_test, predicted_segments, average='weighted')
+
+    # Check if this is the best F1 score
+    if f1 > best_f1:
+        best_f1 = f1
+        best_feature_index = feature_index
+        best_segments = segments
+
+# Output the best feature index and F1 score
+print(f"Best Feature Index: {best_feature_index}, Best F1 Score: {best_f1}")
+
+# Plot the target variable colored by the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(y)), y, c=best_segments, cmap='viridis', marker='o', label='Target variable')
+plt.title(f'Target Variable Segmentation by Feature {best_feature_index}')
+plt.xlabel('Sample Index')
+plt.ylabel('Target Variable Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+# Classification report and confusion matrix for the best feature
+xgb.fit(X, best_segments)
+predicted_segments = xgb.predict(X)
+report = classification_report(best_segments, predicted_segments)
+print("Classification Report:")
+print(report)
+
+cm = confusion_matrix(best_segments, predicted_segments)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 from xgboost import XGBClassifier
