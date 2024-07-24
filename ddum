@@ -1,5 +1,50 @@
 import numpy as np
 import pandas as pd
+
+# Define the initial continuous variable y
+y = np.arange(1, 101)  # y = [1, 2, 3, ..., 100]
+
+# Define initial segment boundaries and minimum number of observations
+initial_segments = [25, 50, 75]
+min_number = 5
+
+# Create an empty DataFrame to store the segmentations
+segmentations = pd.DataFrame({'y': y})
+
+# Function to create a segmentation based on given boundaries
+def create_segmentation(y, boundaries):
+    y_seg = np.zeros_like(y)
+    for i, boundary in enumerate(boundaries):
+        y_seg[(y > boundaries[i-1]) & (y <= boundary)] = i if i > 0 else 0
+    y_seg[y > boundaries[-1]] = len(boundaries)
+    return y_seg
+
+# Iterate over each boundary, starting with the last one and moving backwards
+for i in range(len(initial_segments) - 1, -1, -1):
+    boundary_name = f'S{i+1}'
+    max_value = y[-1] if i == len(initial_segments) - 1 else initial_segments[i+1]
+    min_value = 1 if i == 0 else initial_segments[i-1] + 1
+    
+    for new_boundary in range(initial_segments[i], max_value + 1):
+        new_boundaries = initial_segments.copy()
+        new_boundaries[i] = new_boundary
+        segmentation = create_segmentation(y, new_boundaries)
+        
+        # Check if the segmentation is valid
+        valid = all(np.sum(segmentation == j) >= min_number for j in range(len(new_boundaries) + 1))
+        if valid:
+            column_name = f'y_seg_{"_".join(map(str, new_boundaries))}'
+            segmentations[column_name] = segmentation
+
+# Display the generated segmentations
+import ace_tools as tools; tools.display_dataframe_to_user(name="Generated Segmentations", dataframe=segmentations)
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import LabelEncoder
