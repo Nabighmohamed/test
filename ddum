@@ -4,6 +4,105 @@ import xgboost as xgb
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from itertools import combinations
+
+def generate_possible_segments(y, num_segments, min_obs_per_seg):
+    """
+    Generates all possible segmentations for the target variable `y` with a given number of segments and minimum observations per segment.
+    
+    Parameters:
+    - y: pd.Series - The target variable.
+    - num_segments: int - The number of segments to create.
+    - min_obs_per_seg: int - Minimum number of observations per segment.
+    
+    Returns:
+    - possible_segments: List of lists containing segment boundaries.
+    """
+    possible_segments = []
+    sorted_values = np.sort(y.unique())
+    n_values = len(sorted_values)
+    
+    for combination in combinations(range(1, n_values), num_segments - 1):
+        segments = np.split(sorted_values, combination)
+        if all(len(seg) >= min_obs_per_seg for seg in segments):
+            segment_boundaries = [seg[-1] for seg in segments[:-1]]  # Get the last value in each segment except the last
+            segment_boundaries = [sorted_values[0] - 1] + segment_boundaries + [sorted_values[-1] + 1]
+            possible_segments.append(segment_boundaries)
+    
+    return possible_segments
+
+def optimize_segments(df, target_var, num_segments, min_obs_per_seg):
+    """
+    Optimizes the segmentation of a target variable in a DataFrame to maximize the F1 score of an XGBoost model.
+
+    Parameters:
+    - df: pd.DataFrame - The input DataFrame.
+    - target_var: str - The target variable column name.
+    - num_segments: int - The number of segments to create.
+    - min_obs_per_seg: int - Minimum number of observations per segment.
+
+    Returns:
+    - df_with_segments: pd.DataFrame - The DataFrame with an added 'segment' column.
+    - best_f1: float - The best F1 score achieved.
+    """
+    data = df.copy()
+    X = data.drop(columns=[target_var])
+    y = data[target_var]
+    
+    possible_segments = generate_possible_segments(y, num_segments, min_obs_per_seg)
+    best_f1 = -np.inf
+    best_segments = None
+
+    for boundaries in possible_segments:
+        labels = pd.cut(y, bins=boundaries, labels=False, include_lowest=True)
+        data['segment'] = labels
+
+        # Train an XGBoost model and evaluate F1 score
+        X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2, random_state=42)
+        model = xgb.XGBClassifier(objective='multi:softmax', num_class=num_segments)
+        model.fit(X_train, y_train)
+        predictions = model.predict(X_test)
+        f1 = f1_score(y_test, predictions, average='weighted')
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_segments = boundaries
+
+    # Assign the best segments to the DataFrame
+    data['segment'] = pd.cut(y, bins=best_segments, labels=False, include_lowest=True)
+
+    # Plotting the target variable with segments
+    plt.figure(figsize=(12, 6))
+    plt.scatter(range(len(y)), y, c=data['segment'], cmap='viridis', label='Segments', alpha=0.6)
+    plt.colorbar(label='Segment')
+    plt.title(f'Target Variable Segmentation with Best F1 Score = {best_f1:.4f}')
+    plt.xlabel('Index')
+    plt.ylabel(target_var)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    return data, best_f1
+
+# Example usage:
+# df = pd.read_csv('your_data.csv')
+# df_with_segments, best_f1 = optimize_segments(df, 'target_variable', num_segments=5, min_obs_per_seg=50)
+# print("Data with segments:\n", df_with_segments.head())
+# print("Best F1 score:", best_f1)
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 def optimize_segments(df, target_var, num_segments, min_obs_per_seg):
     """
