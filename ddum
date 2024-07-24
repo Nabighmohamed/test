@@ -1,3 +1,66 @@
+import matplotlib.pyplot as plt
+
+def create_segmentations_with_corrected_steps(y, initial_segments, min_number):
+    segmentations = pd.DataFrame({'y': y})
+    max_y = y[-1]
+    initial_s1, initial_s2, initial_s3 = initial_segments
+    
+    # Function to plot segmentations
+    def plot_segmentation(y, segmentation, boundaries, step):
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y, segmentation, c=segmentation, cmap='viridis', alpha=0.7, edgecolors='w')
+        plt.title(f'Segmentation at Step {step}: Boundaries {boundaries}')
+        plt.xlabel('y')
+        plt.ylabel('Segment')
+        plt.grid(True)
+        plt.show()
+    
+    step = 1
+    
+    # Step 1: Fix S1, S2, S3; change S4
+    for s4 in range(initial_s3 + 1, max_y + 1):
+        boundaries = [initial_s1, initial_s2, initial_s3, s4]
+        segmentation = create_segmentation(y, boundaries)
+        if all(np.sum(segmentation == j) >= min_number for j in range(len(boundaries) + 1)):
+            column_name = f'y_seg_{"_".join(map(str, boundaries))}'
+            segmentations[column_name] = segmentation
+            plot_segmentation(y, segmentation, boundaries, step)
+            step += 1
+    
+    # Step 2: Fix S1, S2; change S3, then S4
+    for s3 in range(initial_s2 + 1, max_y):
+        for s4 in range(s3 + 1, max_y + 1):
+            boundaries = [initial_s1, initial_s2, s3, s4]
+            segmentation = create_segmentation(y, boundaries)
+            if all(np.sum(segmentation == j) >= min_number for j in range(len(boundaries) + 1)):
+                column_name = f'y_seg_{"_".join(map(str, boundaries))}'
+                segmentations[column_name] = segmentation
+                plot_segmentation(y, segmentation, boundaries, step)
+                step += 1
+    
+    # Step 3: Fix S1; change S2, then S3, then S4
+    for s2 in range(initial_s1 + 1, max_y):
+        for s3 in range(s2 + 1, max_y):
+            for s4 in range(s3 + 1, max_y + 1):
+                boundaries = [initial_s1, s2, s3, s4]
+                segmentation = create_segmentation(y, boundaries)
+                if all(np.sum(segmentation == j) >= min_number for j in range(len(boundaries) + 1)):
+                    column_name = f'y_seg_{"_".join(map(str, boundaries))}'
+                    segmentations[column_name] = segmentation
+                    plot_segmentation(y, segmentation, boundaries, step)
+                    step += 1
+    
+    return segmentations
+
+# Generate segmentations with corrected steps and plotting
+corrected_segmentations_with_plots = create_segmentations_with_corrected_steps(y, initial_segments, min_number)
+tools.display_dataframe_to_user(name="Corrected Segmentations with Plots", dataframe=corrected_segmentations_with_plots)
+
+
+
+
+
+
 # Redefine the function to include the steps as specified
 def create_segmentations_with_steps(y, initial_segments, min_number):
     segmentations = pd.DataFrame({'y': y})
