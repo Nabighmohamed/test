@@ -1,5 +1,55 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# Step 1: Generate the data
+np.random.seed(0)  # For reproducibility
+data = np.random.randn(100)  # Generate 100 random points
+
+# Step 2: Create segments based on a minimum number of observations per segment
+min_obs_per_seg = 5
+
+def generate_segments(data, min_obs_per_seg):
+    n = len(data)
+    # This function will generate the possible segmentations
+    segments = []
+    for start in range(n):
+        for end in range(start + min_obs_per_seg, n + 1):
+            segments.append((start, end))
+    return segments
+
+segments = generate_segments(data, min_obs_per_seg)
+
+# Step 3: Animate the plot
+fig, ax = plt.subplots()
+ax.set_xlim(0, len(data))
+ax.set_ylim(np.min(data), np.max(data))
+line, = ax.plot([], [], lw=2)
+title = ax.set_title('')
+
+def init():
+    line.set_data([], [])
+    return line,
+
+def update(frame):
+    start, end = segments[frame]
+    x = range(start, end)
+    y = data[start:end]
+    line.set_data(x, y)
+    title.set_text(f'Segment {frame + 1}/{len(segments)}: {start} to {end}')
+    return line, title
+
+ani = FuncAnimation(fig, update, frames=range(len(segments)), init_func=init, blit=True, repeat=False)
+plt.show()
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
