@@ -1,3 +1,25 @@
+import matplotlib.pyplot as plt
+
+# Define a function to plot segmentations
+def plot_segmentations(segmentations, y, step_boundaries):
+    for column in segmentations.columns[1:]:  # Skip the 'y' column
+        boundaries = list(map(int, column.split('_')[2:]))
+        fig, ax = plt.subplots()
+        for i, boundary in enumerate(boundaries):
+            ax.axvline(boundary, color='r', linestyle='--', label=f'Boundary {i+1}: {boundary}')
+        ax.scatter(y, segmentations[column], c=segmentations[column], cmap='viridis', label='Segmentation')
+        ax.set_title(f'Segmentation: {column}')
+        ax.set_xlabel('y')
+        ax.set_ylabel('Segment')
+        ax.legend(loc='best')
+        plt.show()
+
+# Plot the segmentations
+plot_segmentations(segmentations, y, initial_segments)
+
+
+
+
 import numpy as np
 import pandas as pd
 
