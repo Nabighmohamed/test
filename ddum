@@ -1,6 +1,67 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay, confusion_matrix
+from xgboost import XGBClassifier
+
+# Load your dataset
+# For demonstration, we'll generate a synthetic dataset with multiple features and a binary target
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(1000, 10), columns=[f'feature_{i}' for i in range(10)])
+data['target'] = np.random.randint(0, 2, 1000)  # Binary target variable
+
+# Split the data into features and target
+X = data.drop(columns='target')
+y = data['target']
+
+# Initialize the XGBClassifier
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+
+# Set up cross-validation
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+
+# Perform cross-validation
+cv_scores = cross_val_score(xgb, X, y, cv=cv, scoring='accuracy')
+print(f"Cross-Validation Accuracy Scores: {cv_scores}")
+print(f"Mean CV Accuracy: {cv_scores.mean()}")
+
+# Train the model on the entire dataset and evaluate
+xgb.fit(X, y)
+y_pred = cross_val_score(xgb, X, y, cv=cv, scoring='accuracy')
+
+# Predict using cross-validation and calculate the confusion matrix
+y_pred_all = cross_val_score(xgb, X, y, cv=cv, scoring='accuracy')
+cm = confusion_matrix(y, y_pred_all)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
+
+# Generate and print the classification report for the last fold
+xgb.fit(X, y)
+y_pred_last_fold = xgb.predict(X)
+report = classification_report(y, y_pred_last_fold)
+print("Classification Report:")
+print(report)
+
+# Plot feature importance
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(xgb.feature_importances_)), xgb.feature_importances_)
+plt.yticks(range(len(X.columns)), X.columns)
+plt.xlabel("Feature Importance")
+plt.ylabel("Feature")
+plt.title("Feature Importance in XGBClassifier")
+plt.show()
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 from xgboost import XGBClassifier
