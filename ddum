@@ -1,3 +1,53 @@
+# Create a continuous float variable y in the DataFrame
+df_float = pd.DataFrame({'y': np.linspace(1.0, 100.0, 100)})
+
+# Adjusting the function to handle float values in y
+def create_segmentation_float(y, boundaries):
+    y_seg = np.zeros_like(y, dtype=int)
+    for i, boundary in enumerate(boundaries):
+        y_seg[(y > boundaries[i-1]) & (y <= boundary)] = i if i > 0 else 0
+    y_seg[y > boundaries[-1]] = len(boundaries)
+    return y_seg
+
+def general_segmentations_float(df, var_name, num_segs, min_number):
+    y = df[var_name].values
+    max_y = y[-1]
+    initial_segments = list(np.linspace(min(y), max_y, num_segs, endpoint=False)[1:])
+    
+    segmentations = pd.DataFrame({var_name: y})
+    
+    def plot_segmentation(y, segmentation, boundaries, step):
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y, segmentation, c=segmentation, cmap='viridis', alpha=0.7, edgecolors='w')
+        plt.title(f'Segmentation at Step {step}: Boundaries {boundaries}')
+        plt.xlabel(var_name)
+        plt.ylabel('Segment')
+        plt.grid(True)
+        plt.show()
+    
+    step = 1
+    
+    for idx in reversed(range(num_segs - 1)):
+        for i in np.linspace(initial_segments[idx], max_y, 50):  # finer steps for float
+            boundaries = initial_segments[:]
+            boundaries[idx] = i
+            segmentation = create_segmentation_float(y, boundaries)
+            if all(np.sum(segmentation == j) >= min_number for j in range(len(boundaries) + 1)):
+                column_name = f'{var_name}_seg_{"_".join(map(lambda x: f"{x:.2f}", boundaries))}'
+                segmentations[column_name] = segmentation
+                plot_segmentation(y, segmentation, boundaries, step)
+                step += 1
+    
+    return segmentations
+
+# Generate general segmentations for float values
+general_segmentations_float_result = general_segmentations_float(df_float, 'y', num_segs, min_number)
+tools.display_dataframe_to_user(name="General Segmentations with Float Values", dataframe=general_segmentations_float_result)
+
+
+
+
+
 def general_segmentations(df, var_name, num_segs, min_number):
     y = df[var_name].values
     max_y = y[-1]
