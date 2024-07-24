@@ -1,4 +1,72 @@
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import f1_score
+from xgboost import XGBClassifier
+from sklearn.preprocessing import LabelEncoder
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Store the best F1 score and corresponding feature index
+best_f1 = 0
+best_feature_index = -1
+best_segments = None
+
+# Iterate over each feature to segment the target variable
+for feature_index in range(data.shape[1] - 1):  # Exclude target column
+    feature_name = data.columns[feature_index]
+    X = data.drop(columns='target')
+    y = data['target']
+    
+    # Segment the target variable using the current feature
+    dt = DecisionTreeRegressor(min_samples_split=5, random_state=0)
+    dt.fit(X[[feature_name]], y)
+    segments = dt.apply(X[[feature_name]])
+
+    # Convert segments to categorical labels
+    label_encoder = LabelEncoder()
+    segment_labels = label_encoder.fit_transform(segments)
+
+    # Use these segments as labels and predict using all features with XGBoost
+    xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+    xgb.fit(X, segment_labels)
+
+    # Predict the segments and calculate the F1 score
+    predicted_segments = xgb.predict(X)
+    f1 = f1_score(segment_labels, predicted_segments, average='weighted')
+
+    # Check if this is the best F1 score
+    if f1 > best_f1:
+        best_f1 = f1
+        best_feature_index = feature_index
+        best_segments = segment_labels
+
+# Add the best segments to the DataFrame as a new column
+data['best_segments'] = best_segments
+
+# Output the best feature index and F1 score
+best_feature_name = data.columns[best_feature_index]
+print(f"Best Feature Index: {best_feature_index} ({best_feature_name}), Best F1 Score: {best_f1}")
+
+# Plot the target variable colored by the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(data)), data['target'], c=data['best_segments'], cmap='viridis', marker='o', label='Target variable')
+plt.title(f'Target Variable Segmentation by Feature {best_feature_name}')
+plt.xlabel('Sample Index')
+plt.ylabel('Target Variable Value')
+plt.colorbar(label='Segment Label')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+
+
+
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import f1_score
