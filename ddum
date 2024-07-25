@@ -1,3 +1,46 @@
+Objet : Demande d'approbation pour l'email à Sabrina
+
+Bonjour Solène,
+
+J'espère que vous allez bien.
+
+Je souhaite reporter la discussion RH avec Sabrina et j'ai préparé deux options d'email. Pourriez-vous s'il vous plaît examiner ces messages et me dire lequel vous semble le plus approprié ?
+
+Option 1 :
+
+Objet : Report de la discussion RH
+
+Bonjour Sabrina,
+
+J'espère que vous allez bien.
+
+Pourrions-nous reporter la discussion RH à lundi prochain ?
+
+Merci beaucoup !
+
+Cordialement,
+
+Mohamed
+
+Option 2 :
+
+Bonjour Sabrina,
+
+J'espère que vous allez bien.
+
+Je vous serais très reconnaissant si nous pouvions reporter la discussion RH à la semaine prochaine, à un moment qui vous conviendrait. Merci beaucoup pour votre compréhension et votre flexibilité.
+
+Merci encore pour votre aide.
+
+Cordialement,
+
+Mohamed
+
+
+
+
+
+
 # Create a continuous float variable y in the DataFrame
 df_float = pd.DataFrame({'y': np.linspace(1.0, 100.0, 100)})
 
