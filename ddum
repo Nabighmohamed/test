@@ -2,6 +2,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+# This line is for static plots in Jupyter Notebooks
+%matplotlib inline
+
+# Set up the figure, the axis, and the plot element we want to animate
+fig, ax = plt.subplots()
+x = np.linspace(0, 2 * np.pi, 200)
+line, = ax.plot(x, np.sin(x))
+
+# Initialization function: plot the background of each frame
+def init():
+    line.set_ydata([np.nan] * len(x))
+    return line,
+
+# Animation function: this is called sequentially
+def animate(i):
+    line.set_ydata(np.sin(x + i / 10))  # Update the data
+    return line,
+
+# Call the animator
+ani = FuncAnimation(fig, animate, init_func=init, frames=100, interval=20, blit=True)
+
+# Save the animation as an MP4 file or GIF (optional)
+ani.save('sine_wave_animation.mp4', writer='ffmpeg')
+
+plt.show()
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 # This line is important for Jupyter Notebooks
 %matplotlib notebook
 
