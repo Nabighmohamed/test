@@ -1,3 +1,10 @@
+BNP Paribas : Optimisation de la Valeur à Vie des Clients avec la Modélisation Prédictive et l'Analyse de Données
+UM6P : Réduction de la Congestion Routière avec l'Apprentissage par Renforcement et les Systèmes Multi-Agents
+ANDZOA : Amélioration de la Qualité des Données et de l'Efficacité Stratégique grâce à des Pipelines de Données et Tableaux de Bord Avancés
+
+
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
