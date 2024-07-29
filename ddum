@@ -1,6 +1,14 @@
-BNP Paribas : Optimisation de la Valeur à Vie des Clients avec la Modélisation Prédictive et l'Analyse de Données
-UM6P : Réduction de la Congestion Routière avec l'Apprentissage par Renforcement et les Systèmes Multi-Agents
-ANDZOA : Amélioration de la Qualité des Données et de l'Efficacité Stratégique grâce à des Pipelines de Données et Tableaux de Bord Avancés
+Amélioration du Clustering de Texte avec des Modèles de Langage (LLM)
+
+Développé un système avancé de clustering de texte utilisant des modèles de langage de grande taille (LLM), avec une amélioration de 25 % de la précision du clustering.
+Expérimenté avec des modèles de pointe pour affiner les techniques de clustering, utilisant Python pour le développement, la formation et l'évaluation des modèles.
+Technologies/Compétences : LLMs, Techniques de Data Science, Traitement du Langage Naturel, PyTorch, Hugging Face, Apprentissage Fédéré.
+Système de Recherche de Fichiers Propulsé par LLM
+
+Créé un système de recherche de fichiers utilisant des LLMs pour localiser des fichiers basés sur des descriptions plutôt que des mots-clés explicites.
+Amélioré l'efficacité de la recherche de fichiers de 40 % en permettant aux utilisateurs de taper une description du fichier recherché, et le système recherche le répertoire local pour trouver les fichiers correspondants.
+Utilisé des LLMs et LangChain pour la compréhension du langage naturel et les capacités de recherche.
+Technologies/Compétences : LLMs, LangChain, Compréhension du Langage Naturel, Python, Recherche de Fichiers.
 
 
 
