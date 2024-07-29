@@ -1,6 +1,101 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+from deap import base, creator, tools, algorithms
+import random
+
+# Generate a synthetic dataset for the example
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(100, 5), columns=[f'feature_{i}' for i in range(5)])
+data['target'] = np.random.randn(100)
+
+# Desired number of clusters and range for min_samples_split
+num_clusters = 10
+
+# Define the fitness function
+def fitness_function(individual):
+    min_samples_split = int(individual[0])
+    
+    # Initialize list to store weighted F1 scores for each feature
+    weighted_f1_scores = []
+
+    # Iterate over each feature to segment it using the target variable
+    for feature_index in range(data.shape[1] - 1):  # Exclude the target column
+        feature_name = data.columns[feature_index]
+        X_feature = data[[feature_name]].values.reshape(-1, 1)
+        y = data['target'].values.reshape(-1, 1)
+
+        # Segment the feature using the target variable
+        dt = DecisionTreeRegressor(min_samples_split=min_samples_split, max_leaf_nodes=num_clusters, random_state=0)
+        dt.fit(y, X_feature)
+        predicted_X = dt.predict(y)
+
+        # Convert the continuous segment predictions into discrete labels
+        label_encoder = LabelEncoder()
+        segment_labels = label_encoder.fit_transform(predicted_X)
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(
+            data.drop(columns='target'), segment_labels, test_size=0.3, random_state=0
+        )
+
+        # Use all features (excluding the target variable) to predict these segments
+        xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+        xgb.fit(X_train, y_train)
+
+        # Predict the segments on the test set
+        predicted_segments = xgb.predict(X_test)
+
+        # Generate a classification report
+        report = classification_report(y_test, predicted_segments, output_dict=True)
+        weighted_f1_scores.append(report['weighted avg']['f1-score'])
+
+    # Return the average weighted F1 score as the fitness score (negated to minimize)
+    return -np.mean(weighted_f1_scores),
+
+# Define the GA settings
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
+toolbox = base.Toolbox()
+toolbox.register("attr_int", random.randint, 2, 20)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_int, n=1)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+toolbox.register("evaluate", fitness_function)
+toolbox.register("mate", tools.cxBlend, alpha=0.5)
+toolbox.register("mutate", tools.mutPolynomialBounded, low=2, up=20, eta=0.1, indpb=0.2)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+# Run the Genetic Algorithm
+population = toolbox.population(n=10)
+NGEN = 20
+CXPB, MUTPB = 0.5, 0.2
+
+for gen in range(NGEN):
+    offspring = algorithms.varAnd(population, toolbox, CXPB, MUTPB)
+    invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+    fitnesses = map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+    population = toolbox.select(offspring, k=len(population))
+
+# Extract and print the best solution
+best_individual = tools.selBest(population, k=1)[0]
+best_min_samples_split = int(best_individual[0])
+print("Best min_samples_split is:", best_min_samples_split)
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from itertools import combinations
 import seaborn as sns
