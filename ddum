@@ -2,6 +2,120 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+from xgboost import XGBClassifier
+from deap import base, creator, tools, algorithms
+
+# Load your dataset
+np.random.seed(0)
+data = pd.DataFrame(np.random.randn(1000, 10), columns=[f'feature_{i}' for i in range(10)])
+data['target'] = np.random.randint(0, 2, 1000)  # Binary target variable
+
+# Split the data into features and target
+X = data.drop(columns='target')
+y = data['target']
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Define the fitness function
+def fitness_function(individual):
+    n_estimators, max_depth, learning_rate = individual
+    n_estimators = int(n_estimators)
+    max_depth = int(max_depth)
+    learning_rate = float(learning_rate)
+    
+    model = XGBClassifier(
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+        learning_rate=learning_rate,
+        use_label_encoder=False,
+        eval_metric='logloss',
+        random_state=0
+    )
+    
+    # Evaluate the model using cross-validation
+    scores = cross_val_score(model, X_train, y_train, cv=3, scoring='accuracy')
+    return scores.mean(),
+
+# Define the GA components
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+toolbox = base.Toolbox()
+toolbox.register("attr_int", np.random.randint, 50, 200)  # Range for n_estimators
+toolbox.register("attr_int2", np.random.randint, 1, 10)   # Range for max_depth
+toolbox.register("attr_float", np.random.uniform, 0.01, 0.3)  # Range for learning_rate
+toolbox.register("individual", tools.initCycle, creator.Individual,
+                 (toolbox.attr_int, toolbox.attr_int2, toolbox.attr_float), n=1)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+toolbox.register("evaluate", fitness_function)
+toolbox.register("mate", tools.cxBlend, alpha=0.5)
+toolbox.register("mutate", tools.mutPolynomialBounded, low=[50, 1, 0.01], up=[200, 10, 0.3], eta=0.1, indpb=0.2)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+# Run the Genetic Algorithm
+population = toolbox.population(n=10)  # Smaller population for simplicity
+NGEN = 5
+CXPB, MUTPB = 0.5, 0.2
+
+for gen in range(NGEN):
+    offspring = algorithms.varAnd(population, toolbox, CXPB, MUTPB)
+    invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+    fitnesses = map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+    
+    population = toolbox.select(offspring, k=len(population))
+
+# Extract the best individual
+best_individual = tools.selBest(population, k=1)[0]
+best_params = [int(best_individual[0]), int(best_individual[1]), best_individual[2]]
+print("Best hyperparameters found:", best_params)
+
+# Train the final model with the best hyperparameters
+xgb = XGBClassifier(
+    n_estimators=best_params[0],
+    max_depth=best_params[1],
+    learning_rate=best_params[2],
+    use_label_encoder=False,
+    eval_metric='logloss',
+    random_state=0
+)
+xgb.fit(X_train, y_train)
+
+# Predict the target values for the test set
+y_pred = xgb.predict(X_test)
+
+# Compute the confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
+
+# Generate and print the classification report
+report = classification_report(y_test, y_pred)
+print("Classification Report:")
+print(report)
+
+# Plot feature importance
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(xgb.feature_importances_)), xgb.feature_importances_)
+plt.yticks(range(len(X.columns)), X.columns)
+plt.xlabel("Feature Importance")
+plt.ylabel("Feature")
+plt.title("Feature Importance in XGBClassifier")
+plt.show()
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay, accuracy_score
 from xgboost import XGBClassifier
 from deap import base, creator, tools, algorithms
