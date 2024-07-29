@@ -1,6 +1,81 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from itertools import combinations
+import seaborn as sns
+
+# Sample data for demonstration
+Y = np.random.rand(100) * 10  # Random float numbers between 0 and 10
+Y.sort()
+min_number_per_seg = 25
+N = 4  # Number of segments
+
+# Create a DataFrame with the sample data
+df = pd.DataFrame({'value': Y})
+
+def is_valid_segmentation(segments, min_count):
+    # Count numbers in each segment
+    segment_counts = [np.sum((Y >= segments[i]) & (Y < segments[i+1])) for i in range(len(segments) - 1)]
+    segment_counts.append(np.sum(Y >= segments[-1]))  # For the last segment
+    return all(count >= min_count for count in segment_counts)
+
+# Create a list of valid segmentations and store in DataFrame
+valid_segments = []
+segmentation_results = pd.DataFrame({'value': Y})
+
+for idx, split_points in enumerate(combinations(Y, N-1)):  # We need N-1 split points for N segments
+    if is_valid_segmentation(split_points, min_number_per_seg):
+        valid_segments.append(split_points)
+        # Create a new column for each valid segmentation
+        segmentation_results[f'segment_{idx}'] = np.digitize(Y, bins=split_points, right=False)
+
+# If no valid segments, exit early
+if not valid_segments:
+    print("No valid segmentations found. Exiting.")
+    exit()
+
+# Set up the plot
+fig, ax = plt.subplots()
+sns.set(style="whitegrid")
+
+# Initialize the plot elements
+def init():
+    ax.clear()
+    ax.set_xlim(np.min(Y), np.max(Y))
+    ax.set_ylim(0, 20)  # Adjust ylim based on data
+    return []
+
+# Animation function
+def animate(i):
+    ax.clear()
+    segments = valid_segments[i]
+    df['segment'] = np.digitize(df['value'], bins=segments, right=False)
+    
+    # Plot each segment as a histogram using Seaborn
+    sns.histplot(df, x='value', hue='segment', element="step", palette='tab10', ax=ax)
+    
+    ax.set_title(f'Valid Segmentation {i+1}')
+    return []
+
+# Create the animation
+ani = FuncAnimation(fig, animate, init_func=init, frames=len(valid_segments), interval=200, blit=False)
+
+# Save the animation as a GIF file
+ani.save('segmented_histogram_animation.gif', writer='pillow')
+
+plt.show()
+
+# Save the segmentation results DataFrame to a CSV file
+segmentation_results.to_csv('segmentation_results.csv', index=False)
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 from xgboost import XGBClassifier
