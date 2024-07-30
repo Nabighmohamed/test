@@ -1,14 +1,10 @@
-Amélioration du Clustering de Texte avec des Modèles de Langage (LLM)
+Bonjour,
 
-Développé un système avancé de clustering de texte utilisant des modèles de langage de grande taille (LLM), avec une amélioration de 25 % de la précision du clustering.
-Expérimenté avec des modèles de pointe pour affiner les techniques de clustering, utilisant Python pour le développement, la formation et l'évaluation des modèles.
-Technologies/Compétences : LLMs, Techniques de Data Science, Traitement du Langage Naturel, PyTorch, Hugging Face, Apprentissage Fédéré.
-Système de Recherche de Fichiers Propulsé par LLM
+Tout d'abord, je tiens à vous remercier d'avoir pris le temps de me rencontrer aujourd'hui. Je comprends à quel point votre emploi du temps est chargé et combien votre temps est précieux, et je suis donc particulièrement reconnaissant que vous ayez pu vous libérer pour cette réunion.
 
-Créé un système de recherche de fichiers utilisant des LLMs pour localiser des fichiers basés sur des descriptions plutôt que des mots-clés explicites.
-Amélioré l'efficacité de la recherche de fichiers de 40 % en permettant aux utilisateurs de taper une description du fichier recherché, et le système recherche le répertoire local pour trouver les fichiers correspondants.
-Utilisé des LLMs et LangChain pour la compréhension du langage naturel et les capacités de recherche.
-Technologies/Compétences : LLMs, LangChain, Compréhension du Langage Naturel, Python, Recherche de Fichiers.
+Pour mieux me présenter et en contraste avec cela, j'ai décidé de créer une petite présentation. Celle-ci mettra en valeur mes compétences, mes projets récents, et j'espère qu'elle retiendra votre attention.
+
+Merci encore pour votre temps et votre considération. Je vais maintenant commencer la présentation.
 
 
 
