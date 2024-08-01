@@ -1,3 +1,15 @@
+Bonjour Willy,
+
+Je voulais te recontacter pour savoir si tu avais eu des nouvelles concernant le recrutement des talents en intelligence artificielle dont nous avions parlé. Y a-t-il des informations supplémentaires ou des actions que nous devons entreprendre pour postuler ou nous impliquer dans ce processus ?
+
+Merci d'avance pour ton retour.
+
+Cordialement,
+Mohamed
+
+
+
+
 # Generating a more complex example dataset
 np.random.seed(0)
 x_complex = np.linspace(-10, 10, 200)
