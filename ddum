@@ -1,5 +1,55 @@
 import numpy as np
 import pandas as pd
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from xgboost import XGBRegressor
+
+# Function to compute R² evolution with increasing observations
+def r2_evolution(df, target):
+    # Sort the DataFrame by the target variable
+    df_sorted = df.sort_values(by=target)
+    
+    r2_scores = []
+    observation_counts = []
+    
+    # Start with the first 1000 observations and increment by 500
+    for i in range(1000, len(df_sorted), 500):
+        subset = df_sorted.iloc[:i]
+        X = subset.drop(columns=[target])
+        y = subset[target]
+        
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        # Train an XGBoost model
+        model = XGBRegressor()
+        model.fit(X_train, y_train)
+        
+        # Predict and calculate R² score
+        y_pred = model.predict(X_test)
+        r2 = r2_score(y_test, y_pred)
+        
+        r2_scores.append(r2)
+        observation_counts.append(i)
+    
+    # Plotting the R² evolution
+    plt.figure(figsize=(10, 6))
+    plt.plot(observation_counts, r2_scores, marker='o', linestyle='-', color='b')
+    plt.title('R² Evolution with Increasing Observations')
+    plt.xlabel('Number of Observations')
+    plt.ylabel('R² Score')
+    plt.grid(True)
+    plt.show()
+
+# Example usage
+# r2_evolution(df, 'target_column_name')
+
+
+
+
+import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
