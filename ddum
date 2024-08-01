@@ -1,3 +1,72 @@
+# Generating a more complex example dataset
+np.random.seed(0)
+x_complex = np.linspace(-10, 10, 200)
+y_complex = np.piecewise(x_complex,
+                         [x_complex < -5, (x_complex >= -5) & (x_complex < 5), x_complex >= 5],
+                         [lambda x: 2 * x + 1,
+                          lambda x: -3 * x + 10,
+                          lambda x: 0.5 * x - 5]) + np.random.normal(0, 1, x_complex.size)
+from scipy.stats import spearmanr
+
+# Greedy method for segmentation using Spearman correlation
+def greedy_segmentation_spearman(x, y, max_segments):
+    n = len(x)
+    best_correlation = -np.inf
+    best_segmentation = None
+    best_models = []
+
+    for num_segs in range(1, max_segments + 1):
+        for split_points in combinations(range(1, n), num_segs):
+            splits = [0] + list(split_points) + [n]
+            total_correlation = 0
+            models = []
+            
+            for i in range(len(splits) - 1):
+                x_seg = x[splits[i]:splits[i+1]].reshape(-1, 1)
+                y_seg = y[splits[i]:splits[i+1]]
+                model = LinearRegression().fit(x_seg, y_seg)
+                y_pred = model.predict(x_seg)
+                corr, _ = spearmanr(y_seg, y_pred)
+                total_correlation += corr
+                models.append(model)
+            
+            if total_correlation > best_correlation:
+                best_correlation = total_correlation
+                best_segmentation = splits
+                best_models = models
+                
+    return best_correlation, best_segmentation, best_models
+
+# Finding optimal segmentation with Spearman correlation
+best_corr, best_segmentation_spearman, best_models_spearman = greedy_segmentation_spearman(x_complex, y_complex, max_segments=3)
+
+# Plotting the data and the best segmentation
+plt.figure(figsize=(10, 6))
+plt.scatter(x_complex, y_complex, color='blue', alpha=0.5, label='Data')
+colors = ['red', 'green', 'orange']
+
+for i in range(len(best_segmentation_spearman) - 1):
+    start, end = best_segmentation_spearman[i], best_segmentation_spearman[i+1]
+    x_seg = x_complex[start:end]
+    y_seg = y_complex[start:end]
+    y_pred = best_models_spearman[i].predict(x_seg.reshape(-1, 1))
+    plt.plot(x_seg, y_pred, color=colors[i], linestyle='--', label=f'Segment {i+1}')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Optimal Segmentation with Spearman Correlation')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+best_corr, best_segmentation_spearman
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import r2_score
