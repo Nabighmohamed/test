@@ -3,6 +3,58 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.manifold import Isomap
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.cross_decomposition import PLSRegression
+
+# Example DataFrame
+# df = pd.read_csv('your_data.csv')
+
+# Assuming your target column is named 'target'
+target_column = 'target'
+features = df.drop(columns=[target_column])
+target = df[target_column]
+
+# Standardize the features
+scaler = StandardScaler()
+features_standardized = scaler.fit_transform(features)
+
+# Apply PLS for dimensionality reduction (n_components=2)
+pls = PLSRegression(n_components=2)
+pls.fit(features_standardized, np.zeros((features_standardized.shape[0], 1)))  # Dummy Y
+pls_results = pls.transform(features_standardized)
+
+# Create a DataFrame with the PLS results
+pls_df = pd.DataFrame(data=pls_results, columns=['PLS1', 'PLS2'])
+
+# Function to plot scatter with color based on a given column
+def plot_scatter(data, color_column):
+    plt.figure(figsize=(10, 6))
+    if pd.api.types.is_numeric_dtype(data[color_column]):
+        scatter = plt.scatter(data['PLS1'], data['PLS2'], c=data[color_column], cmap='viridis')
+        plt.colorbar(scatter)
+    else:
+        label_encoder = LabelEncoder()
+        data['encoded'] = label_encoder.fit_transform(data[color_column])
+        scatter = plt.scatter(data['PLS1'], data['PLS2'], c=data['encoded'], cmap='viridis')
+        plt.legend(handles=scatter.legend_elements()[0], labels=label_encoder.classes_)
+    plt.xlabel('PLS1')
+    plt.ylabel('PLS2')
+    plt.title(f'PLS plot colored by {color_column}')
+    plt.show()
+
+# Plot the PLS results colored by each original variable
+for column in df.columns:
+    if column != target_column:
+        plot_scatter(pd.concat([pls_df, df[column]], axis=1), column)
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.manifold import Isomap
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # Example DataFrame
 # df = pd.read_csv('your_data.csv')
