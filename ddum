@@ -1,11 +1,39 @@
-Bonjour Willy,
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import LabelEncoder
 
-Je voulais te recontacter pour savoir si tu avais eu des nouvelles concernant le recrutement des talents en intelligence artificielle dont nous avions parlé. Y a-t-il des informations supplémentaires ou des actions que nous devons entreprendre pour postuler ou nous impliquer dans ce processus ?
+# Example DataFrame
+# df = pd.read_csv('your_data.csv')
 
-Merci d'avance pour ton retour.
+# Assuming your target column is named 'target'
+target_column = 'target'
+features = df.drop(columns=[target_column])
+target = df[target_column]
 
-Cordialement,
-Mohamed
+# Apply t-SNE
+tsne = TSNE(n_components=2, random_state=42)
+tsne_results = tsne.fit_transform(features)
+
+# Create a DataFrame with the t-SNE results
+tsne_df = pd.DataFrame(data=tsne_results, columns=['TSNE1', 'TSNE2'])
+tsne_df[target_column] = target.values
+
+# Encode target labels for coloring
+label_encoder = LabelEncoder()
+tsne_df['target_encoded'] = label_encoder.fit_transform(tsne_df[target_column])
+
+# Plot the t-SNE results
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(tsne_df['TSNE1'], tsne_df['TSNE2'], c=tsne_df['target_encoded'], cmap='viridis')
+plt.legend(handles=scatter.legend_elements()[0], labels=label_encoder.classes_)
+plt.xlabel('TSNE1')
+plt.ylabel('TSNE2')
+plt.title('t-SNE plot')
+plt.show()
+
+
 
 
 
