@@ -2,6 +2,129 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cross_decomposition import PLSRegression
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import r2_score
+from xgboost import XGBRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+import lightgbm as lgb
+from mpl_toolkits.mplot3d import Axes3D
+import imageio
+import os
+
+# Example DataFrame
+# df = pd.read_csv('your_data.csv')
+
+# Assuming your target column is named 'target'
+target_column = 'target'
+features = df.drop(columns=[target_column])
+target = df[target_column]
+
+# Apply PLS for dimensionality reduction (n_components=2)
+pls = PLSRegression(n_components=2)
+pls.fit(features, target)
+pls_results = pls.transform(features)
+
+# Create a DataFrame with the PLS results
+pls_df = pd.DataFrame(data=pls_results, columns=['PLS1', 'PLS2'])
+pls_df[target_column] = target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(pls_df[['PLS1', 'PLS2']], pls_df[target_column], test_size=0.2, random_state=42)
+
+# Define parameter grids for each model
+param_grids = {
+    "XGBoost": {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [3, 6, 9],
+        'learning_rate': [0.01, 0.1, 0.2]
+    },
+    "Random Forest": {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10]
+    },
+    "Gradient Boosting": {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [3, 6, 9],
+        'learning_rate': [0.01, 0.1, 0.2]
+    },
+    "LightGBM": {
+        'n_estimators': [50, 100, 200],
+        'num_leaves': [31, 61, 127],
+        'learning_rate': [0.01, 0.1, 0.2]
+    }
+}
+
+# Initialize models
+models = {
+    "XGBoost": XGBRegressor(),
+    "Random Forest": RandomForestRegressor(),
+    "Gradient Boosting": GradientBoostingRegressor(),
+    "LightGBM": lgb.LGBMRegressor()
+}
+
+# Perform grid search and calculate R² scores
+r2_scores = {}
+best_params = {}
+
+for name, model in models.items():
+    print(f"Training {name}...")
+    grid_search = GridSearchCV(model, param_grids[name], cv=3, scoring='r2', n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    r2_scores[name] = r2_score(y_test, y_pred)
+    best_params[name] = grid_search.best_params_
+    print(f"Best parameters for {name}: {best_params[name]}")
+
+# Plot the R² scores
+plt.figure(figsize=(10, 6))
+plt.bar(r2_scores.keys(), r2_scores.values())
+plt.xlabel('Model')
+plt.ylabel('R² Score')
+plt.title('R² Scores of Different Models')
+plt.ylim(0, 1)
+plt.show()
+
+# Create a rotating 3D plot of PLS1, PLS2, and the target
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+angles = range(0, 360, 10)
+filenames = []
+
+for angle in angles:
+    ax.clear()
+    ax.scatter(pls_df['PLS1'], pls_df['PLS2'], pls_df[target_column], c=pls_df[target_column], cmap='viridis')
+    ax.set_xlabel('PLS1')
+    ax.set_ylabel('PLS2')
+    ax.set_zlabel(target_column)
+    ax.set_title('3D Plot of PLS1, PLS2, and Target')
+    ax.view_init(30, angle)
+    filename = f'frame_{angle}.png'
+    filenames.append(filename)
+    plt.savefig(filename)
+
+# Create a GIF from the saved frames
+images = [imageio.imread(filename) for filename in filenames]
+imageio.mimsave('rotation.gif', images, duration=0.1)
+
+# Clean up the saved frames
+for filename in filenames:
+    os.remove(filename)
+
+print("GIF saved as rotation.gif")
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from xgboost import XGBRegressor
