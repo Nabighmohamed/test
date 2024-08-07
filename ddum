@@ -1,3 +1,41 @@
+import pandas as pd
+
+# Assuming df_2018, df_2019, df_2020, df_2021, df_2022, df_2023 are your DataFrames for each year
+# Each DataFrame should have columns 'id', 'target', and other variables
+
+# Sample data (replace these with your actual data loading methods)
+df_2018 = pd.DataFrame({'id': [1, 2, 3], 'target': [100, 200, 300], 'var1': [10, 20, 30]})
+df_2019 = pd.DataFrame({'id': [1, 3, 4], 'target': [110, 310, 400], 'var1': [15, 25, 35]})
+df_2020 = pd.DataFrame({'id': [1, 2, 4], 'target': [120, 220, 420], 'var1': [12, 22, 32]})
+df_2021 = pd.DataFrame({'id': [1, 2, 3], 'target': [130, 230, 330], 'var1': [14, 24, 34]})
+df_2022 = pd.DataFrame({'id': [2, 3, 4], 'target': [240, 340, 440], 'var1': [18, 28, 38]})
+df_2023 = pd.DataFrame({'id': [1, 3, 4], 'target': [150, 350, 450], 'var1': [16, 26, 36]})
+
+# Combine all DataFrames
+dfs = [df_2018, df_2019, df_2020, df_2021, df_2022, df_2023]
+
+# Initialize the combined DataFrame with the first year's data
+combined_df = df_2018[['id', 'var1']].copy()
+combined_df['target_2018'] = df_2018['target']
+
+# Add target columns for other years, initializing them to zero
+for year, df in zip(range(2019, 2024), dfs[1:]):
+    combined_df = pd.merge(combined_df, df[['id', 'target']], on='id', how='left', suffixes=('', f'_{year}'))
+    combined_df[f'target_{year}'].fillna(0, inplace=True)
+
+# Sum the target values across all years to create the new target variable
+combined_df['new_target'] = combined_df[['target_2018', 'target_2019', 'target_2020', 'target_2021', 'target_2022', 'target_2023']].sum(axis=1)
+
+# Drop the individual target columns if desired
+combined_df.drop(columns=['target_2018', 'target_2019', 'target_2020', 'target_2021', 'target_2022', 'target_2023'], inplace=True)
+
+# Display the final combined DataFrame
+print(combined_df)
+
+
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import xgboost as xgb
