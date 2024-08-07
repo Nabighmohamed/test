@@ -1,48 +1,35 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import xgboost as xgb
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
-Projet de Courriel à Solène
-Objet : Demande de Réunion Avant Vos Vacances
+# Generate synthetic data for regression
+X, y = make_regression(n_samples=100, n_features=1, noise=0.1, random_state=42)
 
-Chère Solène,
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-J'espère que vous allez bien.
+# Create and train the XGBoost regressor
+model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
 
-Je vous écris pour solliciter une réunion avec vous avant votre départ pour vos prochaines vacances de trois semaines. L'objectif de cette réunion est triple :
+# Predict on the test set
+y_pred = model.predict(X_test)
 
-Présenter Mes Progrès : Je souhaite vous informer de mon travail et de mes réalisations récentes. Il est important que vous soyez pleinement informée de l'état actuel de nos projets.
+# Calculate residuals
+residuals = y_test - y_pred
 
-Discuter d'un Article Récent : Ci-joint à cet email, vous trouverez un rapport résumant l'article intitulé "Une Nouvelle Approche pour Prévoir la Valeur Vie Client dans les Entreprises SaaS B2B" de Stephan Curiskis, Xiaojing Dong, Fan Jiang et Mark Scarr. Cet article présente un cadre flexible de machine learning pour prévoir la valeur vie client, qui pourrait fournir des insights précieux pour nos projets en cours.
+# Plot the target values colored by the residuals
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(X_test, y_test, c=residuals, cmap='coolwarm', edgecolor='k', s=100)
+plt.colorbar(scatter, label='Residuals')
+plt.xlabel('Feature')
+plt.ylabel('Target')
+plt.title('Target Values Colored by Residuals')
+plt.show()
 
-Définir les Attentes pour les Trois Prochaines Semaines : Puisque vous serez absente, je souhaite établir une feuille de route claire et fixer le niveau d'attente que vous pouvez avoir à votre retour. Cela garantira que nos projets continuent de progresser sans heurts en votre absence.
-
-Je vous serais reconnaissant(e) de bien vouloir me faire savoir quel moment vous conviendrait pour cette réunion avant vos vacances. Je suis flexible et peux ajuster mon emploi du temps en fonction du vôtre.
-
-Je vous remercie par avance pour votre considération et j'attends avec impatience notre discussion.
-
-Respectueusement,
-
-[Votre Nom]
-
-
-Projet de Courriel à Solène
-Objet : Demande de Réunion Avant Vos Vacances
-
-Chère Solène,
-
-J'espère que vous allez bien.
-
-Je vous écris pour solliciter une réunion avec vous avant votre départ pour vos prochaines vacances de trois semaines. L'objectif de cette réunion est triple :
-
-Présenter Mes Progrès : Je souhaite vous informer de mon travail et de mes réalisations récentes. Il est important que vous soyez pleinement informée de l'état actuel de nos projets.
-
-Discuter d'un Article Récent : Ci-joint à cet email, vous trouverez un rapport résumant l'article intitulé "Une Nouvelle Approche pour Prévoir la Valeur Vie Client dans les Entreprises SaaS B2B" de Stephan Curiskis, Xiaojing Dong, Fan Jiang et Mark Scarr. Cet article présente un cadre flexible de machine learning pour prévoir la valeur vie client, qui pourrait fournir des insights précieux pour nos projets en cours.
-
-Établir les Attentes et l'Engagement pendant Votre Absence : Je souhaite profiter de cette réunion pour définir clairement les attentes et établir un engagement sur ce que je livrerai d'ici votre retour. Mon objectif est de vous rassurer que, durant votre absence, tout sera sous contrôle et que nos projets continueront de progresser sans encombre.
-
-Je vous serais reconnaissant(e) de bien vouloir me faire savoir quel moment vous conviendrait pour cette réunion avant vos vacances. Je suis flexible et peux ajuster mon emploi du temps en fonction du vôtre.
-
-Je vous remercie par avance pour votre considération et j'attends avec impatience notre discussion.
-
-Respectueusement,
 
 
 
