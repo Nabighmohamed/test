@@ -1,4 +1,69 @@
 import pandas as pd
+import numpy as np
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
+
+# Sample data creation (replace this with your actual data loading)
+np.random.seed(42)
+data = pd.DataFrame({
+    'id': range(1, 101),
+    'var1': np.random.rand(100),
+    'var2': np.random.rand(100),
+    'var3': np.random.rand(100),
+    'y_short': np.random.rand(100) * 100,
+    'y_long': np.random.rand(100) * 1000
+})
+
+# Define explanatory variables for the first prediction
+X_short = data[['var1', 'var2', 'var3']]
+y_short = data['y_short']
+
+# Split the data into training and test sets for y_short prediction
+X_train_short, X_test_short, y_train_short, y_test_short = train_test_split(X_short, y_short, test_size=0.2, random_state=42)
+
+# Train the XGBoost regressor to predict y_short
+model_short = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
+model_short.fit(X_train_short, y_train_short)
+
+# Predict y_short on the test set
+y_pred_short = model_short.predict(X_test_short)
+
+# Evaluate the model for y_short using R²
+r2_short = r2_score(y_test_short, y_pred_short)
+print(f'R² for y_short prediction: {r2_short}')
+
+# Create a new dataset with the predicted y_short and additional explanatory variables for y_long prediction
+data['y_short_pred'] = model_short.predict(X_short)
+X_long = data[['y_short_pred', 'var1', 'var2', 'var3']]  # You can add other variables as needed
+y_long = data['y_long']
+
+# Split the data into training and test sets for y_long prediction
+X_train_long, X_test_long, y_train_long, y_test_long = train_test_split(X_long, y_long, test_size=0.2, random_state=42)
+
+# Train the XGBoost regressor to predict y_long
+model_long = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
+model_long.fit(X_train_long, y_train_long)
+
+# Predict y_long on the test set
+y_pred_long = model_long.predict(X_test_long)
+
+# Evaluate the model for y_long using R²
+r2_long = r2_score(y_test_long, y_pred_long)
+print(f'R² for y_long prediction: {r2_long}')
+
+# Display the final dataset
+print(data)
+
+
+
+
+
+
+
+
+
+import pandas as pd
 
 # Sample data (replace these with your actual data loading methods)
 df_2018 = pd.DataFrame({'id': [1, 2, 3], 'target': [100, 200, 300], 'var1': [10, 20, 30]})
