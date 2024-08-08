@@ -12,6 +12,90 @@ df_2021 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100
 df_2022 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
 df_2023 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
 
+# Remove outliers based on 'var1' in the 2018 data
+Q1 = df_2018['var1'].quantile(0.25)
+Q3 = df_2018['var1'].quantile(0.75)
+IQR = Q3 - Q1
+non_outlier_ids = df_2018[(df_2018['var1'] >= (Q1 - 1.5 * IQR)) & (df_2018['var1'] <= (Q3 + 1.5 * IQR))]['id']
+
+# Create subsets of the other dataframes using the non-outlier IDs
+df_2018_no_outliers = df_2018[df_2018['id'].isin(non_outlier_ids)]
+df_2019_no_outliers = df_2019[df_2019['id'].isin(non_outlier_ids)]
+df_2020_no_outliers = df_2020[df_2020['id'].isin(non_outlier_ids)]
+df_2021_no_outliers = df_2021[df_2021['id'].isin(non_outlier_ids)]
+df_2022_no_outliers = df_2022[df_2022['id'].isin(non_outlier_ids)]
+df_2023_no_outliers = df_2023[df_2023['id'].isin(non_outlier_ids)]
+
+# Combine all DataFrames into a single DataFrame for the non-outliers
+combined_df = df_2018_no_outliers[['id', 'target']].rename(columns={'target': 'target_2018'})
+combined_df = combined_df.merge(df_2019_no_outliers[['id', 'target']].rename(columns={'target': 'target_2019'}), on='id', how='left')
+combined_df = combined_df.merge(df_2020_no_outliers[['id', 'target']].rename(columns={'target': 'target_2020'}), on='id', how='left')
+combined_df = combined_df.merge(df_2021_no_outliers[['id', 'target']].rename(columns={'target': 'target_2021'}), on='id', how='left')
+combined_df = combined_df.merge(df_2022_no_outliers[['id', 'target']].rename(columns={'target': 'target_2022'}), on='id', how='left')
+combined_df = combined_df.merge(df_2023_no_outliers[['id', 'target']].rename(columns={'target': 'target_2023'}), on='id', how='left')
+
+# Calculate mean, median, and sum for each year's target
+stats_df = combined_df[['target_2018', 'target_2019', 'target_2020', 'target_2021', 'target_2022', 'target_2023']].agg(['mean', 'median', 'sum']).transpose()
+stats_df.index = ['2018', '2019', '2020', '2021', '2022', '2023']
+
+plt.figure(figsize=(12, 8))
+
+# Plot mean, median, and sum of each target variable over the years
+plt.subplot(3, 1, 1)
+plt.plot(stats_df.index, stats_df['mean'], marker='o')
+plt.title('Mean of Target Variables Over Years')
+plt.ylabel('Mean')
+
+plt.subplot(3, 1, 2)
+plt.plot(stats_df.index, stats_df['median'], marker='o')
+plt.title('Median of Target Variables Over Years')
+plt.ylabel('Median')
+
+plt.subplot(3, 1, 3)
+plt.plot(stats_df.index, stats_df['sum'], marker='o')
+plt.title('Sum of Target Variables Over Years')
+plt.ylabel('Sum')
+plt.xlabel('Year')
+
+plt.tight_layout()
+plt.show()
+
+# Plot the trimmed target distribution for each year separately using Seaborn
+plt.figure(figsize=(12, 18))
+years = ['2018', '2019', '2020', '2021', '2022', '2023']
+
+for i, year in enumerate(years, 1):
+    plt.subplot(6, 1, i)
+    sns.histplot(combined_df[f'target_{year}'], kde=True, bins=20)
+    plt.title(f'Target Distribution for {year}')
+    plt.xlabel('Target')
+    plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample data creation (replace this with your actual data loading)
+np.random.seed(42)
+df_2018 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100, 'var1': np.random.rand(100) * 100})
+df_2019 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
+df_2020 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
+df_2021 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
+df_2022 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
+df_2023 = pd.DataFrame({'id': range(1, 101), 'target': np.random.rand(100) * 100})
+
 # Combine all DataFrames into a single DataFrame
 combined_df = df_2018.copy()
 combined_df = combined_df.rename(columns={'target': 'target_2018'})
