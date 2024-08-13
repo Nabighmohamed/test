@@ -1,3 +1,140 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers, models
+import xgboost as xgb
+from sklearn.metrics import mean_absolute_error
+import matplotlib.pyplot as plt
+
+# 1. Generate Synthetic CLV Distribution
+def generate_clv_distribution(n_customers=10000, p_zero=0.7, mu=3, sigma=1):
+    # Generate zero-inflation
+    clv = np.zeros(n_customers)
+    non_zero_mask = np.random.rand(n_customers) > p_zero
+    
+    # Generate lognormal CLV for non-zero customers
+    clv[non_zero_mask] = np.exp(np.random.normal(mu, sigma, size=np.sum(non_zero_mask)))
+    return clv
+
+clv = generate_clv_distribution()
+
+# Split into train and test
+n_train = int(0.8 * len(clv))
+X = np.random.rand(len(clv), 10)  # Dummy features
+X_train, X_test = X[:n_train], X[n_train:]
+clv_train, clv_test = clv[:n_train], clv[n_train:]
+
+# 2. Implement the DNN with ZILN Loss
+def safe_log(x):
+    return tf.math.log(tf.maximum(x, 1e-6))
+
+def ziln_loss(y_true, y_pred):
+    p, mu, sigma = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2]
+    is_zero = tf.cast(tf.equal(y_true, 0), tf.float32)
+    
+    # Cross-entropy loss for zero-inflation
+    cross_entropy_loss = is_zero * -tf.math.log(1 - p + 1e-6) + (1 - is_zero) * -tf.math.log(p + 1e-6)
+    
+    # Lognormal loss for non-zero CLV
+    lognormal_loss = (1 - is_zero) * (safe_log(y_true) - mu)**2 / (2 * sigma**2) + safe_log(sigma) + safe_log(y_true) * sigma
+    
+    return tf.reduce_mean(cross_entropy_loss + lognormal_loss)
+
+def build_dnn_model(input_dim):
+    inputs = layers.Input(shape=(input_dim,))
+    x = layers.Dense(64, activation='relu', kernel_initializer='he_normal')(inputs)
+    x = layers.Dense(32, activation='relu', kernel_initializer='he_normal')(x)
+    
+    p = layers.Dense(1, activation='sigmoid')(x)
+    mu = layers.Dense(1)(x)
+    sigma = layers.Dense(1, activation='softplus')(x)
+    
+    outputs = layers.Concatenate()([p, mu, sigma])
+    
+    model = models.Model(inputs, outputs)
+    model.compile(optimizer='adam', loss=ziln_loss)
+    return model
+
+# Build and train the model
+input_dim = X_train.shape[1]
+model_dnn = build_dnn_model(input_dim)
+model_dnn.fit(X_train, clv_train, epochs=5000, batch_size=256, validation_split=0.2, verbose=1)
+
+# Predict with the DNN model
+preds_dnn = model_dnn.predict(X_test)
+preds_dnn_clv = preds_dnn[:, 1]  # Use the predicted mean of the lognormal distribution
+
+# Handle NaN values
+preds_dnn_clv = np.nan_to_num(preds_dnn_clv, nan=0.0, posinf=0.0, neginf=0.0)
+
+# 3. Implement a Baseline XGBoost Model
+dtrain = xgb.DMatrix(X_train, label=clv_train)
+dtest = xgb.DMatrix(X_test)
+
+params = {
+    'objective': 'reg:squarederror',
+    'max_depth': 6,
+    'eta': 0.1,
+    'subsample': 0.8,
+    'colsample_bytree': 0.8,
+}
+
+model_xgb = xgb.train(params, dtrain, num_boost_round=100)
+preds_xgb = model_xgb.predict(dtest)
+
+# 4. Evaluate and Compare the Models
+def gini(y_true, y_pred):
+    all = np.asarray(np.c_[y_true, y_pred, np.arange(len(y_true))], dtype=np.float64)
+    all = all[np.lexsort((all[:, 2], -1 * all[:, 1]))]
+    total_losses = all[:, 0].sum()
+    gini_sum = all[:, 0].cumsum().sum() / total_losses
+
+    gini_sum -= (len(y_true) + 1) / 2.
+    return gini_sum / len(y_true)
+
+def normalized_gini(y_true, y_pred):
+    return gini(y_true, y_pred) / gini(y_true, y_true)
+
+# Calculate metrics
+gini_dnn = normalized_gini(clv_test, preds_dnn_clv)
+gini_xgb = normalized_gini(clv_test, preds_xgb)
+
+mae_dnn = mean_absolute_error(clv_test, preds_dnn_clv)
+mae_xgb = mean_absolute_error(clv_test, preds_xgb)
+
+# Output results
+print(f"DNN with ZILN Loss: Gini = {gini_dnn}, MAE = {mae_dnn}")
+print(f"XGBoost: Gini = {gini_xgb}, MAE = {mae_xgb}")
+
+# Optional: Plot Decile Charts for Calibration
+def plot_decile_chart(y_true, y_pred, title):
+    sorted_idx = np.argsort(y_pred)
+    sorted_true = y_true[sorted_idx]
+    sorted_pred = y_pred[sorted_idx]
+    
+    deciles = np.array_split(np.arange(len(y_true)), 10)
+    mean_true = [np.mean(sorted_true[decile]) for decile in deciles]
+    mean_pred = [np.mean(sorted_pred[decile]) for decile in deciles]
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(mean_true, label='Actual CLV', marker='o')
+    plt.plot(mean_pred, label='Predicted CLV', marker='o')
+    plt.title(title)
+    plt.xlabel('Decile')
+    plt.ylabel('Mean CLV')
+    plt.legend()
+    plt.show()
+
+plot_decile_chart(clv_test, preds_dnn_clv, "DNN with ZILN Loss - Decile Chart")
+plot_decile_chart(clv_test, preds_xgb, "XGBoost - Decile Chart")
+
+
+
+
+
+
+
+
+
 import xgboost as xgb
 import numpy as np
 import matplotlib.pyplot as plt
