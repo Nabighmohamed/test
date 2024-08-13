@@ -1,3 +1,71 @@
+import xgboost as xgb
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_pinball_loss
+
+# Load California Housing dataset
+data = fetch_california_housing()
+X = data.data
+y = data.target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define the quantile loss function
+def quantile_loss(preds, dtrain, quantile):
+    labels = dtrain.get_label()
+    errors = labels - preds
+    grad = np.where(errors < 0, quantile - 1, quantile)
+    hess = np.ones_like(preds)
+    return grad, hess
+
+# Set the quantile for median prediction
+quantile = 0.5
+
+# Set XGBoost parameters
+params = {
+    'eta': 0.01,
+    'max_depth': 10,
+    'n_estimators':1000,
+    'objective': 'reg:squarederror',  # Placeholder, we'll use our custom objective
+    'eval_metric': 'mae'  # Use mean absolute error for evaluation
+}
+
+# Convert data into DMatrix
+dtrain = xgb.DMatrix(X_train, label=y_train)
+
+# Train the model using the custom quantile loss function
+quantile_model = xgb.train(
+    params,
+    dtrain,
+    num_boost_round=1000,
+    obj=lambda preds, dtrain: quantile_loss(preds, dtrain, quantile)
+)
+
+# Convert the test set into DMatrix
+dtest = xgb.DMatrix(X_test)
+
+# Make predictions
+preds = quantile_model.predict(dtest)
+
+# Compute the R² score
+r2 = r2_score(y_test, preds)
+print(f'R² score: {r2:.4f}')
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, preds, alpha=0.3)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+plt.xlabel('Actual Median House Value')
+plt.ylabel('Predicted Median House Value')
+plt.title(f'Median Prediction with R²: {r2:.4f}')
+plt.show()
+
+
+
+
 https://bwelcome.hr.bnpparibas/fr_FR/externalcareers/ApplicationConfirmation?jobId=12225
 
 
