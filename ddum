@@ -2,6 +2,100 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
+from scipy.stats import spearmanr
+
+# Custom ZILN evaluation metric
+def ziln_eval_metric(preds, dtrain):
+    labels = dtrain.get_label()
+    eps = 1e-6
+    p = 1 / (1 + np.exp(-preds))
+    nonzero_mask = labels > 0
+    log_preds = np.log(preds[nonzero_mask] + eps)
+    log_labels = np.log(labels[nonzero_mask] + eps)
+    loss = np.mean(- labels * np.log(p + eps) - (1 - labels) * np.log(1 - p + eps))
+    loss += 0.5 * np.mean((log_preds - log_labels) ** 2)
+    return 'ziln_eval', loss
+
+# Train and evaluate models
+def train_evaluate(df, target_var):
+    # Prepare data
+    X = df.drop(columns=[target_var])
+    y = df[target_var]
+    
+    # Split data into DMatrix
+    dtrain = xgb.DMatrix(X, label=y)
+    
+    # XGBoost params for standard model
+    params = {
+        'objective': 'reg:squarederror',
+        'eval_metric': 'rmse',
+        'max_depth': 6,
+        'eta': 0.1,
+        'seed': 42
+    }
+    
+    # Train standard XGBoost model
+    model_standard = xgb.train(params, dtrain, num_boost_round=100)
+    preds_standard = model_standard.predict(dtrain)
+    
+    # Train XGBoost model with custom ZILN metric evaluation
+    model_ziln = xgb.train(params, dtrain, num_boost_round=100, feval=ziln_eval_metric)
+    preds_ziln = model_ziln.predict(dtrain)
+    
+    # Plot predictions vs actuals
+    plt.figure(figsize=(14, 7))
+    
+    plt.subplot(1, 2, 1)
+    plt.scatter(y, preds_standard, alpha=0.3)
+    plt.title('Standard XGBoost: Predictions vs Actuals')
+    plt.xlabel('Actuals')
+    plt.ylabel('Predictions')
+    
+    plt.subplot(1, 2, 2)
+    plt.scatter(y, preds_ziln, alpha=0.3)
+    plt.title('XGBoost with ZILN Metric: Predictions vs Actuals')
+    plt.xlabel('Actuals')
+    plt.ylabel('Predictions')
+    
+    plt.show()
+    
+    # Compute metrics
+    def gini(actual, pred):
+        all = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=np.float)
+        all = all[np.lexsort((all[:, 2], -1 * all[:, 1]))]
+        total_losses = all[:, 0].sum()
+        gini_sum = all[:, 0].cumsum().sum() / total_losses
+        
+        gini_sum -= (len(actual) + 1) / 2.
+        return gini_sum / len(actual)
+    
+    def normalized_gini(actual, pred):
+        return gini(actual, pred) / gini(actual, actual)
+    
+    metrics = {
+        'Spearman Rank Correlation': spearmanr(y, preds_ziln).correlation,
+        'Normalized Gini (Standard)': normalized_gini(y, preds_standard),
+        'Normalized Gini (ZILN)': normalized_gini(y, preds_ziln),
+        'Decile MAPE (Standard)': np.mean(np.abs((y - preds_standard) / y)) * 100,
+        'Decile MAPE (ZILN)': np.mean(np.abs((y - preds_ziln) / y)) * 100,
+    }
+    
+    print("\nModel Comparison Metrics:")
+    for k, v in metrics.items():
+        print(f"{k}: {v:.4f}")
+
+# Example usage with a DataFrame `df` and target variable `target_var`
+# df = pd.DataFrame(...)
+# train_evaluate(df, 'target_var')
+
+
+
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+import matplotlib.pyplot as plt
 from sklearn.metrics import make_scorer, roc_auc_score, mean_squared_error
 from scipy.stats import spearmanr
 
