@@ -1,5 +1,208 @@
 import numpy as np
 import pandas as pd
+
+def generate_simplified_clv_dataset(n_customers=10000, random_seed=42):
+    np.random.seed(random_seed)
+    
+    # Feature: Recency (days since last purchase)
+    recency = np.random.exponential(scale=30, size=n_customers)  # Average 30 days
+    
+    # Feature: Frequency (number of purchases in the last year)
+    frequency = np.random.poisson(lam=3, size=n_customers)  # Average 3 purchases
+    
+    # Feature: Monetary Value (average purchase amount)
+    monetary_value = np.random.normal(loc=50, scale=10, size=n_customers)  # Average $50
+    
+    # Feature: Tenure (days since first purchase)
+    tenure = np.random.exponential(scale=365, size=n_customers)  # Average 1 year
+    
+    # Feature: Age
+    age = np.random.normal(loc=35, scale=10, size=n_customers)  # Average age 35
+    
+    # Feature: Income
+    income = np.random.normal(loc=60000, scale=15000, size=n_customers)  # Average $60k
+    
+    # Generate CLV (target variable)
+    recency_scaled = (recency - recency.mean()) / recency.std()
+    frequency_scaled = (frequency - frequency.mean()) / frequency.std()
+    tenure_scaled = (tenure - tenure.mean()) / tenure.std()
+    
+    # Logistic function to compute zero probability
+    zero_logit = -1.0 + 0.5 * recency_scaled - 0.5 * frequency_scaled - 0.3 * tenure_scaled
+    zero_prob = 1 / (1 + np.exp(-zero_logit))
+    
+    # Determine zero or non-zero CLV
+    is_zero = np.random.binomial(1, zero_prob)
+    
+    # For non-zero CLV, generate from log-normal distribution
+    mu = 2 + 0.3 * frequency_scaled + 0.4 * (monetary_value - monetary_value.mean()) / monetary_value.std() + 0.2 * tenure_scaled
+    sigma = 0.5  # Standard deviation
+    
+    clv = np.zeros(n_customers)
+    non_zero_indices = np.where(is_zero == 0)[0]
+    clv[non_zero_indices] = np.exp(np.random.normal(mu[non_zero_indices], sigma))
+    
+    # Combine features into a DataFrame
+    df = pd.DataFrame({
+        'recency': recency,
+        'frequency': frequency,
+        'monetary_value': monetary_value,
+        'tenure': tenure,
+        'age': age,
+        'income': income,
+        'clv': clv
+    })
+    
+    return df
+
+# Generate the dataset
+df = generate_simplified_clv_dataset()
+print(df.head())
+
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Separate features and target
+X = df.drop('clv', axis=1)
+y = df['clv']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scaling numerical features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+def safe_log(x):
+    return tf.math.log(tf.maximum(x, 1e-6))
+
+def ziln_loss(y_true, y_pred):
+    p = y_pred[:, 0]
+    mu = y_pred[:, 1]
+    sigma = y_pred[:, 2]
+    is_zero = tf.cast(tf.equal(y_true, 0), tf.float32)
+    is_non_zero = 1.0 - is_zero
+    epsilon = 1e-6
+    ce_loss = -is_zero * safe_log(1.0 - p + epsilon) - is_non_zero * safe_log(p + epsilon)
+    ln_loss = is_non_zero * (safe_log(y_true + epsilon) - mu) ** 2 / (2 * (sigma + epsilon) ** 2) + \
+              safe_log(sigma + epsilon) + 0.5 * np.log(2 * np.pi)
+    total_loss = ce_loss + ln_loss
+    return tf.reduce_mean(total_loss)
+
+def build_dnn_ziln_model(input_dim):
+    inputs = layers.Input(shape=(input_dim,))
+    x = layers.Dense(128, activation='relu')(inputs)
+    x = layers.Dense(64, activation='relu')(x)
+    p = layers.Dense(1, activation='sigmoid')(x)
+    mu = layers.Dense(1)(x)
+    sigma = layers.Dense(1, activation='softplus')(x)
+    outputs = layers.Concatenate()([p, mu, sigma])
+    model = models.Model(inputs=inputs, outputs=outputs)
+    model.compile(optimizer='adam', loss=ziln_loss)
+    return model
+
+# Build and train the model
+input_dim = X_train_scaled.shape[1]
+model = build_dnn_ziln_model(input_dim)
+
+# Train the model
+history = model.fit(X_train_scaled, y_train.values, epochs=50, batch_size=256, validation_split=0.2)
+
+
+
+import xgboost as xgb
+
+# Prepare DMatrix for XGBoost
+dtrain = xgb.DMatrix(X_train_scaled, label=y_train)
+dtest = xgb.DMatrix(X_test_scaled)
+
+# Define parameters
+params = {
+    'objective': 'reg:squarederror',
+    'eval_metric': 'rmse',
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+# Train the model
+xgb_model = xgb.train(params, dtrain, num_boost_round=100)
+
+
+# DNN Predictions
+preds = model.predict(X_test_scaled)
+p_pred = preds[:, 0]
+mu_pred = preds[:, 1]
+sigma_pred = preds[:, 2]
+
+# Expected CLV from DNN
+expected_clv_pred = p_pred * np.exp(mu_pred + 0.5 * sigma_pred ** 2)
+expected_clv_pred = np.nan_to_num(expected_clv_pred, nan=0.0, posinf=0.0, neginf=0.0)  # Handle potential NaNs or Infs
+
+# XGBoost Predictions
+xgb_pred = xgb_model.predict(dtest)
+
+
+
+from sklearn.metrics import mean_absolute_error
+
+def gini(y_true, y_pred):
+    arr = np.array(np.c_[y_true, y_pred, np.arange(len(y_true))], dtype=np.float64)
+    arr = arr[np.lexsort((arr[:,2], -1*arr[:,1]))]
+    total_losses = arr[:,0].sum()
+    gini_sum = arr[:,0].cumsum().sum() / total_losses
+    gini_sum -= (len(y_true) + 1) / 2.
+    return gini_sum / len(y_true)
+
+def normalized_gini(y_true, y_pred):
+    return gini(y_true, y_pred) / gini(y_true, y_true)
+
+# DNN Evaluation
+mae_dnn = mean_absolute_error(y_test, expected_clv_pred)
+gini_dnn = normalized_gini(y_test, expected_clv_pred)
+
+# XGBoost Evaluation
+mae_xgb = mean_absolute_error(y_test, xgb_pred)
+gini_xgb = normalized_gini(y_test, xgb_pred)
+
+print(f"DNN with ZILN Loss - MAE: {mae_dnn:.2f}, Gini: {gini_dnn:.4f}")
+print(f"XGBoost - MAE: {mae_xgb:.2f}, Gini: {gini_xgb:.4f}")
+
+
+
+import matplotlib.pyplot as plt
+
+def plot_decile_chart(y_true, y_pred, model_name):
+    df_plot = pd.DataFrame({'Actual CLV': y_true, 'Predicted CLV': y_pred})
+    df_plot['Decile'] = pd.qcut(df_plot['Predicted CLV'], 10, labels=False, duplicates='drop')
+    decile_summary = df_plot.groupby('Decile').agg({'Actual CLV': 'mean', 'Predicted CLV': 'mean'}).reset_index()
+    plt.figure(figsize=(10,6))
+    plt.plot(decile_summary['Decile'], decile_summary['Actual CLV'], label='Actual CLV', marker='o')
+    plt.plot(decile_summary['Decile'], decile_summary['Predicted CLV'], label='Predicted CLV', marker='o')
+    plt.title(f'Decile Chart - {model_name}')
+    plt.xlabel('Decile (0 = Lowest Predicted CLV)')
+    plt.ylabel('Mean CLV')
+    plt.legend()
+    plt.show()
+
+# Plot for DNN
+plot_decile_chart(y_test.values, expected_clv_pred, 'DNN with ZILN Loss')
+
+# Plot for XGBoost
+plot_decile_chart(y_test.values, xgb_pred, 'XGBoost')
+
+
+
+
+
+import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import xgboost as xgb
