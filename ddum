@@ -1,3 +1,73 @@
+import pandas as pd
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_squared_error
+import numpy as np
+import matplotlib.pyplot as plt
+
+def train_xgboost_and_evaluate(df, seg, target):
+    # Split the dataframe into two based on the segmentation value
+    df1 = df[df[target] <= seg]
+    df2 = df[df[target] > seg]
+    
+    def train_and_evaluate(df_segment):
+        # Separate features and target
+        X = df_segment.drop(columns=[target])
+        y = df_segment[target]
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Train an XGBoost model
+        model = xgb.XGBRegressor(objective='reg:squarederror', random_state=42)
+        model.fit(X_train, y_train)
+
+        # Predict and evaluate the model
+        y_pred = model.predict(X_test)
+        r2 = r2_score(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        
+        return r2, rmse, y_test, y_pred
+
+    # Train and evaluate both segments
+    r2_1, rmse_1, y_test_1, y_pred_1 = train_and_evaluate(df1)
+    r2_2, rmse_2, y_test_2, y_pred_2 = train_and_evaluate(df2)
+
+    # Display R² and RMSE for both segments
+    print(f"Segment 1 (y <= {seg}): R² = {r2_1:.4f}, RMSE = {rmse_1:.4f}")
+    print(f"Segment 2 (y > {seg}): R² = {r2_2:.4f}, RMSE = {rmse_2:.4f}")
+    
+    # Plot the predictions vs actuals for a small sample of y_test
+    def plot_predictions(y_test, y_pred, segment):
+        sorted_indices = np.argsort(y_test)
+        y_test_sorted = y_test.iloc[sorted_indices]
+        y_pred_sorted = y_pred[sorted_indices]
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(y_test_sorted.values, label='Actual Y')
+        plt.plot(y_pred_sorted, label='Predicted Y', linestyle='--')
+        plt.title(f'Y Test vs Y Predicted for Segment {segment}')
+        plt.legend()
+        plt.show()
+    
+    # Plot for segment 1
+    plot_predictions(y_test_1, y_pred_1, 1)
+    
+    # Plot for segment 2
+    plot_predictions(y_test_2, y_pred_2, 2)
+
+# Example usage:
+# df = pd.DataFrame(...)  # Your dataframe
+# train_xgboost_and_evaluate(df, seg=50.0, target='your_target_column')
+
+
+
+
+
+
+
+
+
 import numpy as np
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error
