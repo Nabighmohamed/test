@@ -1,4 +1,96 @@
 import numpy as np
+import xgboost as xgb
+from sklearn.metrics import mean_absolute_error
+
+# Define example data (replace with your actual dataset)
+X_train_scaled = np.random.rand(8000, 10)
+X_test_scaled = np.random.rand(2000, 10)
+y_train = np.random.rand(8000)
+y_test = np.random.rand(2000)
+
+# Train a model to predict p (probability of non-zero CLV)
+dtrain_p = xgb.DMatrix(X_train_scaled, label=(y_train > 0).astype(int))
+dtest_p = xgb.DMatrix(X_test_scaled)
+
+params_p = {
+    'objective': 'binary:logistic',  # Binary classification for p
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+xgb_model_p = xgb.train(params_p, dtrain_p, num_boost_round=100)
+
+# Train a model to predict mu (log of CLV for non-zero cases)
+non_zero_indices = y_train > 0
+dtrain_mu = xgb.DMatrix(X_train_scaled[non_zero_indices], label=np.log(y_train[non_zero_indices]))
+dtest_mu = xgb.DMatrix(X_test_scaled)
+
+params_mu = {
+    'objective': 'reg:squarederror',  # Regression for mu
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+xgb_model_mu = xgb.train(params_mu, dtrain_mu, num_boost_round=100)
+
+# Train a model to predict sigma (standard deviation of log CLV)
+sigma_train = np.full_like(y_train[non_zero_indices], 0.5)  # Example fixed sigma, replace with actual calculation if needed
+dtrain_sigma = xgb.DMatrix(X_train_scaled[non_zero_indices], label=sigma_train)
+dtest_sigma = xgb.DMatrix(X_test_scaled)
+
+params_sigma = {
+    'objective': 'reg:squarederror',  # Regression for sigma
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+xgb_model_sigma = xgb.train(params_sigma, dtrain_sigma, num_boost_round=100)
+
+# Make predictions
+p_pred = xgb_model_p.predict(dtest_p)
+mu_pred = xgb_model_mu.predict(dtest_mu)
+sigma_pred = xgb_model_sigma.predict(dtest_sigma)
+
+# Compute final predicted CLV
+expected_clv_pred = p_pred * np.exp(mu_pred + 0.5 * sigma_pred ** 2)
+expected_clv_pred = np.nan_to_num(expected_clv_pred, nan=0.0, posinf=0.0, neginf=0.0)
+
+# Evaluate the performance
+mae_custom = mean_absolute_error(y_test, expected_clv_pred)
+
+# Print evaluation metrics
+print(f"XGBoost with Custom ZILN Loss - MAE: {mae_custom:.2f}")
+
+# You can compare this to a standard XGBoost model as follows:
+
+# Training with Default Loss
+params_default = {
+    'objective': 'reg:squarederror',  # Standard squared error for comparison
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+dtrain_default = xgb.DMatrix(X_train_scaled, label=y_train)
+xgb_model_default = xgb.train(params_default, dtrain_default, num_boost_round=100)
+
+# Predictions with default model
+preds_default = xgb_model_default.predict(dtest_p)
+
+# Evaluate default model
+mae_default = mean_absolute_error(y_test, preds_default)
+
+print(f"XGBoost with Default Loss - MAE: {mae_default:.2f}")
+
+
+
+
+
+
+import numpy as np
 import pandas as pd
 
 def generate_simplified_clv_dataset(n_customers=10000, random_seed=42):
