@@ -1,5 +1,55 @@
 import numpy as np
 
+def ziln_loss(preds, labels):
+    # To prevent log(0) errors
+    eps = 1e-6
+    
+    # Predict the probability that y > 0 using the sigmoid function
+    p = 1 / (1 + np.exp(-preds))
+    
+    # Split the data into zero and non-zero parts
+    zero_mask = labels == 0
+    nonzero_mask = labels > 0
+    
+    # For y = 0, the loss is -log(1 - p)
+    loss_zero = -np.log(1 - p[zero_mask] + eps)
+    
+    # For y > 0, compute the log of the labels
+    log_labels = np.log(labels[nonzero_mask] + eps)
+    
+    # Calculate mu (mean of the log-transformed values) and sigma (standard deviation)
+    mu = np.mean(log_labels)
+    sigma = np.std(log_labels)
+    
+    # Loss for non-zero y
+    loss_nonzero = (
+        -np.log(p[nonzero_mask] + eps) 
+        + np.log(sigma * np.sqrt(2 * np.pi) + eps) 
+        + ((log_labels - mu) ** 2) / (2 * sigma ** 2 + eps)
+    )
+    
+    # Combine the losses
+    total_loss = np.sum(loss_zero) + np.sum(loss_nonzero)
+    
+    return 'ziln_loss', total_loss
+
+# Example usage with predictions and actual labels
+preds = np.array([0.1, 0.9, 2.0, 0.0])  # Example predictions (logits)
+labels = np.array([0, 1, 10, 0])        # Example actual values (CLV)
+loss_name, loss_value = ziln_loss(preds, labels)
+print(f"{loss_name}: {loss_value}")
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+
 def improved_ziln_eval_metric(preds, dtrain):
     labels = dtrain.get_label()
     eps = 1e-6
