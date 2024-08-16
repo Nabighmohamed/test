@@ -1,3 +1,112 @@
+import xgboost as xgb
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.stats import spearmanr
+
+# Assuming ziln_eval_metric is a custom function defined elsewhere
+def ziln_eval_metric(preds, dtrain):
+    labels = dtrain.get_label()
+    residuals = preds - labels
+    ziln_loss = np.mean(np.log1p(residuals**2))  # Example, actual ZiLn metric may differ
+    return 'ziln_loss', ziln_loss
+
+def train_evaluate(df, target_var):
+    # Prepare data
+    X = df.drop(columns=[target_var])
+    y = df[target_var]
+    
+    # Split data into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Create DMatrix for XGBoost
+    dtrain = xgb.DMatrix(X_train, label=y_train)
+    dtest = xgb.DMatrix(X_test, label=y_test)
+    
+    # XGBoost params for standard model
+    params = {
+        'objective': 'reg:squarederror',
+        'eval_metric': 'rmse',
+        'max_depth': 6,
+        'eta': 0.1,
+        'seed': 42
+    }
+    
+    # Train standard XGBoost model
+    model_standard = xgb.train(params, dtrain, num_boost_round=100)
+    preds_standard = model_standard.predict(dtest)
+    
+    # Train XGBoost model with custom ZILN metric evaluation
+    model_ziln = xgb.train(params, dtrain, num_boost_round=100, feval=ziln_eval_metric)
+    preds_ziln = model_ziln.predict(dtest)
+    
+    # Compute and print ZILN loss
+    ziln_loss = ziln_eval_metric(preds_ziln, dtest)[1]
+    print(f"\nZiLn Loss: {ziln_loss:.4f}")
+    
+    # Plot predictions vs actuals
+    plt.figure(figsize=(14, 7))
+    
+    plt.subplot(1, 2, 1)
+    plt.scatter(y_test, preds_standard, alpha=0.3)
+    plt.title('Standard XGBoost: Predictions vs Actuals (Test Set)')
+    plt.xlabel('Actuals')
+    plt.ylabel('Predictions')
+    
+    plt.subplot(1, 2, 2)
+    plt.scatter(y_test, preds_ziln, alpha=0.3)
+    plt.title('XGBoost with ZILN Metric: Predictions vs Actuals (Test Set)')
+    plt.xlabel('Actuals')
+    plt.ylabel('Predictions')
+    
+    plt.show()
+    
+    # Plot residuals vs actuals
+    residuals_ziln = y_test - preds_ziln
+    plt.figure(figsize=(7, 7))
+    plt.scatter(y_test, residuals_ziln, alpha=0.3)
+    plt.axhline(0, color='red', linestyle='--')
+    plt.title('Residuals vs Actuals (ZILN Model)')
+    plt.xlabel('Actuals')
+    plt.ylabel('Residuals')
+    plt.show()
+    
+    # Compute metrics
+    def gini(actual, pred):
+        all = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=np.float)
+        all = all[np.lexsort((all[:, 2], -1 * all[:, 1]))]
+        total_losses = all[:, 0].sum()
+        gini_sum = all[:, 0].cumsum().sum() / total_losses
+        
+        gini_sum -= (len(actual) + 1) / 2.
+        return gini_sum / len(actual)
+    
+    def normalized_gini(actual, pred):
+        return gini(actual, pred) / gini(actual, actual)
+    
+    metrics = {
+        'Spearman Rank Correlation': spearmanr(y_test, preds_ziln).correlation,
+        'Normalized Gini (Standard)': normalized_gini(y_test, preds_standard),
+        'Normalized Gini (ZILN)': normalized_gini(y_test, preds_ziln),
+        'Decile MAPE (Standard)': np.mean(np.abs((y_test - preds_standard) / y_test)) * 100,
+        'Decile MAPE (ZILN)': np.mean(np.abs((y_test - preds_ziln) / y_test)) * 100,
+    }
+    
+    print("\nModel Comparison Metrics:")
+    for k, v in metrics.items():
+        print(f"{k}: {v:.4f}")
+
+# Example usage with a DataFrame `df` and target variable `target_var`
+# df = pd.DataFrame(...)
+# train_evaluate(df, 'target_var')
+
+
+
+
+
+
+
+
+
 from sklearn.model_selection import train_test_split
 
 def train_evaluate(df, target_var):
