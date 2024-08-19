@@ -1,6 +1,49 @@
 import numpy as np
 import xgboost as xgb
 
+# Custom objective function with weighted relative squared error
+def weighted_relative_squared_error_objective(preds, dtrain, alpha=1):
+    labels = dtrain.get_label()
+    eps = 1e-6  # Small value to prevent division by zero
+    
+    # Weighted gradient and hessian
+    weights = labels ** alpha
+    grad = -2 * weights * (labels - preds) / (labels ** 2 + eps)
+    hess = 2 * weights / (labels ** 2 + eps)
+    
+    return grad, hess
+
+# Example usage in XGBoost
+params = {
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+# Assuming X_train, y_train, X_test, and y_test are already defined
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+
+# Train the model using the custom weighted relative squared error objective
+model = xgb.train(params, dtrain, num_boost_round=100, obj=weighted_relative_squared_error_objective)
+
+# Make predictions and evaluate
+preds = model.predict(dtest)
+
+# Compute the weighted relative squared error on the test set
+weighted_relative_squared_error = np.mean((y_test ** alpha) * ((y_test - preds) / (y_test + eps)) ** 2)
+print(f"Weighted Relative Squared Error: {weighted_relative_squared_error}")
+
+
+
+
+
+
+
+
+import numpy as np
+import xgboost as xgb
+
 # Custom objective function based on sum((y - y_pred)/y)²
 def relative_squared_error_objective(preds, dtrain):
     labels = dtrain.get_label()
