@@ -27,6 +27,48 @@ y_test_bad = y_test.iloc[bad_pred_indices]
 explainer = shap.TreeExplainer(xgb_model)
 
 # Calculate SHAP values for the bad predictions
+shap_values_bad = explainer(X_test_bad)
+
+# Select an instance with the highest residual for the waterfall plot
+worst_index = np.argmax(np.abs(residuals[bad_pred_indices]))
+
+# Create a SHAP waterfall plot for this specific instance
+shap.waterfall_plot(shap_values_bad[worst_index])
+
+
+
+
+
+
+import xgboost as xgb
+import shap
+import numpy as np
+import pandas as pd
+
+# Assuming X_train, y_train, X_test, y_test are already defined
+# and xgb_model is the trained XGBoost model
+
+# Predict the test set
+y_pred = xgb_model.predict(X_test)
+
+# Calculate residuals (errors)
+residuals = y_test - y_pred
+
+# Set a threshold to define "bad" predictions (high residuals)
+# For example, you can define it as 1.5 times the standard deviation of the residuals
+threshold = 1.5 * np.std(residuals)
+
+# Get indices of bad predictions
+bad_pred_indices = np.where(np.abs(residuals) > threshold)[0]
+
+# Subset the data for bad predictions
+X_test_bad = X_test.iloc[bad_pred_indices]
+y_test_bad = y_test.iloc[bad_pred_indices]
+
+# Initialize the SHAP explainer
+explainer = shap.TreeExplainer(xgb_model)
+
+# Calculate SHAP values for the bad predictions
 shap_values_bad = explainer.shap_values(X_test_bad)
 
 # Convert SHAP values into a DataFrame for easier analysis
