@@ -1,6 +1,51 @@
 import numpy as np
 import xgboost as xgb
 
+# Custom objective function using the gradient and hessian with mean and std computed from the data
+def custom_objective_with_mu_sigma(preds, dtrain):
+    labels = dtrain.get_label()
+    eps = 1e-6  # Small value to prevent division by zero
+    
+    # Compute mu and sigma from the predictions
+    log_preds = np.log(preds + eps)
+    mu = np.mean(log_preds)
+    sigma = np.std(log_preds)
+    
+    # Calculate the gradient
+    grad = (log_preds - mu) / (sigma**2 * labels + eps)
+    
+    # Calculate the hessian
+    hess = (1 - log_preds + mu) / (sigma**2 * (labels ** 2) + eps)
+    
+    return grad, hess
+
+# Example usage in XGBoost
+params = {
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+# Assuming X_train, y_train, X_test, and y_test are already defined
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+
+# Train the model using the custom objective function
+model = xgb.train(params, dtrain, num_boost_round=100, obj=custom_objective_with_mu_sigma)
+
+# Make predictions and evaluate
+preds = model.predict(dtest)
+
+
+
+
+
+
+
+
+import numpy as np
+import xgboost as xgb
+
 # Custom objective function with weighted relative squared error
 def weighted_relative_squared_error_objective(preds, dtrain, alpha=1):
     labels = dtrain.get_label()
