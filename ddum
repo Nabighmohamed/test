@@ -1,3 +1,120 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Step 1: Define the original loss function
+class OriginalLoss(nn.Module):
+    def __init__(self):
+        super(OriginalLoss, self).__init__()
+
+    def forward(self, preds, labels):
+        eps = 1e-6  # Small value to prevent division by zero
+        
+        # Ensure preds are positive for log transformation
+        preds = torch.clamp(preds, min=eps)
+        
+        # Compute log-transformed predictions
+        log_preds = torch.log(preds)
+        
+        # Compute mu and sigma from the log-transformed predictions
+        mu = torch.mean(log_preds)
+        sigma = torch.std(log_preds)
+        
+        # Compute the loss using the original loss function
+        term1 = torch.log(sigma * torch.sqrt(torch.tensor(2.0) * torch.tensor(np.pi)))
+        term2 = ((log_preds - mu) ** 2) / (2 * sigma ** 2)
+        
+        loss = torch.mean(term1 + term2)
+        return loss
+
+# Step 2: Define a deep neural network model
+class DeepNN(nn.Module):
+    def __init__(self, input_dim):
+        super(DeepNN, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 256)
+        self.fc2 = nn.Linear(256, 256)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, 128)
+        self.fc5 = nn.Linear(128, 64)
+        self.fc6 = nn.Linear(64, 64)
+        self.fc7 = nn.Linear(64, 32)
+        self.fc8 = nn.Linear(32, 32)
+        self.fc9 = nn.Linear(32, 1)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        out = self.relu(self.fc1(x))
+        out = self.relu(self.fc2(out))
+        out = self.relu(self.fc3(out))
+        out = self.relu(self.fc4(out))
+        out = self.relu(self.fc5(out))
+        out = self.relu(self.fc6(out))
+        out = self.relu(self.fc7(out))
+        out = self.relu(self.fc8(out))
+        out = self.fc9(out)
+        return out
+
+# Step 3: Generate synthetic data with large numbers
+np.random.seed(42)
+X_train = np.random.rand(100, 5)  # 100 samples, 5 features
+y_train = np.exp(10 * X_train[:, 0] + 15 * X_train[:, 1]) + np.random.normal(0, 1e3, 100)
+
+X_test = np.random.rand(20, 5)  # 20 samples, 5 features
+y_test = np.exp(10 * X_test[:, 0] + 15 * X_test[:, 1]) + np.random.normal(0, 1e3, 20)
+
+# Convert to PyTorch tensors
+X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train, dtype=torch.float32).view(-1, 1)
+
+X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
+y_test_tensor = torch.tensor(y_test, dtype=torch.float32).view(-1, 1)
+
+# Step 4: Instantiate the deep neural network model, loss function, and optimizer
+model = DeepNN(input_dim=5)
+criterion = OriginalLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Step 5: Train the deep neural network
+num_epochs = 5000
+for epoch in range(num_epochs):
+    model.train()
+    
+    # Forward pass
+    outputs = model(X_train_tensor)
+    loss = criterion(outputs, y_train_tensor)
+    
+    # Backward pass and optimization
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    
+    if (epoch+1) % 50 == 0:
+        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+
+# Step 6: Evaluate the model
+model.eval()
+with torch.no_grad():
+    preds = model(X_test_tensor).numpy()
+    y_test_numpy = y_test_tensor.numpy()
+
+# Step 7: Plot the results
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test_numpy, preds, color='blue', label='Predicted vs True')
+plt.plot([min(y_test_numpy), max(y_test_numpy)], [min(y_test_numpy), max(y_test_numpy)], color='red', linestyle='--', label='Ideal')
+plt.xlabel('True Values')
+plt.ylabel('Predicted Values')
+plt.title('True vs Predicted Values (Deep NN with Original Loss)')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
 import numpy as np
 import xgboost as xgb
 
