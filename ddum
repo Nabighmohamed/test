@@ -19,6 +19,99 @@ y_test = np.clip(y_test, 1e-6, None)
 dtrain = xgb.DMatrix(X_train, label=y_train)
 dtest = xgb.DMatrix(X_test, label=y_test)
 
+# Step 2: Define the custom loss function with L2 regularization
+def custom_log_loss_with_regularization(preds, dtrain, reg_lambda=1.0):
+    labels = dtrain.get_label()
+    eps = 1e-6  # Small value to prevent division by zero and log issues
+    
+    # Clip preds to avoid log of zero or negative numbers
+    preds = np.clip(preds, eps, None)
+    
+    # Gradient: -(2(log(y) - log(y_pred)) / y_pred + 2 * lambda * y_pred)
+    grad = -2 * (np.log(labels) - np.log(preds)) / preds + 2 * reg_lambda * preds
+    
+    # Hessian: -(2(log(y) + 2log(y_pred) + 2)) / (y_pred^2) + 2 * lambda
+    hess = -2 * (np.log(labels) + 2 * np.log(preds) + 2) / (preds ** 2) + 2 * reg_lambda
+    
+    return grad, hess
+
+# Step 3: Train the model using the custom loss function with L2 regularization
+params = {
+    'max_depth': 6,
+    'eta': 0.1,
+    'seed': 42
+}
+
+# Train the model using the custom log-based loss function with regularization
+model_custom_reg = xgb.train(params, dtrain, num_boost_round=100, obj=lambda preds, dtrain: custom_log_loss_with_regularization(preds, dtrain, reg_lambda=1.0))
+
+# Update the params to use the built-in MSE loss function
+params['objective'] = 'reg:squarederror'
+
+# Train the model using the built-in MSE loss function
+model_builtin = xgb.train(params, dtrain, num_boost_round=100)
+
+# Make predictions on the test set
+preds_custom_reg = model_custom_reg.predict(dtest)
+preds_builtin = model_builtin.predict(dtest)
+
+# Calculate the MSE for both models
+mse_custom_reg = mean_squared_error(y_test, preds_custom_reg)
+mse_builtin = mean_squared_error(y_test, preds_builtin)
+
+print(f"Custom Log-based Loss with Regularization MSE: {mse_custom_reg}")
+print(f"Built-in MSE Loss: {mse_builtin}")
+
+# Step 4: Plot the results
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.scatter(y_test, preds_custom_reg, color='blue', label='Predicted vs True (Custom with Reg)')
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label='Ideal')
+plt.xlabel('True Values')
+plt.ylabel('Predicted Values')
+plt.title('Custom Log-based Loss with L2 Regularization')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.scatter(y_test, preds_builtin, color='green', label='Predicted vs True (Built-in)')
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label='Ideal')
+plt.xlabel('True Values')
+plt.ylabel('Predicted Values')
+plt.title('Built-in MSE Loss')
+plt.legend()
+
+plt.show()
+
+
+
+
+
+
+
+
+
+import numpy as np
+import xgboost as xgb
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+
+# Step 1: Generate synthetic data
+np.random.seed(42)
+X_train = np.random.rand(100, 5)  # 100 samples, 5 features
+y_train = np.exp(10 * X_train[:, 0] + 15 * X_train[:, 1]) + np.random.normal(0, 1e3, 100)  # Larger magnitude function
+
+X_test = np.random.rand(20, 5)  # 20 samples, 5 features
+y_test = np.exp(10 * X_test[:, 0] + 15 * X_test[:, 1]) + np.random.normal(0, 1e3, 20)
+
+# Ensure all labels are positive (if necessary)
+y_train = np.clip(y_train, 1e-6, None)
+y_test = np.clip(y_test, 1e-6, None)
+
+# Create DMatrix for XGBoost
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+
 # Step 2: Define the custom loss function
 def custom_log_loss(preds, dtrain):
     labels = dtrain.get_label()
