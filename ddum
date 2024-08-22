@@ -1,3 +1,75 @@
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from zero_inflated_lognormal import zero_inflated_lognormal_loss, zero_inflated_lognormal_pred
+from metrics import cumulative_true, gini_from_gain
+
+
+np.random.seed(42)
+
+# Parameters
+n_samples = 1000  # Number of samples
+n_features = 10   # Number of features
+
+# Generate random features
+X = np.random.normal(size=(n_samples, n_features))
+
+# Simulate the probability of making a purchase (logistic function)
+prob_purchase = 1 / (1 + np.exp(-X[:, 0]))  # Probability influenced by the first feature
+
+# Simulate whether a purchase was made or not (binary outcome)
+purchase_made = np.random.binomial(1, prob_purchase)
+
+# Simulate the lognormal distributed LTV for customers who made a purchase
+lognormal_mean = X[:, 1]  # Mean influenced by the second feature
+lognormal_std = np.abs(X[:, 2])  # Std influenced by the third feature, ensure it's positive
+ltv_positive = np.exp(np.random.normal(lognormal_mean, lognormal_std))
+
+# Combine the zero LTV for non-purchasers and positive LTV for purchasers
+ltv = purchase_made * ltv_positive
+
+# Create a DataFrame
+df = pd.DataFrame(X, columns=[f'feature_{i+1}' for i in range(n_features)])
+df['purchase_value'] = ltv
+
+# Display the first few rows of the generated data
+print(df.head())
+
+# Assuming df is your input DataFrame with features and a 'purchase_value' column as target
+X = df.drop(columns=['purchase_value']).values  # Features
+y = df['purchase_value'].values.reshape(-1, 1)  # Target, reshape to ensure correct dimensions
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define the model architecture with Input layer
+inputs = tf.keras.Input(shape=(X_train.shape[1],))
+x = tf.keras.layers.Dense(64, activation='relu')(inputs)
+x = tf.keras.layers.Dense(32, activation='relu')(x)
+outputs = tf.keras.layers.Dense(3)(x)  # Output layer with 3 logits for ZILN: p, mean, std
+
+# Define the model
+model = tf.keras.Model(inputs, outputs)
+
+# Compile the model with the ZILN loss function
+model.compile(optimizer='adam', loss=zero_inflated_lognormal_loss)
+
+# Train the model on the training set
+model.fit(X_train, y_train, epochs=50, batch_size=128, validation_split=0.2)
+
+# Evaluate the model on the test set
+predictions = model.predict(X_test)
+predicted_ltv = zero_inflated_lognormal_pred(predictions)
+
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
