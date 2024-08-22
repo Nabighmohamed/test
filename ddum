@@ -1,3 +1,87 @@
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+
+# Set random seed for reproducibility
+np.random.seed(42)
+tf.random.set_seed(42)
+
+# Generate synthetic data
+n_samples = 1000  # Number of samples
+n_features = 10   # Number of features
+
+# Generate random features
+X = np.random.normal(size=(n_samples, n_features))
+
+# Simulate the probability of making a purchase (logistic function)
+prob_purchase = 1 / (1 + np.exp(-X[:, 0]))  # Probability influenced by the first feature
+
+# Simulate whether a purchase was made or not (binary outcome)
+purchase_made = np.random.binomial(1, prob_purchase)
+
+# Simulate the lognormal distributed LTV for customers who made a purchase
+lognormal_mean = X[:, 1]  # Mean influenced by the second feature
+lognormal_std = np.abs(X[:, 2])  # Std influenced by the third feature, ensure it's positive
+ltv_positive = np.exp(np.random.normal(lognormal_mean, lognormal_std))
+
+# Combine the zero LTV for non-purchasers and positive LTV for purchasers
+ltv = purchase_made * ltv_positive
+
+# Create a DataFrame
+df = pd.DataFrame(X, columns=[f'feature_{i+1}' for i in range(n_features)])
+df['purchase_value'] = ltv
+
+# Split the data into features and target
+X = df.drop(columns=['purchase_value']).values  # Features
+y = df['purchase_value'].values.reshape(-1, 1)  # Target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define the custom loss function
+def custom_log_loss(y_true, y_pred):
+    # Ensure y_pred is greater than 0 to avoid log(0)
+    y_pred = tf.clip_by_value(y_pred, 1e-10, tf.reduce_max(y_pred))
+    return tf.reduce_mean(tf.square(tf.math.log(y_true) - tf.math.log(y_pred)))
+
+# Define the model architecture
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(X_train.shape[1],)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1)  # Output layer for predicting a single continuous value
+])
+
+# Compile the model with the custom log loss function
+model.compile(optimizer='adam', loss=custom_log_loss)
+
+# Train the model
+model.fit(X_train, y_train, epochs=50, batch_size=128, validation_split=0.2)
+
+# Evaluate the model on the test set
+y_pred = model.predict(X_test)
+
+# Display some of the predictions alongside actual values
+results = pd.DataFrame({
+    'Actual': y_test.flatten(),
+    'Predicted': y_pred.flatten()
+})
+
+print("Sample of Actual vs Predicted values:")
+print(results.head())
+
+# Optionally, evaluate the performance using mean squared error or any other metric
+mse = tf.keras.metrics.mean_squared_error(y_test, y_pred).numpy()
+print(f"\nMean Squared Error on test set: {mse:.4f}")
+
+
+
+
+
+
+
+
 import tensorflow as tf
 import numpy as np
 import pandas as pd
