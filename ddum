@@ -1,3 +1,45 @@
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+from zero_inflated_lognormal import zero_inflated_lognormal_loss, zero_inflated_lognormal_pred
+from metrics import cumulative_true, gini_from_gain
+
+# Assuming df is your input DataFrame with features and a 'purchase_value' column as target
+X = df.drop(columns=['purchase_value']).values  # Features
+y = df['purchase_value'].values.reshape(-1, 1)  # Target, reshape to ensure correct dimensions
+
+# Define the model architecture with Input layer
+inputs = tf.keras.Input(shape=(X.shape[1],))
+x = tf.keras.layers.Dense(64, activation='relu')(inputs)
+x = tf.keras.layers.Dense(32, activation='relu')(x)
+outputs = tf.keras.layers.Dense(3)(x)  # Output layer with 3 logits for ZILN: p, mean, std
+
+# Define the model
+model = tf.keras.Model(inputs, outputs)
+
+# Compile the model with the ZILN loss function
+model.compile(optimizer='adam', loss=zero_inflated_lognormal_loss)
+
+# Train the model
+model.fit(X, y, epochs=50, batch_size=128, validation_split=0.2)
+
+# Make predictions
+predictions = model.predict(X)
+predicted_ltv = zero_inflated_lognormal_pred(predictions)
+
+# Evaluate using metrics
+cumulative_true_values = cumulative_true(y, predicted_ltv.numpy())
+gini_df = pd.DataFrame({
+    'true': cumulative_true_values,
+    'predicted': cumulative_true(y, predicted_ltv.numpy())
+})
+gini_results = gini_from_gain(gini_df)
+
+# Print Gini coefficient results
+print(gini_results)
+
+
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
