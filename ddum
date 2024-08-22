@@ -1,3 +1,98 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
+from tensorflow.keras import layers, Model
+import lifetime_value as ltv  # Assuming you have imported your custom package correctly
+
+# Step 1: Generate a random DataFrame with numeric features X1, X2, X3, X4 and target Y
+np.random.seed(42)
+df = pd.DataFrame({
+    'X1': np.random.randn(1000),
+    'X2': np.random.randn(1000),
+    'X3': np.random.randn(1000),
+    'X4': np.random.randn(1000),
+    'Y': np.random.randn(1000)
+})
+
+df['label'] = df['Y'].values.reshape(-1, 1)  # Ensure label is a column vector
+df['calibration_value'] = df['Y']  # This is used for calibration purposes
+
+NUMERIC_FEATURES = ['X1', 'X2', 'X3', 'X4']
+CATEGORICAL_FEATURES = []
+
+# Step 2: Define the function to split the data for DNN
+def dnn_split(df):
+    y0 = df['calibration_value'].values
+    df_train, df_eval, y0_train, y0_eval = train_test_split(
+        df, y0, test_size=0.2, random_state=123
+    )
+
+    def feature_dict(df):
+        return {'numeric': df[NUMERIC_FEATURES].values}
+
+    x_train, y_train = feature_dict(df_train), df_train['label'].values.reshape(-1, 1)
+    x_eval, y_eval = feature_dict(df_eval), df_eval['label'].values.reshape(-1, 1)
+
+    return x_train, x_eval, y_train, y_eval, y0_eval
+
+# Step 3: Define the DNN model
+def dnn_model(output_units):
+    numeric_input = tf.keras.layers.Input(shape=(len(NUMERIC_FEATURES),), name='numeric')
+    deep_model = tf.keras.Sequential([
+        layers.Dense(64, activation='relu'),
+        layers.Dense(32, activation='relu'),
+        layers.Dense(output_units)  # Output units must be 3 for ZILN
+    ])
+    return tf.keras.Model(inputs=numeric_input, outputs=deep_model(numeric_input))
+
+# Step 4: Set parameters and compile the model
+LOSS = 'ziln'  # Using the Zero-Inflated Lognormal loss
+LEARNING_RATE = 0.001
+EPOCHS = 100
+output_units = 3  # ZILN requires 3 output units
+
+x_train, x_eval, y_train, y_eval, y0_eval = dnn_split(df)
+model = dnn_model(output_units)
+
+model.compile(loss=ltv.zero_inflated_lognormal_loss, optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE))
+
+callbacks = [
+    tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', min_lr=1e-6),
+    tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+]
+
+# Step 5: Train the model
+history = model.fit(
+    x=x_train['numeric'],
+    y=y_train,
+    batch_size=1024,
+    epochs=EPOCHS,
+    verbose=2,
+    callbacks=callbacks,
+    validation_data=(x_eval['numeric'], y_eval)
+)
+
+# Step 6: Evaluate and predict
+logits = model.predict(x_eval['numeric'], batch_size=1024)
+y_pred = ltv.zero_inflated_lognormal_pred(logits).numpy().flatten()
+
+df_pred = pd.DataFrame({
+    'y_true': y_eval.flatten(),  # Flatten y_eval to match the shape
+    'y_pred': y_pred,
+})
+print(df_pred.head(10))
+
+# Step 7: Save the results to a CSV
+output_path = "/path/to/your/output/folder/results.csv"
+df_pred.to_csv(output_path, index=False)
+
+
+
+
+
+
 import tensorflow as tf
 import numpy as np
 import pandas as pd
