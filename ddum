@@ -1,5 +1,45 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from statsmodels.genmod.families import Tweedie
+from scipy.stats import gaussian_kde
+
+# Sample data for target variable y
+# Replace this with your actual data
+y = np.random.gamma(shape=2.0, scale=2.0, size=1000)  # Example data
+
+# Plot the actual distribution of the target variable
+plt.hist(y, bins=30, density=True, alpha=0.6, color='g', label='Actual Distribution')
+
+# Define a range of variance power values to test
+tweedie_powers = [1.1, 1.5, 1.9]  # You can add more values if needed
+
+# Overlay Tweedie distributions with different variance power values
+for p in tweedie_powers:
+    # Using statsmodels Tweedie distribution family
+    tweedie_family = Tweedie(var_power=p)
+    mu = np.mean(y)  # Estimate mean from data
+    phi = np.var(y) / mu  # Estimate dispersion parameter from data (phi)
+
+    # Generate random samples from the Tweedie distribution
+    y_tweedie = tweedie_family.resid_dev(mu, y) * np.sqrt(phi) + mu
+
+    # Estimate density of Tweedie distribution using Kernel Density Estimation (KDE)
+    kde = gaussian_kde(y_tweedie)
+    x = np.linspace(0, max(y) * 2, 100)
+    plt.plot(x, kde(x), label=f'Tweedie p={p}')
+
+# Add labels and legend
+plt.xlabel('Value')
+plt.ylabel('Density')
+plt.title('Comparison of Target Distribution with Tweedie Distributions')
+plt.legend()
+plt.show()
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
 from statsmodels.distributions.empirical_distribution import ECDF
 from statsmodels.genmod.families import Tweedie
 
