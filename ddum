@@ -1,3 +1,71 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.distributions.empirical_distribution import ECDF
+from statsmodels.genmod.families import Tweedie
+
+# Sample data for target variable y
+# Replace this with your actual data
+y = np.random.gamma(shape=2.0, scale=2.0, size=1000)  # Example data
+
+# Plot the actual distribution of the target variable
+plt.hist(y, bins=30, density=True, alpha=0.6, color='g', label='Actual Distribution')
+
+# Define a range of variance power values to test
+tweedie_powers = [1.1, 1.5, 1.9]  # You can add more values if needed
+
+# Overlay Tweedie distributions with different variance power values
+for p in tweedie_powers:
+    # Using statsmodels Tweedie distribution family
+    tweedie_family = Tweedie(var_power=p)
+    mu = np.mean(y)  # Estimate mean from data
+    phi = np.var(y) / mu  # Estimate dispersion parameter from data (phi)
+    x = np.linspace(0, max(y) * 2, 100)  # Generate x values for the density plot
+    
+    # Calculate Tweedie probability density function (PDF)
+    pdf = tweedie_family.pdf(x, mu=mu, phi=phi)
+    
+    plt.plot(x, pdf, label=f'Tweedie p={p}')
+
+# Add labels and legend
+plt.xlabel('Value')
+plt.ylabel('Density')
+plt.title('Comparison of Target Distribution with Tweedie Distributions')
+plt.legend()
+plt.show()
+
+
+
+
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
+# Assuming X and y are your features and target variables
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Set up XGBoost Regressor
+xgb_model = xgb.XGBRegressor(
+    objective='reg:tweedie',
+    tweedie_variance_power=1.5,  # Adjust as needed
+    eta=0.1,
+    max_depth=6,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    n_estimators=100
+)
+
+# Train the model
+xgb_model.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = xgb_model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+print(f'Mean Squared Error: {mse}')
+
+
+
+
+
 import xgboost as xgb
 import numpy as np
 import pandas as pd
