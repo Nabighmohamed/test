@@ -1,3 +1,99 @@
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+import tensorflow_probability as tfp
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+
+# Set the random seed for reproducibility
+np.random.seed(42)
+
+# Number of samples
+n_samples = 1000
+
+# Generate 5 continuous variables
+X = pd.DataFrame({
+    'var1': np.random.normal(loc=50, scale=10, size=n_samples),
+    'var2': np.random.normal(loc=100, scale=20, size=n_samples),
+    'var3': np.random.normal(loc=150, scale=30, size=n_samples),
+    'var4': np.random.normal(loc=200, scale=40, size=n_samples),
+    'var5': np.random.normal(loc=250, scale=50, size=n_samples),
+})
+
+# Generate LTV as the target variable
+LTV = 2 * X['var1'] + 0.5 * X['var2'] + 0.3 * X['var3'] + 0.1 * X['var4'] + 0.05 * X['var5'] + np.random.normal(loc=0, scale=10, size=n_samples)
+
+# Combine into a single DataFrame
+df = X.copy()
+df['LTV'] = LTV
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, LTV, test_size=0.2, random_state=42)
+
+# Define the custom quadratic mean-based loss function
+def quadratic_mean_loss(y_true, y_pred):
+    """
+    Custom quadratic mean-based loss function for a DNN in TensorFlow.
+
+    Parameters:
+    y_true (tf.Tensor): True labels.
+    y_pred (tf.Tensor): Predicted values from the model.
+
+    Returns:
+    tf.Tensor: Calculated quadratic mean-based loss.
+    """
+    # Calculate the median of y_true
+    median = tfp.stats.percentile(y_true, 50.0, interpolation='midpoint')
+    
+    # Create a mask for values below or equal to the median
+    mask = tf.less_equal(y_true, median)
+    
+    # Split y_true and y_pred based on the median
+    y_true_first_half = tf.boolean_mask(y_true, mask)
+    y_pred_first_half = tf.boolean_mask(y_pred, mask)
+    
+    y_true_second_half = tf.boolean_mask(y_true, ~mask)
+    y_pred_second_half = tf.boolean_mask(y_pred, ~mask)
+    
+    # Compute MSE for both halves
+    mse_first_half = tf.reduce_mean(tf.square(y_true_first_half - y_pred_first_half))
+    mse_second_half = tf.reduce_mean(tf.square(y_true_second_half - y_pred_second_half))
+    
+    # Compute the quadratic mean of the MSEs
+    quadratic_mean = tf.sqrt(0.5 * (tf.square(mse_first_half) + tf.square(mse_second_half)))
+    
+    return quadratic_mean
+
+# Define the DNN model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+# Compile the model with the custom loss function
+model.compile(optimizer='adam', loss=quadratic_mean_loss)
+
+# Train the model
+model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=1)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Plot predicted values vs. true values
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, y_pred, alpha=0.5)
+plt.xlabel('True Values')
+plt.ylabel('Predicted Values')
+plt.title('Predicted vs. True Values')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)
+plt.show()
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
