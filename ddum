@@ -2,6 +2,70 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
+def segmented_r2(y, y_pred, segment_range=1000):
+    # Sort y and map y_pred accordingly
+    sorted_indices = np.argsort(y)
+    y_sorted = y[sorted_indices]
+    y_pred_sorted = y_pred[sorted_indices]
+    
+    # Determine the minimum and maximum of y to set up the segments
+    min_y = np.min(y_sorted)
+    max_y = np.max(y_sorted)
+    
+    # Define the segments based on the range
+    segments = np.arange(min_y, max_y + segment_range, segment_range)
+    
+    # Calculate R² for each segment
+    segment_r2_scores = []
+    segment_sizes = []
+    
+    for i in range(len(segments) - 1):
+        start_val = segments[i]
+        end_val = segments[i + 1]
+        
+        # Find indices for the current segment
+        mask = (y_sorted >= start_val) & (y_sorted < end_val)
+        y_segment = y_sorted[mask]
+        y_pred_segment = y_pred_sorted[mask]
+        
+        if len(y_segment) > 1:  # To avoid computing R² on a single point
+            r2 = r2_score(y_segment, y_pred_segment)
+            segment_r2_scores.append(r2)
+            segment_sizes.append(len(y_segment))
+        else:
+            segment_r2_scores.append(0)  # If a segment is too small, R² is 0
+            segment_sizes.append(1)
+    
+    # Calculate weighted R²
+    weighted_r2 = np.sum(np.array(segment_r2_scores) * np.array(segment_sizes)) / np.sum(segment_sizes)
+    
+    # Plot R² for each segment
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(segment_r2_scores)), segment_r2_scores, marker='o', linestyle='-', color='b')
+    plt.title('Segmented R² Scores')
+    plt.xlabel('Segment Index')
+    plt.ylabel('R² Score')
+    plt.grid(True)
+    plt.show()
+    
+    return weighted_r2, segment_r2_scores
+
+# Example usage
+y = np.random.gamma(shape=2.0, scale=2.0, size=5000)
+y_pred = y + np.random.normal(0, 1, size=5000)
+
+weighted_r2, segment_r2_scores = segmented_r2(y, y_pred, segment_range=1000)
+print('Weighted R²:', weighted_r2)
+
+
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+
 def segmented_r2(y, y_pred, segment_size=1000):
     # Sort y and map y_pred accordingly
     sorted_indices = np.argsort(y)
