@@ -1,4 +1,29 @@
 import pandas as pd
+
+# Assuming og_df, df_19, df_20, df_21, df_22, and df_23 are already defined
+
+# List of dataframes to merge with the original dataframe
+dfs = [df_19, df_20, df_21, df_22, df_23]
+
+# Loop through each dataframe to merge it with the original dataframe
+for i, df in enumerate(dfs, start=19):
+    # Rename the pnb_annuel column to pnb_annuel_year (e.g., pnb_annuel_19, pnb_annuel_20)
+    df = df.rename(columns={'pnb_annuel': f'pnb_annuel_{i}'})
+    
+    # Merge the original dataframe with the current dataframe on the 'id' column
+    og_df = pd.merge(og_df, df[['id', f'pnb_annuel_{i}']], on='id', how='left')
+
+# Now og_df contains all the pnb_annuel columns from df_19 to df_23
+
+
+
+
+
+
+
+
+
+import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
