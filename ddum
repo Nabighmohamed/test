@@ -1,47 +1,128 @@
-Bonjour Solène,
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
-Oui, je vais organiser une réunion cette semaine pour que nous puissions discuter du rapport en détail.
+# Generate synthetic data for regression
+X, y = make_regression(n_samples=1000, n_features=20, noise=0.1, random_state=42)
 
-En ce qui concerne ma soutenance, je n'ai pas encore de date fixe. La dernière mise à jour que nous avons reçue hier de Nadif indique que la soutenance passera d'une présentation en personne à une présentation en ligne. De plus, la date limite de dépôt du rapport est fixée au 12 septembre.
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-Je vous tiendrai informée dès que j'aurai plus d'informations.
+# Convert to DMatrix for XGBoost
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
 
-Merci et à bientôt !
+# Genetic algorithm parameters
+numberOfParents = 8
+numberOfParentsMating = 4
+numberOfParameters = 7
+numberOfGenerations = 5
+populationSize = (numberOfParents, numberOfParameters)
 
-Bien cordialement,
+# Initialize population
+def initialize_population(n_parents):
+    population = np.zeros((n_parents, 7))
+    for i in range(n_parents):
+        population[i, 0] = np.round(np.random.uniform(0.01, 0.3), 2)  # learning_rate
+        population[i, 1] = np.random.randint(50, 500)  # n_estimators
+        population[i, 2] = np.random.randint(3, 10)  # max_depth
+        population[i, 3] = np.round(np.random.uniform(0.5, 10.0), 2)  # min_child_weight
+        population[i, 4] = np.round(np.random.uniform(0, 0.5), 2)  # gamma
+        population[i, 5] = np.round(np.random.uniform(0.5, 1.0), 2)  # subsample
+        population[i, 6] = np.round(np.random.uniform(0.5, 1.0), 2)  # colsample_bytree
+    return population
 
+# Fitness function
+def fitness_mse(y_true, y_pred):
+    return mean_squared_error(y_true, y_pred)
 
+# Train and evaluate a population
+def evaluate_population(population, dtrain, dtest):
+    fitness = []
+    for i in range(population.shape[0]):
+        params = {
+            'objective': 'reg:squarederror',
+            'learning_rate': population[i, 0],
+            'n_estimators': int(population[i, 1]),
+            'max_depth': int(population[i, 2]),
+            'min_child_weight': population[i, 3],
+            'gamma': population[i, 4],
+            'subsample': population[i, 5],
+            'colsample_bytree': population[i, 6],
+            'seed': 42
+        }
+        model = xgb.train(params, dtrain, num_boost_round=int(population[i, 1]))
+        preds = model.predict(dtest)
+        fitness.append(fitness_mse(y_test, preds))
+    return fitness
 
+# Selection of parents
+def select_parents(population, fitness, num_parents):
+    parents = np.empty((num_parents, population.shape[1]))
+    for parent_num in range(num_parents):
+        min_fitness_idx = np.argmin(fitness)
+        parents[parent_num, :] = population[min_fitness_idx, :]
+        fitness[min_fitness_idx] = float('inf')
+    return parents
 
+# Crossover
+def crossover(parents, offspring_size):
+    offspring = np.empty(offspring_size)
+    crossover_point = np.uint8(offspring_size[1]/2)
 
-Objet : Bon retour ! Rapport et ressources supplémentaires
+    for k in range(offspring_size[0]):
+        parent1_idx = k % parents.shape[0]
+        parent2_idx = (k + 1) % parents.shape[0]
+        offspring[k, 0:crossover_point] = parents[parent1_idx, 0:crossover_point]
+        offspring[k, crossover_point:] = parents[parent2_idx, crossover_point:]
 
-Bonjour [Nom du Manager],
+    return offspring
 
-J'espère que vous avez passé de bonnes vacances ! Vous les avez bien méritées, et j'espère que vous avez pu profiter de cette pause pour vous détendre et vous ressourcer.
+# Mutation
+def mutation(offspring_crossover):
+    for idx in range(offspring_crossover.shape[0]):
+        random_idx = np.random.randint(0, offspring_crossover.shape[1])
+        random_value = np.random.uniform(-0.1, 0.1)
+        offspring_crossover[idx, random_idx] = offspring_crossover[idx, random_idx] + random_value
+        # Ensuring parameter boundaries
+        offspring_crossover[idx, 0] = np.clip(offspring_crossover[idx, 0], 0.01, 0.3)
+        offspring_crossover[idx, 1] = np.clip(offspring_crossover[idx, 1], 50, 500)
+        offspring_crossover[idx, 2] = np.clip(offspring_crossover[idx, 2], 3, 10)
+        offspring_crossover[idx, 3] = np.clip(offspring_crossover[idx, 3], 0.5, 10.0)
+        offspring_crossover[idx, 4] = np.clip(offspring_crossover[idx, 4], 0, 0.5)
+        offspring_crossover[idx, 5] = np.clip(offspring_crossover[idx, 5], 0.5, 1.0)
+        offspring_crossover[idx, 6] = np.clip(offspring_crossover[idx, 6], 0.5, 1.0)
+    return offspring_crossover
 
-Pour vous aider à reprendre vos activités, je voulais vous transmettre le lien vers le rapport. Celui-ci contient un résumé détaillé et un plan de mise en œuvre basé sur quelques articles académiques que j'ai examinés : [insérez le lien vers le rapport ici].
+# Genetic Algorithm Execution
+population = initialize_population(numberOfParents)
+for generation in range(numberOfGenerations):
+    print(f"Generation {generation}")
+    fitness = evaluate_population(population, dtrain, dtest)
+    print(f"Best fitness in generation {generation}: {min(fitness)}")
+    parents = select_parents(population, fitness, numberOfParentsMating)
+    offspring_crossover = crossover(parents, (populationSize[0] - parents.shape[0], numberOfParameters))
+    offspring_mutation = mutation(offspring_crossover)
+    population[0:parents.shape[0], :] = parents
+    population[parents.shape[0]:, :] = offspring_mutation
 
-De plus, j'ai rassemblé tous les articles académiques mentionnés dans le rapport dans un dossier pour vous faciliter la tâche. Vous pouvez les consulter ici : [insérez le lien vers le dossier ici]. J'espère que cela vous sera utile pour passer en revue les informations.
+# Evaluate the final population
+final_fitness = evaluate_population(population, dtrain, dtest)
+best_idx = np.argmin(final_fitness)
+best_params = population[best_idx]
 
-Si vous avez besoin de quoi que ce soit d'autre ou si vous avez des questions, n'hésitez pas à me contacter. Je suis là pour vous aider !
+print("Best parameters found:")
+print(f"Learning rate: {best_params[0]}")
+print(f"n_estimators: {int(best_params[1])}")
+print(f"max_depth: {int(best_params[2])}")
+print(f"min_child_weight: {best_params[3]}")
+print(f"gamma: {best_params[4]}")
+print(f"subsample: {best_params[5]}")
+print(f"colsample_bytree: {best_params[6]}")
 
-Bon retour parmi nous !
-
-Bien cordialement,
-
-
-Subject: Excuse pour mon absence d'hier
-
-Bonjour Solène,
-
-Je tiens à m'excuser pour mon absence d'hier. J'ai passé toute la journée à l'hôpital, de 6 heures du matin à 17 heures, en raison de problèmes de santé.
-
-Veuillez trouver ci-joint les documents justificatifs émis par le médecin pour expliquer mon absence. Je suis désolé pour tout inconvénient que cela aurait pu causer et je suis maintenant prêt à reprendre mes tâches.
-
-Merci pour votre compréhension. N'hésitez pas à me contacter si vous avez besoin de plus d'informations.
-
-Bien cordialement,
 
 
 
