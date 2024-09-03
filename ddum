@@ -1,3 +1,39 @@
+Objet : Bon retour ! Rapport et ressources supplémentaires
+
+Bonjour [Nom du Manager],
+
+J'espère que vous avez passé de bonnes vacances ! Vous les avez bien méritées, et j'espère que vous avez pu profiter de cette pause pour vous détendre et vous ressourcer.
+
+Pour vous aider à reprendre vos activités, je voulais vous transmettre le lien vers le rapport. Celui-ci contient un résumé détaillé et un plan de mise en œuvre basé sur quelques articles académiques que j'ai examinés : [insérez le lien vers le rapport ici].
+
+De plus, j'ai rassemblé tous les articles académiques mentionnés dans le rapport dans un dossier pour vous faciliter la tâche. Vous pouvez les consulter ici : [insérez le lien vers le dossier ici]. J'espère que cela vous sera utile pour passer en revue les informations.
+
+Si vous avez besoin de quoi que ce soit d'autre ou si vous avez des questions, n'hésitez pas à me contacter. Je suis là pour vous aider !
+
+Bon retour parmi nous !
+
+Bien cordialement,
+
+
+Subject: Excuse pour mon absence d'hier
+
+Bonjour Solène,
+
+Je tiens à m'excuser pour mon absence d'hier. J'ai passé toute la journée à l'hôpital, de 6 heures du matin à 17 heures, en raison de problèmes de santé.
+
+Veuillez trouver ci-joint les documents justificatifs émis par le médecin pour expliquer mon absence. Je suis désolé pour tout inconvénient que cela aurait pu causer et je suis maintenant prêt à reprendre mes tâches.
+
+Merci pour votre compréhension. N'hésitez pas à me contacter si vous avez besoin de plus d'informations.
+
+Bien cordialement,
+
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
