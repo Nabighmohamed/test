@@ -1,3 +1,125 @@
+import pandas as pd
+import numpy as np
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
+# Assuming final_df is your dataframe
+final_df.rename(columns={'total_pnb': 'y_long', 'short_total': 'y_short'}, inplace=True)
+data = final_df.copy()
+data.dropna(inplace=True)
+
+# Define explanatory variables
+X_short = data[['AGE', 'MACMPROF', 'nb_op_annuel', 'CA', 'nb_salaries', 'anc_mois_crea', 'MACMREP', 'MFTCREP', 'k_eq_restant_du']]
+y_short = data['y_short']
+
+# Split the data into training and test sets
+X_train_short, X_test_short, y_train_short, y_test_short = train_test_split(X_short, y_short, test_size=0.2, random_state=42)
+
+# Define AGBooster parameters
+params_agbooster = {
+    'eta': 0.01,
+    'seed': 1989,
+    'subsample': 0.8,
+    'booster': 'gbtree',
+    'min_child_weight': 10,
+    'colsample_bytree': 1
+}
+
+# Initialize AGBooster
+agbooster_short = agb.AGBooster(
+    label_name='y_short',
+    feature_names=X_train_short.columns.tolist(),
+    params_xgbooster=params_agbooster,
+    prefix_sep="_ohe_",
+    target_encoding_dict=None  # Adjust if you have target encoding
+)
+
+# Select individual features
+agbooster_short.select_features(
+    data=X_train_short,
+    cv_imp=True,
+    threshold=5,
+    num_boost_round_min=51,
+    num_boost_round_max=200,
+    num_boost_round_start=200,
+    early_stopping_rounds=10,
+    eta_start=0.1
+)
+
+# Update selected features based on threshold
+agbooster_short.update_selected_features(threshold=5)
+
+# Fit AGBooster with univariate GAM
+agbooster_short.fit_univariate_gam(
+    data=X_train_short,
+    num_boost_round_min=51,
+    num_boost_round_max=200,
+    num_boost_round_start=200,
+    early_stopping_rounds=10
+)
+
+# Predictions on training and testing datasets
+y_pred_short_train = agbooster_short.gam_univariate_model.predict(data=X_train_short)
+y_pred_short_test = agbooster_short.gam_univariate_model.predict(data=X_test_short)
+
+# Calculate RMSE for train and test datasets
+rmse_gam_univar_train = mean_squared_error(y_train_short, y_pred_short_train, squared=False)
+rmse_gam_univar_test = mean_squared_error(y_test_short, y_pred_short_test, squared=False)
+
+print(f'RMSE for y_short on training set: {rmse_gam_univar_train}')
+print(f'RMSE for y_short on test set: {rmse_gam_univar_test}')
+
+# Use y_short predictions for y_long model training
+data['y_short_pred'] = agbooster_short.gam_univariate_model.predict(data=X_short)
+X_long = data[['y_short_pred', 'AGE', 'MACMPROF', 'CA', 'anc_mois_crea', 'MACMREP']]
+y_long = data['y_long']
+
+# Split the data into training and test sets for y_long prediction
+X_train_long, X_test_long, y_train_long, y_test_long = train_test_split(X_long, y_long, test_size=0.2, random_state=42)
+
+# Initialize AGBooster for y_long
+agbooster_long = agb.AGBooster(
+    label_name='y_long',
+    feature_names=X_train_long.columns.tolist(),
+    params_xgbooster=params_agbooster,
+    prefix_sep="_ohe_",
+    target_encoding_dict=None  # Adjust if you have target encoding
+)
+
+# Repeat the process for feature selection and model fitting
+agbooster_long.select_features(
+    data=X_train_long,
+    cv_imp=True,
+    threshold=5,
+    num_boost_round_min=51,
+    num_boost_round_max=200,
+    num_boost_round_start=200,
+    early_stopping_rounds=10,
+    eta_start=0.1
+)
+
+agbooster_long.update_selected_features(threshold=5)
+
+agbooster_long.fit_univariate_gam(
+    data=X_train_long,
+    num_boost_round_min=51,
+    num_boost_round_max=200,
+    num_boost_round_start=200,
+    early_stopping_rounds=10
+)
+
+# Predictions on test dataset
+y_pred_long_test = agbooster_long.gam_univariate_model.predict(data=X_test_long)
+
+# Calculate RMSE for y_long on test dataset
+rmse_gam_univar_long_test = mean_squared_error(y_test_long, y_pred_long_test, squared=False)
+print(f'RMSE for y_long on test set: {rmse_gam_univar_long_test}')
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 import xgboost as xgb
