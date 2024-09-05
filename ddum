@@ -1,5 +1,38 @@
 import matplotlib.pyplot as plt
 
+# Group by each variable and create separate plots
+unique_variables = df['variable'].unique()
+
+for variable in unique_variables:
+    # Filter data for the current variable
+    variable_data = df[df['variable'] == variable]
+    
+    # Extract groups (intervals) and coefficients
+    groups = variable_data['group']
+    coefficients = variable_data['coef']
+    
+    # Create a new figure for each variable
+    plt.figure(figsize=(10, 6))
+    plt.scatter(groups, coefficients, color='blue')
+    
+    # Customize the plot
+    plt.xlabel('Group (Interval)')
+    plt.ylabel('Coefficient')
+    plt.title(f'Coefficients vs. Groups for {variable}')
+    plt.xticks(rotation=90)  # Rotate group labels for readability
+    plt.grid(True)
+    
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+
 # Group by each variable and plot
 unique_variables = df['variable'].unique()
 
