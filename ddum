@@ -1,3 +1,81 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def plot_segments_with_regression(df, column_name, segments, target):
+    # Create a new column to hold the segment information based on the given ranges
+    segment_labels = [f'{segments[i]}-{segments[i+1]}' for i in range(len(segments) - 1)]
+    
+    # Use pandas cut function to create a categorical column with the segment labels
+    df['Segment'] = pd.cut(df[column_name], bins=segments, labels=segment_labels, include_lowest=True)
+    
+    # Set the style of the seaborn plot
+    sns.set_style("whitegrid")
+    
+    # Initialize the matplotlib figure
+    plt.figure(figsize=(12, 8))
+    
+    # Create scatter plot with seaborn
+    sns.scatterplot(
+        data=df,
+        x=column_name,
+        y=target,
+        hue='Segment',
+        palette='bright',
+        s=100,
+        edgecolor='white'
+    )
+    
+    # Plot regression lines for each segment
+    for label in segment_labels:
+        seg_data = df[df['Segment'] == label]
+        sns.regplot(
+            data=seg_data,
+            x=column_name,
+            y=target,
+            scatter=False,
+            label=f'{label} Regression',
+            ci=None
+        )
+    
+    # Customize the plot
+    plt.xlabel(column_name)
+    plt.ylabel(target)
+    plt.title(f'{target} vs {column_name} with Regression Lines by Segment')
+    
+    # Adjust legend to avoid duplicates
+    handles, labels = plt.gca().get_legend_handles_labels()
+    unique_labels = dict(zip(labels, handles))
+    plt.legend(unique_labels.values(), unique_labels.keys(), title='Segment')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Example usage with a test DataFrame
+# Creating a sample DataFrame
+data = {
+    'Value': [5, 15, 25, 30, 40, 50, 60, 75, 85, 95],
+    'Target': [50, 60, 65, 70, 80, 85, 90, 100, 110, 120]
+}
+
+df_example = pd.DataFrame(data)
+
+# Segments (ranges) to plot
+segments_example = [0, 10, 80, 100]  # Define the bins
+
+# Column to plot against target
+column_example = 'Value'
+
+# Target column
+target_example = 'Target'
+
+# Call the function to test the plot
+plot_segments_with_regression(df_example, column_example, segments_example, target_example)
+
+
+
+
+
 import matplotlib.pyplot as plt
 
 # Group by each variable and create separate plots
