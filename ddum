@@ -1,26 +1,25 @@
-import pandas as pd
+import xgboost as xgb
+import shap
 import numpy as np
-from sklearn.model_selection import train_test_split
+import pandas as pd
 
-# Generate a random DataFrame with 10 features and 1000 samples
-np.random.seed(42)
-n_samples = 1000
-n_features = 10
+# Sample data and XGBoost model (you can replace this with your data and model)
+X, y = shap.datasets.boston()  # Example dataset
+model = xgb.XGBRegressor().fit(X, y)  # Train an XGBoost model
 
-# Feature names
-feature_names = [f'feature_{i}' for i in range(n_features)]
+# Select a single instance to explain
+instance_idx = 0  # Index of the instance to explain
+single_instance = X.iloc[instance_idx:instance_idx + 1]
 
-# Generate random data
-X_random = pd.DataFrame(np.random.randn(n_samples, n_features), columns=feature_names)
-y_random = np.random.randint(0, 2, size=n_samples)  # Binary target
+# Initialize the SHAP explainer
+explainer = shap.Explainer(model)
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_random, y_random, test_size=0.2, random_state=42)
+# Get SHAP values for the single instance
+shap_values = explainer(single_instance)
 
-# Display the test DataFrame
-import ace_tools as tools; tools.display_dataframe_to_user(name="Test DataFrame", dataframe=X_test)
+# Plot the SHAP values for the single instance
+shap.plots.waterfall(shap_values[0])
 
-X_test.head()
 
 
 
