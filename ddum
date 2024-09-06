@@ -2,6 +2,75 @@ import xgboost as xgb
 import shap
 import numpy as np
 import pandas as pd
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Generate random dataset (replace this with your actual train/test data)
+np.random.seed(1989)
+X_train = pd.DataFrame(np.random.randn(1000, 10), columns=[f'feature_{i}' for i in range(10)])
+y_train = np.random.randn(1000)
+X_test = pd.DataFrame(np.random.randn(200, 10), columns=[f'feature_{i}' for i in range(10)])
+y_test = np.random.randn(200)
+
+# Define XGBoost parameters
+xgb_params = {
+    'eta': 0.02,
+    'seed': 1989,
+    'subsample': 0.8,
+    'booster': 'gbtree',
+    'max_depth': 3,
+    'colsample_bytree': 1
+}
+
+# Create DMatrix for XGBoost
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test)
+
+# Perform cross-validation to determine the best number of boosting rounds
+xgb_cv = xgb.cv(
+    params=xgb_params,
+    dtrain=dtrain,
+    num_boost_round=1000,
+    nfold=5,
+    early_stopping_rounds=10,
+    verbose_eval=False
+)
+
+# Find the optimal number of boosting rounds
+best_ntrees = len(xgb_cv)
+
+# Train the final XGBoost model with the best number of boosting rounds
+xgb_final = xgb.train(params=xgb_params, dtrain=dtrain, num_boost_round=best_ntrees)
+
+# Predict on test set
+y_pred = xgb_final.predict(dtest)
+
+# Evaluate the model
+rmse_xgb_test = mean_squared_error(y_test, y_pred, squared=False)
+r2_xgb_test = r2_score(y_test, y_pred)
+
+print(f'RMSE: {rmse_xgb_test}')
+print(f'R^2: {r2_xgb_test}')
+
+# SHAP explainer
+explainer = shap.TreeExplainer(xgb_final)
+shap_values = explainer.shap_values(X_test)
+
+# Plot SHAP values for a random test instance
+random_instance = X_test.sample(1, random_state=42)
+shap.plots.waterfall(explainer(random_instance))
+
+
+
+
+
+
+
+
+
+import xgboost as xgb
+import shap
+import numpy as np
+import pandas as pd
 
 # Generate a random dataset
 np.random.seed(42)
