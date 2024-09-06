@@ -1,3 +1,17 @@
+Bonjour [Nom du Manager],
+
+J'espère que vous allez bien.
+
+L'objectif de cette réunion est d'explorer et d'analyser les coefficients d'AgeBoost. Pour vous donner un aperçu, j'ai préparé quelques graphiques initiaux que vous pouvez examiner avant la réunion. N'hésitez pas à me faire part de vos questions ou des points supplémentaires que vous souhaiteriez aborder.
+
+Au plaisir d'en discuter avec vous.
+
+Cordialement,
+
+
+
+
+
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
