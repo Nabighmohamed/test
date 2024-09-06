@@ -1,12 +1,26 @@
-Bonjour [Nom du Manager],
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 
-J'espère que vous allez bien.
+# Generate a random DataFrame with 10 features and 1000 samples
+np.random.seed(42)
+n_samples = 1000
+n_features = 10
 
-L'objectif de cette réunion est d'explorer et d'analyser les coefficients d'AgeBoost. Pour vous donner un aperçu, j'ai préparé quelques graphiques initiaux que vous pouvez examiner avant la réunion. N'hésitez pas à me faire part de vos questions ou des points supplémentaires que vous souhaiteriez aborder.
+# Feature names
+feature_names = [f'feature_{i}' for i in range(n_features)]
 
-Au plaisir d'en discuter avec vous.
+# Generate random data
+X_random = pd.DataFrame(np.random.randn(n_samples, n_features), columns=feature_names)
+y_random = np.random.randint(0, 2, size=n_samples)  # Binary target
 
-Cordialement,
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_random, y_random, test_size=0.2, random_state=42)
+
+# Display the test DataFrame
+import ace_tools as tools; tools.display_dataframe_to_user(name="Test DataFrame", dataframe=X_test)
+
+X_test.head()
 
 
 
