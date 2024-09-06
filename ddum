@@ -3,6 +3,35 @@ import shap
 import numpy as np
 import pandas as pd
 
+# Generate a random dataset
+np.random.seed(42)
+X = pd.DataFrame(np.random.randn(1000, 10), columns=[f'feature_{i}' for i in range(10)])
+y = np.random.randint(0, 2, size=1000)
+
+# Train an XGBoost model
+model = xgb.XGBClassifier(n_estimators=50, use_label_encoder=False, eval_metric="logloss").fit(X, y)
+
+# Select a random instance
+random_instance = X.sample(1, random_state=42)
+
+# Initialize SHAP TreeExplainer
+explainer = shap.TreeExplainer(model)
+
+# Calculate SHAP values for the random instance
+shap_values = explainer(random_instance)
+
+# Plot SHAP values for the random instance
+shap.plots.waterfall(shap_values[0])
+
+
+
+
+
+import xgboost as xgb
+import shap
+import numpy as np
+import pandas as pd
+
 # Sample data and XGBoost model (you can replace this with your data and model)
 X, y = shap.datasets.boston()  # Example dataset
 model = xgb.XGBRegressor().fit(X, y)  # Train an XGBoost model
