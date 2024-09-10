@@ -1,3 +1,21 @@
+Objet : Rapport de stage & Fiche d’évaluation – Action requise
+
+Bonjour Solène,
+
+J'espère que tu vas bien.
+
+Je t'envoie en pièce jointe mon rapport de stage. Je ne l’ai pas encore envoyé, car j’attends ta validation avant de le faire.
+
+Tu trouveras également ma fiche d’évaluation avec ma partie complétée. Pourrais-tu, s’il te plaît, remplir ta partie et l’envoyer à Aline Dodeman à l’adresse aline.dodeman@u-paris.fr dès que possible ?
+
+Merci d’avance pour ton aide !
+
+Bien à toi,
+
+
+
+
+
 import xgboost as xgb
 import shap
 import numpy as np
