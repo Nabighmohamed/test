@@ -141,6 +141,150 @@ for variable in unique_variables:
 
 
 
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assume 'og' is your original dataframe
+# For this example, let's create a sample 'og' dataframe
+og = pd.DataFrame({
+    'X1': ['A', 'B', 'C', 'A', 'B', 'C'],
+    'X1_numcode': [1, 2, 3, 1, 2, 3],
+    'X2': ['D', 'E', 'F', 'D', 'E', 'F'],
+    'X2_numcode': [1, 2, 3, 1, 2, 3],
+    # ... potentially more columns and rows
+})
+
+print("Original DataFrame (og):")
+print(og)
+print("\n")
+
+# List of variables you're interested in
+variables_of_interest = ['X1', 'X2']
+
+# Create the mapping_df from 'og' for the variables of interest
+mapping_dfs = []
+
+for var in variables_of_interest:
+    numcode_var = var + '_numcode'  # Assuming encoded variable is named 'var_numcode'
+    if var in og.columns and numcode_var in og.columns:
+        # Extract unique mappings
+        mapping = og[[var, numcode_var]].drop_duplicates()
+        mapping['variable'] = var
+        mapping.columns = ['category', 'numcode', 'variable']
+        mapping_dfs.append(mapping)
+    else:
+        print(f"Variable '{var}' or '{numcode_var}' not found in 'og'.")
+
+# Combine all mappings into one dataframe
+mapping_df = pd.concat(mapping_dfs, ignore_index=True)
+mapping_df = mapping_df[['variable', 'category', 'numcode']]
+
+print("Mapping DataFrame (mapping_df):")
+print(mapping_df)
+print("\n")
+
+# Sample dataframe (df) containing intervals and coefficients
+df = pd.DataFrame({
+    'variable': ['X1_numcode', 'X1_numcode', 'X2_numcode', 'X2_numcode'],
+    'group': ['[-inf,1.5)', '[1.5,inf)', '[-inf,2)', '[2,inf)'],
+    'coef': [200, 100, 250, 150],
+    'min': [-float('inf'), 1.5, -float('inf'), 2],
+    'max': [1.5, float('inf'), 2, float('inf')],
+    'Variable': ['X1_numcode', 'X1_numcode', 'X2_numcode', 'X2_numcode']
+})
+
+print("DataFrame with intervals and coefficients (df):")
+print(df)
+print("\n")
+
+# Function to map intervals to categories
+def map_intervals_to_categories(variable_data, variable, mapping_df):
+    # Get the original variable name (without '_numcode')
+    original_var = variable.replace('_numcode', '')
+    # Filter mapping_df for this variable
+    var_mapping_df = mapping_df[mapping_df['variable'] == original_var]
+    # Map intervals back to categories
+    new_groups = []
+    for idx, row in variable_data.iterrows():
+        min_val = row['min']
+        max_val = row['max']
+        # Find categories within the interval
+        categories_in_interval = var_mapping_df[
+            (var_mapping_df['numcode'] >= min_val) & (var_mapping_df['numcode'] < max_val)
+        ]['category'].unique()
+        # If categories are found, join them into a string
+        if len(categories_in_interval) > 0:
+            categories_str = ', '.join(categories_in_interval)
+            new_groups.append(categories_str)
+        else:
+            new_groups.append(row['group'])
+    return new_groups
+
+# New: List of variables to replot with sorted X-axis based on Y-values
+variables_to_sort_and_replot = ['X1_numcode']  # Replace with your selected variables
+
+# Group by each variable and create separate plots
+unique_variables = df['variable'].unique()
+
+data = []
+
+for variable in unique_variables:
+    # Filter data for the current variable
+    variable_data = df[df['variable'] == variable].copy()
+    
+    # Extract coefficients
+    coefficients = variable_data['coef'].values
+    
+    # Map intervals to categories for variables ending with '_numcode'
+    if variable.endswith('_numcode'):
+        groups = map_intervals_to_categories(variable_data, variable, mapping_df)
+    else:
+        groups = variable_data['group'].tolist()
+    
+    # New: Sort categories based on coefficients if variable is in variables_to_sort_and_replot
+    if variable in variables_to_sort_and_replot:
+        # Create a DataFrame to hold groups and coefficients
+        plot_data = pd.DataFrame({
+            'group': groups,
+            'coef': coefficients
+        })
+        # Sort the DataFrame based on 'coef'
+        plot_data.sort_values('coef', inplace=True)
+        # Update groups and coefficients
+        groups = plot_data['group'].tolist()
+        coefficients = plot_data['coef'].tolist()
+    
+    # Create a new figure for each variable
+    plt.figure(figsize=(8, 5))
+    plt.scatter(groups, coefficients, color='blue')
+    
+    # Customize the plot
+    plt.xlabel('Category')
+    plt.ylabel('Coefficient')
+    plt.title(f'Coefficients vs. Categories for {variable}')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    
+    # Collect data
+    data.append([[groups, list(coefficients)]])
+    
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+    
+    # Print groups and coefficients for verification
+    print(f"Variable: {variable}")
+    print("Groups:", groups)
+    print("Coefficients:", list(coefficients))
+    print("\n")
+
+
+
+
+
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
