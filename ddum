@@ -1,16 +1,101 @@
-Objet : Demande de possibilité de changement d'horaire pour la soutenance
+import pandas as pd
+import matplotlib.pyplot as plt
 
-Monsieur Labiod,
+# Sample original dataframe (og_df) with categorical variables and their encoded versions
+og_df = pd.DataFrame({
+    'car_type': ['Sedan', 'SUV', 'Coupe', 'Convertible', 'Hatchback'],
+    'car_type_numcode': [1, 2, 3, 4, 5],
+    'AGE': [25, 35, 45, 55, 65]
+})
 
-J'espère que vous allez bien. Je me permets de vous écrire pour vous demander s'il serait possible de modifier l'horaire de ma soutenance, actuellement prévue le 17 septembre.
+print("Original DataFrame (og_df):")
+print(og_df)
+print("\n")
 
-Malheureusement, ma responsable, Solène, a une réunion importante prévue au même moment, et sa présence lors de ma soutenance est importante pour moi.
+# Sample dataframe (df) containing variables, groups (intervals), coefficients, etc.
+df = pd.DataFrame({
+    'variable': ['car_type_numcode', 'car_type_numcode', 'AGE', 'AGE'],
+    'group': ['[-inf,2)', '[2,inf)', '[-inf,40)', '[40,inf)'],
+    'coef': [100, 200, -50, 50],
+    'min': [-float('inf'), 2, -float('inf'), 40],
+    'max': [2, float('inf'), 40, float('inf')],
+    'Variable': ['car_type_numcode', 'car_type_numcode', 'AGE', 'AGE']
+})
 
-Je vous serais très reconnaissant si cette demande pouvait être prise en compte. Merci de me tenir informé de la faisabilité de ce changement.
+print("DataFrame with intervals and coefficients (df):")
+print(df)
+print("\n")
 
-Je vous remercie pour votre compréhension et votre aide.
+# Function to map intervals to categories
+def map_intervals_to_categories(variable_data, variable, og_df):
+    # Get the original variable name (without '_numcode')
+    original_var = variable.replace('_numcode', '')
+    # Check if original variable exists in og_df
+    if original_var in og_df.columns:
+        # Get the mapping from numcodes to categories
+        mapping_df = og_df[[original_var, variable]].drop_duplicates()
+        mapping_df.columns = ['category', 'numcode']
+        mapping_df['numcode'] = mapping_df['numcode'].astype(float)
+        # Map intervals back to categories
+        new_groups = []
+        for idx, row in variable_data.iterrows():
+            min_val = row['min']
+            max_val = row['max']
+            # Find categories within the interval
+            categories_in_interval = mapping_df[
+                (mapping_df['numcode'] >= min_val) & (mapping_df['numcode'] < max_val)
+            ]['category'].unique()
+            # If categories are found, join them into a string
+            if len(categories_in_interval) > 0:
+                categories_str = ', '.join(categories_in_interval)
+                new_groups.append(categories_str)
+            else:
+                new_groups.append(row['group'])
+        return new_groups
+    else:
+        return variable_data['group'].tolist()
 
-Cordialement,
+# Group by each variable and create separate plots
+unique_variables = df['variable'].unique()
+
+data = []
+
+for variable in unique_variables:
+    # Filter data for the current variable
+    variable_data = df[df['variable'] == variable]
+    
+    # Extract coefficients
+    coefficients = variable_data['coef']
+    
+    # Map intervals to categories for variables ending with '_numcode'
+    if variable.endswith('_numcode'):
+        groups = map_intervals_to_categories(variable_data, variable, og_df)
+    else:
+        groups = variable_data['group'].tolist()
+    
+    # Create a new figure for each variable
+    plt.figure(figsize=(10, 6))
+    plt.scatter(groups, coefficients, color='blue')
+    
+    # Customize the plot
+    plt.xlabel('Group')
+    plt.ylabel('Coefficient')
+    plt.title(f'Coefficients vs. Groups for {variable}')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    
+    # Collect data
+    data.append([[groups, list(coefficients)]])
+    
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+    
+    # Print groups and coefficients for verification
+    print(f"Variable: {variable}")
+    print("Groups:", groups)
+    print("Coefficients:", list(coefficients))
+    print("\n")
 
 
 
