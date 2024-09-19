@@ -1,3 +1,39 @@
+import matplotlib.pyplot as plt
+
+# Increase point size and change color to make data points more visible
+pw_fit_i.plot_data(color="blue", s=50, alpha=0.8, edgecolors='k')
+
+# Enhance the fit line appearance
+pw_fit_i.plot_fit(color="red", linewidth=3, linestyle='-')
+
+# Customize breakpoints appearance
+pw_fit_i.plot_breakpoints(color='green', marker='o', markersize=10, linestyle='None', label='Breakpoints')
+
+# Adjust confidence intervals with transparency
+pw_fit_i.plot_breakpoint_confidence_intervals(color='lightgreen', alpha=0.3, label='Confidence Intervals')
+
+# Add labels with larger font sizes
+plt.xlabel("x", fontsize=14)
+plt.ylabel("y", fontsize=14)
+
+# Add a title to the plot
+plt.title("Piecewise Linear Fit", fontsize=16)
+
+# Add gridlines for better readability
+plt.grid(True, linestyle='--', alpha=0.5)
+
+# Add a legend to identify plot elements
+plt.legend(fontsize=12)
+
+# Optimize layout
+plt.tight_layout()
+
+# Display the plot
+plt.show()
+plt.close()
+
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
