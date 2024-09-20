@@ -1,5 +1,4 @@
-Merci pour ta réponse. Si je comprends bien, en configurant le nombre total de segments, cela revient à réduire le degré de liberté, c'est bien ça ? Si c'est le cas, merci quand même.
-
+Je suis en train de rédiger un petit rapport pour tout détailler, mais pour le moment, voici la régression par paires originale et, après correction, la régression par paires.
 
 
 import numpy as np
