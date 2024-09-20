@@ -1,3 +1,7 @@
+Merci pour ta réponse. Si je comprends bien, en configurant le nombre total de segments, cela revient à réduire le degré de liberté, c'est bien ça ? Si c'est le cas, merci quand même.
+
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
