@@ -1,3 +1,45 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# Assume 'data' is your dataset; replace this with your actual data
+# For demonstration, let's create a sample data series
+np.random.seed(42)
+data = np.random.normal(loc=50, scale=15, size=1000)  # Normal distribution data
+
+# Calculate statistics
+mean_value = np.mean(data)
+median_value = np.median(data)
+q1_value = np.percentile(data, 25)  # First quartile (25th percentile)
+q3_value = np.percentile(data, 75)  # Third quartile (75th percentile)
+
+# Create the plot
+plt.figure(figsize=(12, 6))
+
+# Plot the distribution using seaborn
+sns.histplot(data, kde=True, color='skyblue', edgecolor='black', bins=30)
+
+# Add vertical lines for mean, median, Q1, and Q3
+plt.axvline(mean_value, color='red', linestyle='--', linewidth=2, label=f'Mean: {mean_value:.2f}')
+plt.axvline(median_value, color='green', linestyle='--', linewidth=2, label=f'Median: {median_value:.2f}')
+plt.axvline(q1_value, color='orange', linestyle='--', linewidth=2, label=f'Q1: {q1_value:.2f}')
+plt.axvline(q3_value, color='purple', linestyle='--', linewidth=2, label=f'Q3: {q3_value:.2f}')
+
+# Customize the plot
+plt.title('Distribution of Variable with Mean, Median, Q1, and Q3', fontsize=16)
+plt.xlabel('Value', fontsize=14)
+plt.ylabel('Frequency', fontsize=14)
+plt.legend(fontsize=12)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+
+# Show the plot
+plt.show()
+
+
+
+
 Bonjour Baptiste,
 
 J'espère que tu vas bien. Je voulais te demander s'il est possible de définir le nombre minimum d'éléments ou d'observations dans chaque segment dans la sortie d'AgBoost. Peux-tu me dire si cela peut être configuré ?
