@@ -24,6 +24,66 @@ df = df.sort_values('x').reset_index(drop=True)
 # Create quantile-based bins so each bin has approximately the same number of data points
 df['bin'] = pd.qcut(df['x'], q=n_bins, labels=False, duplicates='drop')
 
+# Compute the mean and median of x and y in each bin
+stats_df = df.groupby('bin').agg({
+    'x': ['mean', 'median'],
+    'y': ['mean', 'median']
+}).reset_index()
+
+# Flatten the MultiIndex columns
+stats_df.columns = ['bin', 'x_mean', 'x_median', 'y_mean', 'y_median']
+
+# Plot the scatter plot
+plt.figure(figsize=(12, 6))
+plt.scatter(df['x'], df['y'], color='skyblue', alpha=0.7, label='Data Points')
+
+# Plot the mean points and connect them
+plt.plot(stats_df['x_mean'], stats_df['y_mean'], color='red', marker='o', linestyle='-', linewidth=2, markersize=8, label='Mean per Bin')
+
+# Plot the median points and connect them
+plt.plot(stats_df['x_median'], stats_df['y_median'], color='green', marker='s', linestyle='--', linewidth=2, markersize=8, label='Median per Bin')
+
+# Customize the plot
+plt.title('Scatter Plot with Mean and Median Points per Bin', fontsize=16)
+plt.xlabel('x', fontsize=14)
+plt.ylabel('y', fontsize=14)
+plt.legend(fontsize=12)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+
+# Show the plot
+plt.show()
+
+
+
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming x and y are your data variables
+# Replace the sample data with your actual data
+# x = np.array([...])
+# y = np.array([...])
+
+# For demonstration, let's create sample data
+np.random.seed(0)
+x = np.random.uniform(0, 10, 100)  # Replace with your x data
+y = 2 * x + np.random.normal(0, 5, size=100)  # Replace with your y data
+
+# Number of bins (segments)
+n_bins = 5  # Adjust this to change the number of segments
+
+# Create a DataFrame for easier manipulation
+df = pd.DataFrame({'x': x, 'y': y})
+
+# Sort the DataFrame by x to ensure proper binning
+df = df.sort_values('x').reset_index(drop=True)
+
+# Create quantile-based bins so each bin has approximately the same number of data points
+df['bin'] = pd.qcut(df['x'], q=n_bins, labels=False, duplicates='drop')
+
 # Compute the mean of x and y in each bin
 mean_df = df.groupby('bin').agg({'x': 'mean', 'y': 'mean'}).reset_index()
 
