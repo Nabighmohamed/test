@@ -1,4 +1,9 @@
-Salut Solène, je voulais juste vérifier si tu as du temps pour une réunion de 15 minutes à 16h45.
+Bonjour Baptiste,
+
+J'espère que tu vas bien. Je voulais te demander s'il est possible de définir le nombre minimum d'éléments ou d'observations dans chaque segment dans la sortie d'AgBoost. Peux-tu me dire si cela peut être configuré ?
+
+Bien cordialement,
+
 
 import matplotlib.pyplot as plt
 
