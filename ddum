@@ -1,14 +1,22 @@
-Hi Larbi,
+Subject: Notebooks and Reports
 
-I hope you're doing well. I just wanted to follow up on my previous message about setting up a call to discuss your experience as a Quantitative Analyst at BNP. I understand you might be busy, but I'm still very interested in connecting whenever you have the time.
+Hi Abidjo,
 
-Please let me know what time works best for you, and I'll make sure to accommodate your schedule.
+I hope you're doing well.
 
-Looking forward to speaking with you soon!
+As discussed, here is the link to the notebooks: [Insert Link].
 
-Best regards,
+In the first folder, titled Clean Notebooks, you'll find three cleaned and organized notebooks:
 
-Nabigh
+One for data management.
+Two others for modeling DF for ER and the rest using AgBoost.
+In the second folder, called R&D, you'll find the rest of the implementation for the other approaches. However, these notebooks are not cleaned and require a lot of preprocessing. To help with that, I’ve included a report alongside each notebook that explains each approach, the article it was derived from, and how to implement it.
+
+Additionally, there’s a folder in the parent directory called Rapports, which contains multiple reports justifying the extra analyses and statistical descriptions that led to some of the decisions made in the data management section.
+
+Let me know if you need anything else.
+
+Best,
 
 
 
